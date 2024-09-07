@@ -50,6 +50,9 @@ class calculus_tree
         bool is_op(const string&expression,unsigned int  ) ;
 
         node*parse_expression(const string&,unsigned int &start);
+
+        void remove_root_keep_children(node*&ret_root);
+
     public:
         calculus_tree(void);
         calculus_tree(const string&expression);
