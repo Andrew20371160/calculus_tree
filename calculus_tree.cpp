@@ -433,11 +433,7 @@ string calculus_tree::expression(node* ptr) const {
                     else{
                         //we remove the latest operator
                         //and the root becomes children
-                        temp= ret_root ;
-                        ret_root=ret_root->children;
-                        temp->children=NULL;
-                        ret_root->parent=NULL;
-                        remove_node(temp);
+                        remove_root_keep_children(ret_root);
                         start--;
                         return ret_root;
                     }
@@ -445,11 +441,7 @@ string calculus_tree::expression(node* ptr) const {
                 else{
                     //we remove the latest operator
                     //and the root becomes children
-                    temp= ret_root ;
-                    ret_root=ret_root->children;
-                    temp->children=NULL;
-                    ret_root->parent=NULL;
-                    remove_node(temp);
+                    remove_root_keep_children(ret_root);
                     start--;
                     return ret_root;
                 }
@@ -457,11 +449,7 @@ string calculus_tree::expression(node* ptr) const {
             if(start<expression.length()&&(expression[start]=='(')){
                 if(ret_root->children&&ret_root->children->next==ret_root->children){
                     //one child pointing at itself
-                    temp= ret_root ;
-                    ret_root=ret_root->children;
-                    temp->children=NULL;
-                    ret_root->parent=NULL;
-                    remove_node(temp);
+                    remove_root_keep_children(ret_root);
                     start--;
                 }
             }
@@ -469,10 +457,19 @@ string calculus_tree::expression(node* ptr) const {
             }
         return NULL;
     }
-
+    void calculus_tree::remove_root_keep_children(node*&ret_root){
+        if(ret_root){
+            node *temp= ret_root ;
+            ret_root=ret_root->children;
+            temp->children=NULL;
+            ret_root->parent=NULL;
+            remove_node(temp);
+        }
+    }
 
 int main(){
     calculus_tree tree("((a1+3.14)*(b2-(c3/d4)+e5)-(f6*g7/(h8-i9))+j10)*(k11+l12-(m13*n14/(o15+p16)))");
     cout<<tree;
+    system("pause");
     return 0 ;
 }
