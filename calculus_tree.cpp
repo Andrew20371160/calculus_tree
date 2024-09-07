@@ -1,4 +1,9 @@
 #include "calculus_tree.h"
+    const int keyword_count =13 ;
+
+    const string key_words[keyword_count]={"sin","cos","tan","sec","csc","cotan",
+                              "asin","acos","atan", "exp","ln","pi","log"};
+
 
     node * node::get_node(const string &symbol){
         node*ret_node = NULL;
@@ -274,6 +279,7 @@ string calculus_tree::expression(node* ptr) const {
     }
     return "";
 }
+
     bool calculus_tree::is_op(const string&expression,unsigned int pos ) {
         switch(expression[pos]){
             case '+':return true ;break;
@@ -329,10 +335,7 @@ string calculus_tree::expression(node* ptr) const {
                     }
                     else{
                         if(!(ret_root->symbol[0]==expression[start])){
-                            while(!q.empty()){
-                                ret_root->append_child(q.front());
-                                q.pop() ;
-                           }
+                            fill_children(q,ret_root);
                             return ret_root;
                         }
                     }
@@ -341,23 +344,30 @@ string calculus_tree::expression(node* ptr) const {
             if(q.size()==1){
                 //means this we found this -> 5-(
                 //extracted 5 and - we only take the 5
-                if(expression[start]=='(')
+                if(expression[start]=='('){
                     start--;
                     remove_node(ret_root) ;
                     ret_root = ret_root->get_node(q.front());
                     q.pop() ;
+                    }
                 }
             else{
-                while(!q.empty()){
-                    ret_root->append_child(q.front());
-                    q.pop() ;
-                }
+                fill_children(q,ret_root);
             }
             return ret_root;
 
             }
 
         return NULL;
+    }
+
+    void calculus_tree::fill_children(queue<string>&q ,node*&ret_root){
+        if(ret_root){
+            while(!q.empty()){
+                ret_root->append_child(q.front());
+                q.pop();
+            }
+        }
     }
     //assuming start at first encountered '('
     node* calculus_tree::parse_paranthese(const string& expression, unsigned int &start) {
@@ -401,7 +411,7 @@ string calculus_tree::expression(node* ptr) const {
             return ret_root;
         }
         return NULL;
-}
+    }
     //extract a normal expression without paranthese
     node*calculus_tree::parse_expression(const string&expression,unsigned int &start){
         if(expression[start]!='('&&expression[start]!=')'){
@@ -467,6 +477,37 @@ string calculus_tree::expression(node* ptr) const {
         }
     }
 
+    bool calculus_tree:: is_keyword(const string&expression ,unsigned int pos){
+         string temp=  extract(expression,pos);
+         if(temp.substr(0,3)=="log"){
+            return 1 ;
+         }
+         for(int i =0 ; i <keyword_count-1;i++){
+            if(temp==key_words[i]){
+                return 1;
+            }
+         }
+         return 0 ;
+    }
+    //assuming it's a keywrod AND its a function
+    node*calculus_tree::parse_function(const string&expression,unsigned int &start){
+        if(start<expression.length()){
+            string var = extract(expression,start);
+            unsigned int temp_start = start;
+            if(is_keyword(expression,temp_start)){
+                node*ret_root = parse_paranthese(expression,start);
+                if(ret_root){
+                    ret_root->apeend_parent(var);
+                    ret_root=ret_root->parent;
+                    return ret_root ;
+                }
+            }
+            else{
+                start-=var.length();
+            }
+        }
+        return NULL;
+    }
 int main(){
     calculus_tree tree("((a1+3.14)*(b2-(c3/d4)+e5)-(f6*g7/(h8-i9))+j10)*(k11+l12-(m13*n14/(o15+p16)))");
     cout<<tree;
