@@ -48,10 +48,13 @@ class calculus_tree
 
         bool remove_node(node*&src) ;
         bool is_op(const string&expression,unsigned int  ) ;
+        bool is_keyword(const string&expression,unsigned int  ) ;
 
         node*parse_expression(const string&,unsigned int &start);
 
         void remove_root_keep_children(node*&ret_root);
+        void fill_children(queue<string>&q ,node*&ret_root);
+        node*parse_function(const string&,unsigned int &start);
 
     public:
         calculus_tree(void);
