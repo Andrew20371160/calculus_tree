@@ -206,6 +206,15 @@
                     root = NULL;
                 }
             }
+            else if(is_keyword(expression,start)){
+                temp = parse_function(expression,start);
+                if(root){
+                    root->append_child(temp);
+                }
+                else{
+                    root=temp;
+                }
+            }
             else{
                 temp = parse_expression(expression,start) ;
                 if(root){
@@ -399,6 +408,15 @@ string calculus_tree::expression(node* ptr) const {
                         return NULL;
                     }
                 }
+                else if(is_keyword(expression,start)){
+                    temp = parse_function(expression, start);
+                    if(ret_root == NULL) {
+                        ret_root = temp;
+                    }
+                    else {
+                        ret_root->append_child(temp);
+                    }
+                }
                 else {
                     temp = parse_expression(expression, start);
                     if(ret_root == NULL) {
@@ -493,23 +511,18 @@ string calculus_tree::expression(node* ptr) const {
     node*calculus_tree::parse_function(const string&expression,unsigned int &start){
         if(start<expression.length()){
             string var = extract(expression,start);
-            unsigned int temp_start = start;
-            if(is_keyword(expression,temp_start)){
-                node*ret_root = parse_paranthese(expression,start);
-                if(ret_root){
-                    ret_root->apeend_parent(var);
-                    ret_root=ret_root->parent;
-                    return ret_root ;
-                }
+            node*ret_root = parse_paranthese(expression,start);
+            if(ret_root){
+                ret_root->apeend_parent(var);
+                ret_root=ret_root->parent;
+                return ret_root ;
             }
-            else{
-                start-=var.length();
-            }
+
         }
         return NULL;
     }
 int main(){
-    calculus_tree tree("((a1+3.14)*(b2-(c3/d4)+e5)-(f6*g7/(h8-i9))+j10)*(k11+l12-(m13*n14/(o15+p16)))");
+    calculus_tree tree("sin(exp(x))+cos(2*y)");
     cout<<tree;
     system("pause");
     return 0 ;
