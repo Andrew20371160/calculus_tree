@@ -196,7 +196,7 @@
                 //then this is out of place closing bracket
                 return ;
             }
-            else if(is_op(expression,start)&&expression[start]!=root->symbol[0]){
+            else if(is_op(expression,start)){
                 if(root){
                     root->apeend_parent(extract(expression,start));
                     root=root->parent;
@@ -359,13 +359,15 @@ string calculus_tree::expression(node* ptr) const {
                     ret_root = ret_root->get_node(q.front());
                     q.pop() ;
                     }
+                if(ret_root==NULL){
+                    ret_root=ret_root->get_node(q.front());
                 }
+            }
             else{
                 fill_children(q,ret_root);
             }
             return ret_root;
-
-            }
+        }
 
         return NULL;
     }
@@ -383,52 +385,51 @@ string calculus_tree::expression(node* ptr) const {
         if(start < expression.length()) {
             node* ret_root = NULL;
             node* temp = NULL;
-            while(start < expression.length()) {
-                if(expression[start] == '(') {
-                    start++;
-                    temp = parse_paranthese(expression, start); // Parse the contents of the parentheses
-                    if(ret_root == NULL) {
-                        ret_root = temp;
-                    }
-                    else {
-                        ret_root->append_child(temp);
-                    }
-                }
-                else if(expression[start] == ')') {
-                    start++; // Skip the closing parenthesis
-                    return ret_root; // Return the root of the parsed subtree
-                }
-                else if(is_op(expression, start)) {
-                    if(ret_root) {
-                        ret_root->apeend_parent(extract(expression, start));
-                        ret_root = ret_root->parent;
-                    } else {
-                        // Something is wrong, clean up and return NULL
-                        remove_node(ret_root);
-                        return NULL;
-                    }
-                }
-                else if(is_keyword(expression,start)){
-                    temp = parse_function(expression, start);
-                    if(ret_root == NULL) {
-                        ret_root = temp;
-                    }
-                    else {
-                        ret_root->append_child(temp);
-                    }
+            if(expression[start] == '(') {
+                start++;
+                temp = parse_paranthese(expression, start); // Parse the contents of the parentheses
+                if(ret_root == NULL) {
+                    ret_root = temp;
                 }
                 else {
-                    temp = parse_expression(expression, start);
-                    if(ret_root == NULL) {
-                        ret_root = temp;
-                    } else {
-                        ret_root->append_child(temp);
-                    }
+                    ret_root->append_child(temp);
                 }
             }
-            return ret_root;
+            if(expression[start] == ')') {
+                start++; // Skip the closing parenthesis
+                return ret_root; // Return the root of the parsed subtree
+            }
+            if(is_op(expression, start)) {
+                if(ret_root) {
+                    ret_root->apeend_parent(extract(expression, start));
+                    ret_root = ret_root->parent;
+                } else {
+                    // Something is wrong, clean up and return NULL
+                    remove_node(ret_root);
+                    return NULL;
+                }
+            }
+            if(is_keyword(expression,start)){
+                temp = parse_function(expression, start);
+                if(ret_root == NULL) {
+                    ret_root = temp;
+                }
+                else {
+                    ret_root->append_child(temp);
+                }
+            }
+            else {
+                temp = parse_expression(expression, start);
+                if(ret_root == NULL) {
+                    ret_root = temp;
+                } else {
+                    ret_root->append_child(temp);
+                }
+            }
         }
-        return NULL;
+        else{
+            return NULL;
+        }
     }
     //extract a normal expression without paranthese
     node*calculus_tree::parse_expression(const string&expression,unsigned int &start){
@@ -482,7 +483,7 @@ string calculus_tree::expression(node* ptr) const {
                 }
             }
             return ret_root ;
-            }
+        }
         return NULL;
     }
     void calculus_tree::remove_root_keep_children(node*&ret_root){
@@ -522,7 +523,7 @@ string calculus_tree::expression(node* ptr) const {
         return NULL;
     }
 int main(){
-    calculus_tree tree("sin(exp(x))+cos(2*y)");
+    calculus_tree tree("sin(x*2)*2");
     cout<<tree;
     system("pause");
     return 0 ;
