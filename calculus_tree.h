@@ -19,15 +19,19 @@ class node
     node *next ;
     bool append_next(node*&src_root);
     bool append_child(node*&src_root);
-    bool apeend_parent(node*&src_root);
+    bool append_parent(node*&src_root);
     public :
 
         node*get_node(const string&);
 
         bool append_next(const string&);
         bool append_child(const string&);
-        bool apeend_parent(const string&);
-
+        bool append_parent(const string&);
+        //where op is new parent of last op
+        //and op is new children to parent of last op
+        //and then last op becomes parent of last op
+        //last_op->exchange_parent(op);
+        bool exchange_parent(const string&op) ;
 
 };
 /*
@@ -45,6 +49,7 @@ class calculus_tree
         node*parse_operation(const string&,unsigned int &start);
         //this extracts operand (whatever its length) or operator
         string extract(const string&,unsigned int &start);
+        bool  is_keyword( node*&ptr)const;
 
         bool remove_node(node*&src) ;
         bool is_op(const string&expression,unsigned int  ) ;
@@ -55,6 +60,7 @@ class calculus_tree
         void remove_root_keep_children(node*&ret_root);
         void fill_children(queue<string>&q ,node*&ret_root);
         node*parse_function(const string&,unsigned int &start);
+        int precedence(const string&expression,unsigned int pos);
 
     public:
         calculus_tree(void);
