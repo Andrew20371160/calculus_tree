@@ -17,11 +17,13 @@
         }
         return NULL;
     }
-
+    //appends symbol as a new sibling to this
+    //and a new child to parent of this
+    //must have a parent to do the operation
+    //so that the tree structure isn't ruined
     bool node::append_next(const string &symbol){
         if(parent){
             node*tail = parent->children ;
-
             node*new_node= get_node(symbol);
             if(new_node){
                 new_node->next= tail->next;
@@ -34,104 +36,131 @@
         }
         return false;
     }
-
+    /*
+    appends symbol as a new child to this
+    */
     bool node::append_child(const string &symbol){
+        bool success = false ;
         if(children==NULL){
             children = get_node(symbol);
-            children->parent = this;
-        }
-        else{
-            children->append_next(symbol);
-        }
-    }
-
-    bool node::append_parent(const string&symbol){
-        if(parent==NULL){
-            parent= get_node(symbol);
-            if(parent){
-                parent->children = this;
+            if(children){
+                children->parent = this;
+                success =true ;
             }
         }
         else{
-            //when adjusting parent of this
-            //all his siblings must have same parent
-            node *new_parent = get_node(symbol);
-            if(new_parent){
-
-                new_parent->parent=parent;
-                new_parent->children = parent->children;
-                parent->children = new_parent;
-
-                parent = new_parent;
-
-                //loop through each child of this siblings and adjust their parents
-                node*ch_ptr = new_parent->children->next;
-                do{
-                    ch_ptr->parent=new_parent;
-                    ch_ptr=ch_ptr->next;
-
-                }while(ch_ptr!=new_parent->children->next);
+            if(children->append_next(symbol)){
+                success = true ;
             }
         }
+        return success ;
     }
-    /*
-    previous operations but on pointers
+        /*
+    disconnects this from his parent and his siblings
+    not from his children
     */
-    bool node::append_next(node*&src_root){
-        if(src_root&&parent){
-            node*tail = parent->children ;
-
-            src_root->next= tail->next;
-            src_root->parent=  this->parent;
-            tail->next= src_root;
-            parent->children=  src_root;
-
+    bool node::disconnect_self(void) {
+        if(parent){
+            if(this->next==this){
+                //this is the only child of parent's children
+                parent->children=NULL;
+            }
+            else{
+                node * before_this = parent->children;
+                while(before_this->next!=this){
+                    before_this= before_this->next ;
+                }
+                if(this==parent->children){
+                    parent->children=before_this;
+                }
+                before_this->next=before_this->next->next ;
+            }
+            this->next=this;
+            parent= NULL ;
             return true;
         }
         return false;
     }
+    /*
+    symbol is a new parent and his first child becomes this
+    this function disconnects this from its sibling and assign a new parent
+    to it which is symbol
+    */
+    bool node::append_parent(const string&symbol){
+        node*new_parent = get_node(symbol);
+        if(new_parent){
+            //disconnect this from its parent and its sibling
+            this->disconnect_self();
+            //then append this as the new child of symbol
+            this->parent = new_parent ;
+            new_parent->children= this ;
+            return true;
+        }
+        return false ;
+    }
 
+    /*
+    previous operations but on pointers
+    */
+    /*
+    append src_root as a sibling to this
+    and a child of its parent
+    so first disconnect src_root from his parent and siblings
+    assign his new parent as parent of this
+    */
+    bool node::append_next(node*&src_root){
+        if(src_root&&parent){
+            src_root->disconnect_self() ;
+            src_root->parent= parent ;
+            //then connect src_root as a new sibling of this
+            node*tail = parent->children;
+            src_root->next = tail->next
+            tail->next = src_root ;
+            parent->children = src_root ;
+            return true ;
+        }
+        return false ;
+    }
+    /*
+    append src_root as a child to this
+    so first disconnect src_root from his parent and siblings
+    then do the connections
+    */
     bool node::append_child(node*&src_root){
         if(src_root){
+            src_root->disconnect_self();
+            src_root->parent= this;
             if(children==NULL){
-                children = src_root;
-                children->parent = this;
+                children = src_root ;
             }
             else{
                 children->append_next(src_root);
             }
         }
     }
-
+    //this function separates this from his parent's list
+    //and put this into the childrent of src_root
     bool node::append_parent(node*&src_root){
         if(src_root){
-            if(parent==NULL){
-                parent= src_root;
-                if(parent){
-                    parent->children = this;
+            if(parent){
+                if(this->next!=this){
+                    node * before_this = parent->children;
+                    while(before_this->next!=this){
+                        before_this= before_this->next ;
+                    }
+                    if(this==parent->children){
+                        parent->children=before_this;
+                    }
+                    before_this->next=before_this->next->next ;
+                }
+                else{
+                    parent->children=NULL;
                 }
             }
-            else{
-                //when adjusting parent of this
-                //all his siblings must have same parent
-                node *new_parent = src_root;
-                if(new_parent){
+            this->next=this;
+            node*temp = this;
+            src_root->append_child(temp);
 
-                    src_root->parent=parent;
-                    src_root->children = parent->children;
-                    parent->children = src_root;
-
-                    parent = src_root;
-
-                    //loop through each child of this siblings and adjust their parents
-                    node*ch_ptr = src_root->children->next;
-                    do{
-                        ch_ptr->parent=src_root;
-                        ch_ptr=ch_ptr->next;
-
-                    }while(ch_ptr!=src_root->children->next);
-                }
-            }
         }
     }
     /*
@@ -141,6 +170,7 @@
     last_op->exchange_parent(op);
 
     */
+
     bool node::exchange_parent(const string&op) {
         //parent of this becomes gparent
         node*new_parent = get_node(op);
@@ -160,9 +190,9 @@
                 before_this ->next=before_this->next->next ;
                 this->next=this;
             }
-            node * temp = this ;
+            parent->append_child(new_parent);
+            node*temp=  this;
             new_parent->append_child(temp);
-            new_parent->append_parent(gparent);
         }
     }
 
@@ -408,6 +438,9 @@ string calculus_tree::expression(node* ptr) const {
                 ret_root->append_child(var) ;
                 last_op = ret_root;
                 while(start<expression.length()){
+                    if(last_op){
+                        cout<<"last op exists";
+                    }
                     new_var =false ;
                     new_op = false ;
                     if(!is_op(expression,start)&&!is_keyword(expression,start)){
@@ -419,6 +452,7 @@ string calculus_tree::expression(node* ptr) const {
                         new_op = true ;
                     }
                     if(new_var){
+
                         if(new_op){
                             int diff = precedence(op,0)-precedence(last_op->symbol,0);
                             if(diff>0){
@@ -443,10 +477,14 @@ string calculus_tree::expression(node* ptr) const {
                         }
                         else{
                             last_op->append_child(var);
+                            return ret_root  ;
                         }
                     }
                 }
+                return ret_root;
+
             }
+            return ret_root;
         }
 
         return NULL ;
@@ -504,7 +542,7 @@ string calculus_tree::expression(node* ptr) const {
     }
 
     int main(){
-        calculus_tree tree("9+10+18+5+8*2/5-9*9");
+        calculus_tree tree("5+8-9^10^18*25/8-92*8^5-38");
         cout<<tree;
         system("pause");
         return 0 ;
