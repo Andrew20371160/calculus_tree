@@ -23,7 +23,7 @@ class node
     public :
 
         node*get_node(const string&);
-
+        bool disconnect_self(void);
         bool append_next(const string&);
         bool append_child(const string&);
         bool append_parent(const string&);
