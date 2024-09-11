@@ -395,11 +395,14 @@ string calculus_tree::expression(node* ptr) const {
             bool new_op= false ;
             bool new_var = false;
             if(!is_op(expression,start)&&!is_keyword(expression,start)){
+
                 var = extract(expression,start);
+
             }
             if(is_op(expression,start)&&expression[start]!='('){
                 op=extract(expression,start);
             }
+
             if(var.length()&&op.length()){
                 ret_root =ret_root->get_node(op);
                 ret_root->append_child(var) ;
@@ -425,18 +428,19 @@ string calculus_tree::expression(node* ptr) const {
                                 last_op = last_op->children;
                             }
                             else{
-
                                 last_op->append_child(var);
                                 //where op is new parent of last op
                                 //and op is new children to parent of last op
                                 //and then last op becomes parent of last op
+                                while(last_op->parent&&precedence(op,0)<precedence(last_op->parent->symbol,0)){
+                                    last_op=last_op->parent;
+                                }
                                 last_op->exchange_parent(op);
                                 if(ret_root==last_op){
                                     ret_root=ret_root->parent;
                                 }
                                 last_op=last_op->parent;
                             }
-
                         }
                         else{
                             last_op->append_child(var);
@@ -445,7 +449,6 @@ string calculus_tree::expression(node* ptr) const {
                     }
                 }
                 return ret_root;
-
             }
             return ret_root;
         }
@@ -505,8 +508,7 @@ string calculus_tree::expression(node* ptr) const {
     }
 
     int main(){
-        calculus_tree tree("5+8-9^10^18*25/8-92*8^5-38");
+        calculus_tree tree("5 * x^2 + 3 / x + 4 * x^3 + 76 * y^3 - 2 * y^2 + 5 / y - 17 * z^2 + 9 * z + 2 / z + 1110 * a + 3 * a^2 - 2 / a + 58 * b^3 - 4 / b + 6 * b - 3");
         cout<<tree;
-        system("pause");
         return 0 ;
     }
