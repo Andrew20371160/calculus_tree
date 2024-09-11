@@ -62,8 +62,10 @@
     bool node::disconnect_self(void) {
         if(parent){
             if(this->next==this){
-                //this is the only child of parent's children
-                parent->children=NULL;
+                if(parent->children==this){
+                    //this is the only child of parent's children
+                    parent->children=NULL;
+                }
             }
             else{
                 node * before_this = parent->children;
@@ -114,7 +116,7 @@
             src_root->parent= parent ;
             //then connect src_root as a new sibling of this
             node*tail = parent->children;
-            src_root->next = tail->next
+            src_root->next = tail->next;
             tail->next = src_root ;
             parent->children = src_root ;
             return true ;
@@ -124,7 +126,7 @@
     /*
     append src_root as a child to this
     so first disconnect src_root from his parent and siblings
-    then do the connections
+    then does the connections
     */
     bool node::append_child(node*&src_root){
         if(src_root){
@@ -136,85 +138,44 @@
             else{
                 children->append_next(src_root);
             }
+            return true ;
         }
+        return false ;
     }
     //this function separates this from his parent's list
     //and put this into the childrent of src_root
     bool node::append_parent(node*&src_root){
+        this->disconnect_self() ;
         if(src_root){
-            if(parent){
-                if(this->next!=this){
-                    node * before_this = parent->children;
-                    while(before_this->next!=this){
-                        before_this= before_this->next ;
-                    }
-                    if(this==parent->children){
-                        parent->children=before_this;
-                    }
-                    before_this->next=before_this->next->next ;
-                }
-                else{
-                    parent->children=NULL;
-                }
-            }
-            this->next=this;
-            node*temp = this;
-            src_root->append_child(temp);
-
+            node*temp = this ;
+            src_root->append_child(temp) ;
         }
+        return true ;
     }
     /*
     //where op is new parent of last op
     //and op is new children to parent of last op
     //and then last op becomes parent of last op
     last_op->exchange_parent(op);
-
     */
-
     bool node::exchange_parent(const string&op) {
-        //parent of this becomes gparent
-        node*new_parent = get_node(op);
-        node*gparent = parent ;
-        if(new_parent){
-            new_parent->parent= gparent ;
-            new_parent->children=this ;
-            if(this->next!=this){
-                //if not a singular node in a list
-                node * before_this = gparent->children;
-                while(before_this->next!=this){
-                    before_this= before_this->next ;
-                }
-                if(this==parent->children){
-                    gparent->children=before_this;
-                }
-                before_this ->next=before_this->next->next ;
-                this->next=this;
-            }
-            parent->append_child(new_parent);
-            node*temp=  this;
+         if(parent==NULL){
+            this->append_parent(op) ;
+         }
+         else{
+            node*new_parent = get_node(op);
+            node*gparent  =parent ;
+            gparent->append_child(new_parent) ;
+            node*temp = this;
             new_parent->append_child(temp);
-        }
+         }
+         return true;
     }
 
     bool calculus_tree::remove_node(node*&src) {
         if(src){
-            if(src->parent){
+            src->disconnect_self();
 
-                if(src->next==src){
-                    src->parent->children = NULL;
-                }
-                else{
-                    node*ptr = src->parent->children;
-                    while(ptr->next!=src){
-                        ptr=ptr->next ;
-                    }
-                    if(ptr->next==src->parent->children){
-                        //then i'm deleting tail
-                        src->parent->children= ptr ;
-                    }
-                    ptr->next=ptr->next->next;
-                }
-            }
             queue<node*>q ;
             q.push(src);
             while(!q.empty())
@@ -232,7 +193,9 @@
                 temp=NULL;
             }
             src=NULL;
+            return true;
         }
+        return false ;
     }
 
     calculus_tree::~calculus_tree(){
@@ -250,8 +213,12 @@
     }
 
     bool calculus_tree::remove_tree(void){
-        remove_node(root);
-        root =NULL;
+        if(root){
+            remove_node(root);
+            root =NULL;
+            return true ;
+        }
+        return 0 ;
     }
 
     void calculus_tree::print(node* ptr) const {
@@ -438,9 +405,6 @@ string calculus_tree::expression(node* ptr) const {
                 ret_root->append_child(var) ;
                 last_op = ret_root;
                 while(start<expression.length()){
-                    if(last_op){
-                        cout<<"last op exists";
-                    }
                     new_var =false ;
                     new_op = false ;
                     if(!is_op(expression,start)&&!is_keyword(expression,start)){
@@ -452,7 +416,6 @@ string calculus_tree::expression(node* ptr) const {
                         new_op = true ;
                     }
                     if(new_var){
-
                         if(new_op){
                             int diff = precedence(op,0)-precedence(last_op->symbol,0);
                             if(diff>0){
