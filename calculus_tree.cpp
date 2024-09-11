@@ -395,9 +395,7 @@ string calculus_tree::expression(node* ptr) const {
             bool new_op= false ;
             bool new_var = false;
             if(!is_op(expression,start)&&!is_keyword(expression,start)){
-
                 var = extract(expression,start);
-
             }
             if(is_op(expression,start)&&expression[start]!='('){
                 op=extract(expression,start);
@@ -450,7 +448,9 @@ string calculus_tree::expression(node* ptr) const {
                 }
                 return ret_root;
             }
-            return ret_root;
+            else if(var.length()){
+                return ret_root->get_node(var) ;
+            }
         }
 
         return NULL ;
@@ -510,5 +510,6 @@ string calculus_tree::expression(node* ptr) const {
     int main(){
         calculus_tree tree("5 * x^2 + 3 / x + 4 * x^3 + 76 * y^3 - 2 * y^2 + 5 / y - 17 * z^2 + 9 * z + 2 / z + 1110 * a + 3 * a^2 - 2 / a + 58 * b^3 - 4 / b + 6 * b - 3");
         cout<<tree;
+        system("pause");
         return 0 ;
     }
