@@ -54,6 +54,8 @@ class calculus_tree
         bool remove_node(node*&src) ;
         bool is_op(const string&expression,unsigned int  ) ;
         bool is_keyword(const string&expression,unsigned int  ) ;
+        node*parse(const string &expression,unsigned int &start);
+        node*parse_block(const string &expression,unsigned int &start);
 
         node*parse_expression(const string&,unsigned int &start);
 
