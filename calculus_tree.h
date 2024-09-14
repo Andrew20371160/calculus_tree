@@ -43,7 +43,7 @@ class calculus_tree
         node *root  ;
         //this function parse an expression between 2 paranthese
         //then return it's root
-        node*parse_paranthese(const string&,unsigned int &start);
+        node*parse_parenthese(const string&,unsigned int &start);
         node*parse_operation(const string&,unsigned int &start);
         //this extracts operand (whatever its length) or operator
         string extract(const string&,unsigned int &start);
@@ -61,6 +61,8 @@ class calculus_tree
         void fill_children(queue<string>&q ,node*&ret_root);
         node*parse_function(const string&,unsigned int &start);
         int precedence(const string&expression,unsigned int pos);
+        void var_op_func(const string&op,node*&var,node*&last_op,node*&ret_root);
+        void var_op_func(const string&op,const string&var,node*&last_op,node*&ret_root);
 
     public:
         calculus_tree(void);
