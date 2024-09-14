@@ -325,7 +325,7 @@ string calculus_tree::expression(node* ptr) const {
     }
 
 
-    node* calculus_tree::parse_paranthese(const string& expression, unsigned int &start) {
+    node* calculus_tree::parse_parenthese(const string& expression, unsigned int &start) {
         if(expression[start]=='('){
             start++;
             node * last_op = NULL ;
@@ -339,7 +339,7 @@ string calculus_tree::expression(node* ptr) const {
                 var= NULL ;
                 new_op =false ;
                 if(expression[start]=='('){
-                    var = parse_paranthese(expression, start);
+                    var = parse_parenthese(expression, start);
                 }
                 else if(!is_op(expression,start)){
                     var = parse_block(expression,start);
@@ -485,7 +485,7 @@ string calculus_tree::expression(node* ptr) const {
                 return parse_function(expression,start);
             }
             else if(expression[start]=='('){
-                return parse_paranthese(expression,start);
+                return parse_parenthese(expression,start);
             }
             else{
                 return parse_expression(expression,start);
@@ -595,7 +595,7 @@ string calculus_tree::expression(node* ptr) const {
     node*calculus_tree::parse_function(const string&expression,unsigned int &start){
         if(start<expression.length()){
             string var = extract(expression,start);
-            node*ret_root = parse_paranthese(expression,start);
+            node*ret_root = parse_parenthese(expression,start);
 
             if(ret_root){
                 ret_root->append_parent(var);
