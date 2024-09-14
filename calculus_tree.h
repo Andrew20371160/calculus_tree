@@ -20,18 +20,16 @@ class node
     bool append_next(node*&src_root);
     bool append_child(node*&src_root);
     bool append_parent(node*&src_root);
-    public :
-
-        node*get_node(const string&);
-        bool disconnect_self(void);
-        bool append_next(const string&);
-        bool append_child(const string&);
-        bool append_parent(const string&);
-        //where op is new parent of last op
-        //and op is new children to parent of last op
-        //and then last op becomes parent of last op
-        //last_op->exchange_parent(op);
-        bool exchange_parent(const string&op) ;
+    node*get_node(const string&);
+    bool disconnect_self(void);
+    bool append_next(const string&);
+    bool append_child(const string&);
+    bool append_parent(const string&);
+    //where op is new parent of last op
+    //and op is new children to parent of last op
+    //and then last op becomes parent of last op
+    //last_op->exchange_parent(op);
+    bool exchange_parent(const string&op) ;
 
 };
 /*
