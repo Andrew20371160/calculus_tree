@@ -205,7 +205,7 @@
 
     calculus_tree ::calculus_tree(const string&expression){
         unsigned int start= 0;
-        root =parse_expression(expression,start) ;
+        root =parse(expression,start) ;
     }
 
     calculus_tree::calculus_tree(void){
@@ -228,9 +228,7 @@
             }
             if(is_keyword(ptr)){
                 cout<<ptr->symbol;
-                print(ptr->children);
             }
-            else{
                 if(ptr->children){
                     cout << "(";
 
@@ -249,7 +247,6 @@
                     cout << ptr->symbol;
                 }
             }
-        }
     }
 
 string calculus_tree::expression(node* ptr) const {
@@ -262,7 +259,6 @@ string calculus_tree::expression(node* ptr) const {
             ret_exp+=ptr->symbol;
             ptr=ptr->children;
         }
-        else{
             if(ptr->children){
                 ret_exp += "(";
 
@@ -281,7 +277,6 @@ string calculus_tree::expression(node* ptr) const {
             else{
                 ret_exp += ptr->symbol;
             }
-        }
         return ret_exp;
         }
         return "";
@@ -330,56 +325,74 @@ string calculus_tree::expression(node* ptr) const {
     }
 
 
-    //assuming start at first encountered '('
     node* calculus_tree::parse_paranthese(const string& expression, unsigned int &start) {
-        if(start < expression.length()) {
-            node* ret_root = NULL;
-            node* temp = NULL;
-            if(expression[start] == '(') {
-                start++;
-                temp = parse_paranthese(expression, start); // Parse the contents of the parentheses
-                if(ret_root == NULL) {
-                    ret_root = temp;
+        if(expression[start]=='('){
+            start++;
+            node * last_op = NULL ;
+            node * ret_root = NULL ;
+            node * var = NULL;
+            node * temp = NULL ;
+            string op  ="" ;
+            bool new_op = false;
+
+            while(start<expression.length() && expression[start]!=')'){
+                var= NULL ;
+                new_op =false ;
+                if(expression[start]=='('){
+                    var = parse_paranthese(expression, start);
                 }
-                else {
-                    ret_root->append_child(temp);
+                else if(!is_op(expression,start)){
+                    var = parse_block(expression,start);
+                }
+                if(is_op(expression,start)&&expression[start]!='('&&expression[start]!=')'){
+                    new_op= true  ;
+                    op = extract(expression,start);
+                }
+                if(var){
+                    if(new_op){
+                        if(ret_root==NULL){
+                            ret_root = var ;
+                            ret_root->append_parent(op);
+                            ret_root=ret_root->parent ;
+                            last_op = ret_root ;
+                        }
+                        else{
+                            int diff = precedence(op,0)-precedence(last_op->symbol,0);
+                            if(diff>0){
+                                temp = temp->get_node(op) ;
+                                temp->append_child(var) ;
+                                last_op->append_child(temp) ;
+                                last_op = last_op->children;
+                            }
+                            else{
+                                last_op->append_child(var);
+                                while(last_op->parent&&precedence(op,0)<precedence(last_op->parent->symbol,0)){
+                                    last_op=last_op->parent;
+                                }
+                                last_op->exchange_parent(op);
+                                if(ret_root==last_op){
+                                    ret_root=ret_root->parent;
+                                }
+                                last_op=last_op->parent;
+                            }
+                        }
+                    }
+                    else{
+                        if(ret_root==NULL){
+                            ret_root=var;
+                        }
+                        else{
+                            last_op->append_child(var);
+                        }
+                    }
                 }
             }
             if(expression[start] == ')') {
                 start++; // Skip the closing parenthesis
-                return ret_root; // Return the root of the parsed subtree
             }
-            if(is_op(expression, start)) {
-                if(ret_root) {
-                    ret_root->append_parent(extract(expression, start));
-                    ret_root = ret_root->parent;
-                } else {
-                    // Something is wrong, clean up and return NULL
-                    remove_node(ret_root);
-                    return NULL;
-                }
-            }
-            if(is_keyword(expression,start)){
-                temp = parse_function(expression, start);
-                if(ret_root == NULL) {
-                    ret_root = temp;
-                }
-                else {
-                    ret_root->append_child(temp);
-                }
-            }
-            else {
-                temp = parse_expression(expression, start);
-                if(ret_root == NULL) {
-                    ret_root = temp;
-                } else {
-                    ret_root->append_child(temp);
-                }
-            }
+            return ret_root ;
         }
-        else{
-            return NULL;
-        }
+        return NULL ;
     }
     node* calculus_tree::parse_expression(const string&expression,unsigned int & start){
         if(start<expression.length()){
@@ -397,10 +410,14 @@ string calculus_tree::expression(node* ptr) const {
             if(!is_op(expression,start)&&!is_keyword(expression,start)){
                 var = extract(expression,start);
             }
-            if(is_op(expression,start)&&expression[start]!='('){
+            if(is_op(expression,start)&&expression[start]!='('&&expression[start]!=')'){
                 op=extract(expression,start);
             }
-
+            if(expression[start]=='('){
+                //expression is -> x+(
+                start--;
+                return ret_root->get_node(var);
+            }
             if(var.length()&&op.length()){
                 ret_root =ret_root->get_node(op);
                 ret_root->append_child(var) ;
@@ -412,7 +429,7 @@ string calculus_tree::expression(node* ptr) const {
                         var = extract(expression,start);
                         new_var = true ;
                     }
-                    if(is_op(expression,start)&&expression[start]!='('){
+                    if(is_op(expression,start)&&expression[start]!='('&&expression[start]!=')'){
                         op = extract(expression,start);
                         new_op = true ;
                     }
@@ -445,6 +462,13 @@ string calculus_tree::expression(node* ptr) const {
                             return ret_root  ;
                         }
                     }
+                    else{
+                        if(new_op&&expression[start]=='('){
+                            //->something +(
+                            start-- ;
+                            return ret_root ;
+                        }
+                    }
                 }
                 return ret_root;
             }
@@ -452,10 +476,84 @@ string calculus_tree::expression(node* ptr) const {
                 return ret_root->get_node(var) ;
             }
         }
-
         return NULL ;
     }
 
+    node*calculus_tree::parse_block(const string &expression,unsigned int &start){
+        if(start<expression.length()){
+            if(is_keyword(expression,start)){
+                return parse_function(expression,start);
+            }
+            else if(expression[start]=='('){
+                return parse_paranthese(expression,start);
+            }
+            else{
+                return parse_expression(expression,start);
+            }
+        }
+        return NULL ;
+    }
+    //this forms the complete tree from an expression and returns
+    //its root
+    node*calculus_tree::parse(const string &expression,unsigned int &start){
+        if(start<expression.length()){
+            node*ret_root = NULL ;
+            node*block =NULL ;
+            node*temp = NULL ;
+            node*last_op= NULL ;
+            string op ="";
+            //extract the thing
+            ret_root=parse_block(expression,start);
+
+            if(ret_root&&start<expression.length()&&is_op(expression,start)&&expression[start]!='('&&expression[start]!=')'){
+
+                ret_root->append_parent(extract(expression,start));
+                ret_root=ret_root->parent;
+                last_op = ret_root;
+                while(start<expression.length()){
+                    bool new_op= false ;
+                    //extract the thing
+                    block= parse_block(expression,start) ;
+
+                    if(is_op(expression,start)&&expression[start]!='('&&expression[start]!=')'){
+                        op=extract(expression,start);
+                        new_op =true;
+                    }
+                    if(block){
+                        if(new_op){
+                            int diff = precedence(op,0)-precedence(last_op->symbol,0);
+                            if(diff>0){
+                                temp = temp->get_node(op) ;
+                                temp->append_child(block) ;
+                                last_op->append_child(block) ;
+                                last_op = last_op->children;
+                            }
+                            else{
+                                last_op->append_child(block);
+                                //where op is new parent of last op
+                                //and op is new children to parent of last op
+                                //and then last op becomes parent of last op
+                                while(last_op->parent&&precedence(op,0)<precedence(last_op->parent->symbol,0)){
+                                    last_op=last_op->parent;
+                                }
+                                last_op->exchange_parent(op);
+                                if(ret_root==last_op){
+                                    ret_root=ret_root->parent;
+                                }
+                                last_op=last_op->parent;
+                            }
+                        }
+                        else{
+                            last_op->append_child(block);
+                            return ret_root  ;
+                        }
+                    }
+                }
+            }
+            return ret_root ;
+        }
+    return NULL ;
+    }
     void calculus_tree::remove_root_keep_children(node*&ret_root){
         if(ret_root){
             node *temp= ret_root ;
@@ -498,6 +596,7 @@ string calculus_tree::expression(node* ptr) const {
         if(start<expression.length()){
             string var = extract(expression,start);
             node*ret_root = parse_paranthese(expression,start);
+
             if(ret_root){
                 ret_root->append_parent(var);
                 ret_root=ret_root->parent;
@@ -508,8 +607,8 @@ string calculus_tree::expression(node* ptr) const {
     }
 
     int main(){
-        calculus_tree tree("5 * x^2 + 3 / x + 4 * x^3 + 76 * y^3 - 2 * y^2 + 5 / y - 17 * z^2 + 9 * z + 2 / z + 1110 * a + 3 * a^2 - 2 / a + 58 * b^3 - 4 / b + 6 * b - 3");
+        //
+        calculus_tree tree("(((3*(x+2))+((4-(y^2))))/((z+5)*(a-7)))+((b+(c-3))*sin(d2+1))");
         cout<<tree;
-        system("pause");
         return 0 ;
     }
