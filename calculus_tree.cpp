@@ -2,7 +2,7 @@
     const int keyword_count =12 ;
 
     const string key_words[keyword_count]={"sin","cos","tan","sec","csc","cotan",
-                              "asin","acos","atan", "exp","ln","log"};
+                              "asin","acos","atan","exp","ln","log"};
 
 
     node * node::get_node(const string &symbol){
@@ -257,7 +257,6 @@ string calculus_tree::expression(node* ptr) const {
         }
         if(is_keyword(ptr)){
             ret_exp+=ptr->symbol;
-            ptr=ptr->children;
         }
             if(ptr->children){
                 ret_exp += "(";
@@ -334,7 +333,6 @@ string calculus_tree::expression(node* ptr) const {
             node * temp = NULL ;
             string op  ="" ;
             bool new_op = false;
-
             while(start<expression.length() && expression[start]!=')'){
                 var= NULL ;
                 new_op =false ;
@@ -357,24 +355,8 @@ string calculus_tree::expression(node* ptr) const {
                             last_op = ret_root ;
                         }
                         else{
-                            int diff = precedence(op,0)-precedence(last_op->symbol,0);
-                            if(diff>0){
-                                temp = temp->get_node(op) ;
-                                temp->append_child(var) ;
-                                last_op->append_child(temp) ;
-                                last_op = last_op->children;
-                            }
-                            else{
-                                last_op->append_child(var);
-                                while(last_op->parent&&precedence(op,0)<precedence(last_op->parent->symbol,0)){
-                                    last_op=last_op->parent;
-                                }
-                                last_op->exchange_parent(op);
-                                if(ret_root==last_op){
-                                    ret_root=ret_root->parent;
-                                }
-                                last_op=last_op->parent;
-                            }
+                        //void var_op_func(const string&op,node*&var,node*&last_op,node*&ret_root){
+                            var_op_func(op,var,last_op,ret_root) ;
                         }
                     }
                     else{
@@ -393,6 +375,27 @@ string calculus_tree::expression(node* ptr) const {
             return ret_root ;
         }
         return NULL ;
+    }
+    void calculus_tree::var_op_func(const string&op,node*&var,node*&last_op,node*&ret_root){
+        node*temp = NULL ;
+        int diff = precedence(op,0)-precedence(last_op->symbol,0);
+        if(diff>0){
+            temp = temp->get_node(op) ;
+            temp->append_child(var) ;
+            last_op->append_child(temp) ;
+            last_op = last_op->children;
+        }
+        else{
+            last_op->append_child(var);
+            while(last_op->parent&&precedence(op,0)<precedence(last_op->parent->symbol,0)){
+                last_op=last_op->parent;
+            }
+            last_op->exchange_parent(op);
+            if(ret_root==last_op){
+                ret_root=ret_root->parent;
+            }
+            last_op=last_op->parent;
+        }
     }
     node* calculus_tree::parse_expression(const string&expression,unsigned int & start){
         if(start<expression.length()){
@@ -413,7 +416,7 @@ string calculus_tree::expression(node* ptr) const {
             if(is_op(expression,start)&&expression[start]!='('&&expression[start]!=')'){
                 op=extract(expression,start);
             }
-            if(expression[start]=='('){
+            if(expression[start]=='('||is_keyword(expression,start)){
                 //expression is -> x+(
                 start--;
                 return ret_root->get_node(var);
@@ -435,39 +438,25 @@ string calculus_tree::expression(node* ptr) const {
                     }
                     if(new_var){
                         if(new_op){
-                            int diff = precedence(op,0)-precedence(last_op->symbol,0);
-                            if(diff>0){
-                                temp = temp->get_node(op) ;
-                                temp->append_child(var) ;
-                                last_op->append_child(temp) ;
-                                last_op = last_op->children;
+                            if(expression[start]=='('||expression[start]==')'||is_keyword(expression,start)){
+                                //expression is -> x+(
+                                start--;
+                                last_op->append_child(var);
+                                return ret_root;
+                            }
+                            var_op_func(op,var,last_op,ret_root)  ;
                             }
                             else{
                                 last_op->append_child(var);
-                                //where op is new parent of last op
-                                //and op is new children to parent of last op
-                                //and then last op becomes parent of last op
-                                while(last_op->parent&&precedence(op,0)<precedence(last_op->parent->symbol,0)){
-                                    last_op=last_op->parent;
-                                }
-                                last_op->exchange_parent(op);
-                                if(ret_root==last_op){
-                                    ret_root=ret_root->parent;
-                                }
-                                last_op=last_op->parent;
+                                return ret_root  ;
                             }
                         }
-                        else{
-                            last_op->append_child(var);
-                            return ret_root  ;
-                        }
-                    }
                     else{
-                        if(new_op&&expression[start]=='('){
-                            //->something +(
-                            start-- ;
-                            return ret_root ;
+                        if(new_op){
+                            start--;
                         }
+                        return ret_root;
+
                     }
                 }
                 return ret_root;
@@ -479,6 +468,30 @@ string calculus_tree::expression(node* ptr) const {
         return NULL ;
     }
 
+    void calculus_tree::var_op_func(const string&op,const string&var,node*&last_op,node*&ret_root){
+        node *temp = NULL;
+        int diff = precedence(op,0)-precedence(last_op->symbol,0);
+        if(diff>0){
+            temp = temp->get_node(op) ;
+            temp->append_child(var) ;
+            last_op->append_child(temp) ;
+            last_op = last_op->children;
+        }
+        else{
+            last_op->append_child(var);
+            //where op is new parent of last op
+            //and op is new children to parent of last op
+            //and then last op becomes parent of last op
+            while(last_op->parent&&precedence(op,0)<precedence(last_op->parent->symbol,0)){
+                last_op=last_op->parent;
+            }
+            last_op->exchange_parent(op);
+            if(ret_root==last_op){
+                ret_root=ret_root->parent;
+            }
+            last_op=last_op->parent;
+        }
+    }
     node*calculus_tree::parse_block(const string &expression,unsigned int &start){
         if(start<expression.length()){
             if(is_keyword(expression,start)){
@@ -521,27 +534,8 @@ string calculus_tree::expression(node* ptr) const {
                     }
                     if(block){
                         if(new_op){
-                            int diff = precedence(op,0)-precedence(last_op->symbol,0);
-                            if(diff>0){
-                                temp = temp->get_node(op) ;
-                                temp->append_child(block) ;
-                                last_op->append_child(block) ;
-                                last_op = last_op->children;
-                            }
-                            else{
-                                last_op->append_child(block);
-                                //where op is new parent of last op
-                                //and op is new children to parent of last op
-                                //and then last op becomes parent of last op
-                                while(last_op->parent&&precedence(op,0)<precedence(last_op->parent->symbol,0)){
-                                    last_op=last_op->parent;
-                                }
-                                last_op->exchange_parent(op);
-                                if(ret_root==last_op){
-                                    ret_root=ret_root->parent;
-                                }
-                                last_op=last_op->parent;
-                            }
+                            //    void var_op_func(const string&op,node*&var,node*&last_op,node*&ret_root){
+                            var_op_func(op,block,last_op,ret_root);
                         }
                         else{
                             last_op->append_child(block);
@@ -607,8 +601,18 @@ string calculus_tree::expression(node* ptr) const {
     }
 
     int main(){
-        //
-        calculus_tree tree("(((3*(x+2))+((4-(y^2))))/((z+5)*(a-7)))+((b+(c-3))*sin(d2+1))");
+
+/*
+f(x)=sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))+tan(log2(x+5))
++sec⁡(x*asin(1/(x+1)))+csc⁡((x^3+2*x)/4)-cotan(exp⁡(x/2))
++acos(1/(x+2)^0.5)-atan(x^2/3−ln⁡(x))+exp⁡(sin⁡(pi/6+x))
++ln⁡(cos⁡(x^2+exp⁡(x)))+log⁡2(1/(x+3))
+*/
+string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))+tan(log2(x+5))+sec(x*asin(1/(x + 1)))+"
+                   "csc((x^3+2*x)/4)-cotan(exp(x/2))+acos(1/(x + 2)^0.5)-atan(x^2/3-ln(x))+"
+                   "exp(sin(pi/6+x))+ln(cos(x^2+exp(x)))+log2(1/(x+3))"
+                   ;
+        calculus_tree tree(operation);
         cout<<tree;
         return 0 ;
     }
