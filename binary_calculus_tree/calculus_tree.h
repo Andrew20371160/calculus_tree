@@ -5,6 +5,7 @@
 #include <iostream>
 #include <queue>
 #include <stack>
+#include <list>
 #include <math.h>
 #include <cmath>
 
@@ -67,6 +68,10 @@ class calculus_tree
         bool is_num(const string &var);
 
         double evaluate_function(const unsigned int &fn,const long double&var,const,unsigned int base );
+
+        long double evaluate(node*ptr,const list<string>&vars,const list<string>&vars_values);
+
+        string eval_extract(const string&,unsigned int &start);
     public:
         calculus_tree(void);
         calculus_tree(const string&expression);
@@ -83,6 +88,14 @@ class calculus_tree
             os << obj.expression();
             return os;
         }
+        /*
+        if the tree contains variables like x ,y,c1,v2....
+        and you want to evaluate the tree
+        call it like this ->evaluate_at("x=5.55,y=728,c1=525.2")
+        if there are no variables then call it as it is
+        evaluate_at
+        */
+        long double evaluate_at(string vars_equal="");
 };
 
 
