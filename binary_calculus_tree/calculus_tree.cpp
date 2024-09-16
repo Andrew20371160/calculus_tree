@@ -538,6 +538,50 @@
         }
     }
 
+    string calculus_tree::eval_extract(const string&expression,unsigned int &start){
+        string var="";
+        if(start<expression.length()){
+            while(start<expression.length()&&expression[start]!='='&&expression[start]!=','){
+                var+=expression[start];
+                start++;
+            }
+        }
+        return var ;
+    }
+
+    long double calculus_tree::evaluate_at(string vars_equal){
+        if(root){
+            list<string>variables;
+            list<string>values;
+            string value="";
+            string var="";
+            if(vars_equal.length()){
+
+                unsigned int i =0;
+                while(i<vars_equal.length()){
+                    string var = eval_extract(vars_equal,i);
+                    if(var.length()){
+                       if(i<vars_equal.length(),vars_equal[i]=='='){
+                            i++ ;
+                       }
+                       if(i<vars_equal.length()){
+                           value = eval_extract(vars_equal,i);
+                       }
+                       if(value.length()&&is_num(value)){
+                            variables.push_back(var);
+                            values.push_back(value);
+                       }
+                   }
+                }
+            }
+            return evaluate(root,variables,values) ;
+        }
+        return 0 ;
+    }
+    long double calculus_tree::evaluate(node*ptr,const list<string>&vars,const list<string>&vars_values){
+        return 0;
+    }
+
 
 #include <chrono>
     int main(){
