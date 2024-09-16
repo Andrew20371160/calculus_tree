@@ -385,7 +385,7 @@ string calculus_tree::expression(node* ptr) const {
     void calculus_tree::var_op_func(const string&op,node*&var,node*&last_op,node*&ret_root){
         node *temp = NULL;
         int diff = precedence(op,0)-precedence(last_op->symbol,0);
-        if(diff>0){
+        if(diff>0||op=="^"){
             temp = temp->get_node(op) ;
             temp->append_child(var) ;
             last_op->append_child(temp) ;
@@ -396,7 +396,7 @@ string calculus_tree::expression(node* ptr) const {
             //where op is new parent of last op
             //and op is new children to parent of last op
             //and then last op becomes parent of last op
-            while(last_op->parent&&precedence(op,0)<=precedence(last_op->parent->symbol,0)){
+            while(last_op->parent&&(precedence(op,0)-precedence(last_op->parent->symbol,0)<=0)){
                 last_op=last_op->parent;
             }
             last_op->exchange_parent(op);
@@ -482,7 +482,7 @@ string calculus_tree::expression(node* ptr) const {
     void calculus_tree::var_op_func(const string&op,const string&var,node*&last_op,node*&ret_root){
         node *temp = NULL;
         int diff = precedence(op,0)-precedence(last_op->symbol,0);
-        if(diff>0){
+        if(diff>0||op=="^"){
             temp = temp->get_node(op) ;
             temp->append_child(var) ;
             last_op->append_child(temp) ;
@@ -493,7 +493,7 @@ string calculus_tree::expression(node* ptr) const {
             //where op is new parent of last op
             //and op is new children to parent of last op
             //and then last op becomes parent of last op
-            while(last_op->parent&&precedence(op,0)<=precedence(last_op->parent->symbol,0)){
+            while(last_op->parent&&(precedence(op,0)-precedence(last_op->parent->symbol,0)<=0)){
                 last_op=last_op->parent;
             }
             last_op->exchange_parent(op);
@@ -621,10 +621,14 @@ test4
 string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))^tan(log2(x+5))*sec(x*asin(1/(x+1)))/"
                    "csc((x^3+2*x)/4)^cotan(exp(x/2))*acos(1/(x+2)^0.5)";
 
+test6 string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))^tan(log2(x+5))^sec(x*asin(1/(x+1)))/"
+                   "csc((x^3+2*x)/4)*(cotan(exp(x/2))+acos(1/(x+2)^0.5))";
+
 */
-string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))^tan(log2(x+5))*sec(x*asin(1/(x+1)))/"
-                   "csc((x^3+2*x)/4)^cotan(exp(x/2))*acos(1/(x+2)^0.5)";
+string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))*tan(log2(x+5))^(sec(x*asin(1/(x+1)))+5*"
+                   "csc((x^3+2*x)/4))^cotan(exp(x/2))*acos(1/(x+2)^0.5)";
         calculus_tree tree(operation);
         cout<<tree;
+        system("pause");
         return 0 ;
     }
