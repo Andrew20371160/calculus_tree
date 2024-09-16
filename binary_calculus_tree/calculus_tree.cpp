@@ -430,11 +430,20 @@
                     }
                     if(new_var){
                         if(new_op){
-                            if(expression[start]=='('||expression[start]==')'||is_keyword(expression,start)){
-                                //expression is -> x+(
-                                start--;
-                                last_op->append_child(var);
-                                return ret_root;
+                            if(expression[start]=='('||is_keyword(expression,start)){
+                                start-=var.length();
+                                start-=op.length() ;
+                                start-=last_op->symbol.length() ;
+                                if(last_op==ret_root){
+                                    ret_root=ret_root->left ;
+                                    ret_root->disconnect_self() ;
+                                }
+                                else{
+                                     node*temp = last_op->left;
+                                     temp->disconnect_self() ;
+                                 }
+                                 remove_node(last_op);
+                                 return ret_root ;
                             }
                             var_op_func(op,var,last_op,ret_root)  ;
                             }
@@ -605,7 +614,7 @@ string operation = "1/x+1*((x^2+4*x+1/x^2-1)*log(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.
 
 */
 
-string operation = "1/x+1*((x^2+4*x+1/x^2-1)*log(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
+string operation = "1/x+1*((x^2+4*x+1/x^2*1)*log(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
         calculus_tree tree(operation);
         cout<<tree;
         return 0 ;
