@@ -352,9 +352,6 @@
                     }
                 }
                 else{
-                    if(new_op){
-                        start--;
-                    }
                     return ret_root;
                 }
             }
@@ -365,6 +362,7 @@
         }
         return NULL ;
     }
+
     void calculus_tree::var_op_func(const string&op,node*&var,node*&last_op,node*&ret_root){
         node *temp = NULL;
         int diff = precedence(op,0)-precedence(last_op->symbol,0);
@@ -389,78 +387,6 @@
             last_op=last_op->parent;
         }
     }
-    node* calculus_tree::parse_expression(const string&expression,unsigned int & start){
-        if(start<expression.length()){
-            /*
-            parsing must be made on variable level
-            no separation can be done sadly
-            */
-            node*ret_root =NULL;
-            node*last_op=NULL;
-            node*temp= NULL;
-            string var ="";
-            string op = "";
-            bool new_op= false ;
-            bool new_var = false;
-            if(!is_op(expression,start)&&!is_keyword(expression,start)){
-                var = extract(expression,start);
-            }
-            if(is_op(expression,start)&&expression[start]!='('&&expression[start]!=')'){
-                op=extract(expression,start);
-            }
-            if(expression[start]=='('||is_keyword(expression,start)){
-                //expression is -> x+(
-                start--;
-                return ret_root->get_node(var);
-            }
-            if(var.length()&&op.length()){
-                ret_root =ret_root->get_node(op);
-                ret_root->append_child(var) ;
-                last_op = ret_root;
-                while(start<expression.length()){
-                    new_var =false ;
-                    new_op = false ;
-                    if(!is_op(expression,start)&&!is_keyword(expression,start)){
-                        var = extract(expression,start);
-                        new_var = true ;
-                    }
-                    if(is_op(expression,start)&&expression[start]!='('&&expression[start]!=')'){
-                        op = extract(expression,start);
-                        new_op = true ;
-                    }
-                    if(new_var){
-                        if(new_op){
-                            if(expression[start]=='('||expression[start]==')'||is_keyword(expression,start)){
-                                //expression is -> x+(
-                                start--;
-                                last_op->append_child(var);
-                                return ret_root;
-                            }
-                            var_op_func(op,var,last_op,ret_root)  ;
-                            }
-                            else{
-                                last_op->append_child(var);
-                                return ret_root  ;
-                            }
-                        }
-                    else{
-                        if(new_op){
-                            start--;
-                        }
-                        return ret_root;
-
-                    }
-                }
-                return ret_root;
-            }
-            else if(var.length()){
-                return ret_root->get_node(var) ;
-            }
-        }
-        return NULL ;
-    }
-
-
 
     void calculus_tree::var_op_func(const string&op,const string&var,node*&last_op,node*&ret_root){
         node *temp = NULL;
@@ -495,7 +421,8 @@
                 return parse_parenthese(expression,start);
             }
             else{
-                return parse_expression(expression,start);
+                node *temp = NULL;
+                return temp->get_node(extract(expression,start));
             }
         }
         return NULL ;
@@ -535,6 +462,9 @@
                             last_op->append_child(block);
                             return ret_root  ;
                         }
+                    }
+                    else{
+                        return ret_root;
                     }
                 }
             }
@@ -584,6 +514,7 @@
         return NULL;
     }
 
+
     int main(){
 
 /*
@@ -604,9 +535,11 @@ issue with
 string operation = "1/x+1*((x^2+4*x+1/x^2-1)*log(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
 
 */
+        string operation = "1/x+1*((x^2+4*x+1/x^2-1)*log(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
 
-string operation = "1/x+1*((x^2+4*x+1/x^2-1)*log(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
         calculus_tree tree(operation);
+
         cout<<tree;
+        system("pause");
         return 0 ;
     }
