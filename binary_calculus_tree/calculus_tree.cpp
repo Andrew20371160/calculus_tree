@@ -599,10 +599,14 @@ test6 string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))^tan(log2(x+5))^se
 
 string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))*tan(log2(x+5))^(sec(x*asin(1/(x+1)))+5*"
                    "csc((x^3+2*x)/4))^cotan(exp(x/2))*acos(1/(x+2)^0.5)";
+
+issue
+string operation = "1/x+1*((x^2+4*x+1/x^2-1)*log(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
+
 */
-    string operation = "5+i(6*x+y)";
+
+string operation = "1/x+1*((x^2+4*x+1/x^2-1)*log(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
         calculus_tree tree(operation);
         cout<<tree;
-        system("pause");
         return 0 ;
     }
