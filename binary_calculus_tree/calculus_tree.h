@@ -5,6 +5,8 @@
 #include <iostream>
 #include <queue>
 #include <stack>
+#include <math.h>
+#include <cmath>
 
 #include <string>
 using namespace std ;
@@ -47,11 +49,11 @@ class calculus_tree
         node*parse_operation(const string&,unsigned int &start);
         //this extracts operand (whatever its length) or operator
         string extract(const string&,unsigned int &start);
-        bool  is_keyword( node*&ptr)const;
+        int  is_function( node*&ptr)const;
 
         bool remove_node(node*&src) ;
         bool is_op(const string&expression,unsigned int  ) ;
-        bool is_keyword(const string&expression,unsigned int  ) ;
+        int is_function(const string&expression,unsigned int  ) ;
         node*parse(const string &expression,unsigned int &start);
         node*parse_block(const string &expression,unsigned int &start);
 
@@ -62,6 +64,9 @@ class calculus_tree
         void var_op_func(const string&op,node*&var,node*&last_op,node*&ret_root);
         void var_op_func(const string&op,const string&var,node*&last_op,node*&ret_root);
 
+        bool is_num(const string &var);
+
+        double evaluate_function(const unsigned int &fn,const long double&var,const,unsigned int base );
     public:
         calculus_tree(void);
         calculus_tree(const string&expression);
@@ -73,7 +78,7 @@ class calculus_tree
         string integrate(void)const;
         void print(node*ptr = NULL)const;
         string expression(node*ptr = NULL)const;
-        friend std::ostream& operator<<(ostream& os, const calculus_tree& obj) {
+        friend ostream& operator<<(ostream& os, const calculus_tree& obj) {
 
             os << obj.expression();
             return os;
