@@ -1,6 +1,6 @@
-#ifndef _calculus_tree_h_
+#ifndef _calculus_general_tree_
 
-#define _calculus_tree_h_
+#define _calculus_general_tree_
 
 #include <iostream>
 #include <queue>
