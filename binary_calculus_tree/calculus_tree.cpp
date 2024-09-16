@@ -377,7 +377,7 @@
             //where op is new parent of last op
             //and op is new children to parent of last op
             //and then last op becomes parent of last op
-            while(last_op->parent&&(precedence(op,0)-precedence(last_op->parent->symbol,0)<=0)){
+            while(last_op->parent&&((precedence(op,0)-precedence(last_op->parent->symbol,0))<=0)){
                 last_op=last_op->parent;
             }
             last_op->exchange_parent(op);
@@ -388,30 +388,6 @@
         }
     }
 
-    void calculus_tree::var_op_func(const string&op,const string&var,node*&last_op,node*&ret_root){
-        node *temp = NULL;
-        int diff = precedence(op,0)-precedence(last_op->symbol,0);
-        if(diff>0||op=="^"){
-            temp = temp->get_node(op) ;
-            temp->append_child(var) ;
-            last_op->append_child(temp) ;
-            last_op = last_op->right;
-        }
-        else{
-            last_op->append_child(var);
-            //where op is new parent of last op
-            //and op is new children to parent of last op
-            //and then last op becomes parent of last op
-            while(last_op->parent&&(precedence(op,0)-precedence(last_op->parent->symbol,0)<=0)){
-                last_op=last_op->parent;
-            }
-            last_op->exchange_parent(op);
-            if(last_op==ret_root){
-                ret_root =ret_root ->parent ;
-            }
-            last_op=last_op->parent;
-        }
-    }
     node*calculus_tree::parse_block(const string &expression,unsigned int &start){
         if(start<expression.length()){
             if(is_keyword(expression,start)){
@@ -514,7 +490,7 @@
         return NULL;
     }
 
-
+#include <chrono>
     int main(){
 
 /*
@@ -531,15 +507,26 @@ test6 string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))^tan(log2(x+5))^se
 string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))*tan(log2(x+5))^(sec(x*asin(1/(x+1)))+5*"
                    "csc((x^3+2*x)/4))^cotan(exp(x/2))*acos(1/(x+2)^0.5)";
 
-issue with
 string operation = "1/x+1*((x^2+4*x+1/x^2-1)*log(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
 
+
+string operation = "sin(acos(1/(x+5*(exp(2*x)^atan(x^2+3)))))+ln(sec(3*x))-(cos(x^2)/(x+4))";
+
+
+string operation = "(cos(acos(1/(x+5*(exp(3*y)^atan(x^3+y^2-4)))))+ln(sec(2*x-cos(y^3)))-(cos(x^2+y)/(tan(y^4-x)+7*(exp(x+y)))))*(asin(x+y)^3)+log(5*exp(cotan(x^3-2*y))+sin(x*ln(cos(3*y))))-(atan(exp(x+y)^tan(x-y))/(sec(x^2+y^2)+3*csc(x+y)))+7*log(x*y)-(cos(exp(x*atan(y^2)))/(sec(ln(x))+cos(y*x^2))))";
+    string operation ="1+2-3*6/18^1^8*5/8*25^x^sin(x+2)/(13+224)+7";
+
 */
-        string operation = "1/x+1*((x^2+4*x+1/x^2-1)*log(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
+    string operation ="1+2-3*6/18^1^8*5/8*25^x^sin(x+2)/(13+224)+7";
 
-        calculus_tree tree(operation);
+    auto start = std::chrono::high_resolution_clock::now();
+    calculus_tree tree(operation);
+    cout<<tree;
+    auto end = std::chrono::high_resolution_clock::now();
 
-        cout<<tree;
+    std::chrono::duration<double, std::micro> diff = end-start;
+    cout << "Time to build tree: " << diff.count() << " microseconds\n";
+
         system("pause");
         return 0 ;
     }
