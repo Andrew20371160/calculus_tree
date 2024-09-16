@@ -430,20 +430,11 @@
                     }
                     if(new_var){
                         if(new_op){
-                            if(expression[start]=='('||is_keyword(expression,start)){
-                                start-=var.length();
-                                start-=op.length() ;
-                                start-=last_op->symbol.length() ;
-                                if(last_op==ret_root){
-                                    ret_root=ret_root->left ;
-                                    ret_root->disconnect_self() ;
-                                }
-                                else{
-                                     node*temp = last_op->left;
-                                     temp->disconnect_self() ;
-                                 }
-                                 remove_node(last_op);
-                                 return ret_root ;
+                            if(expression[start]=='('||expression[start]==')'||is_keyword(expression,start)){
+                                //expression is -> x+(
+                                start--;
+                                last_op->append_child(var);
+                                return ret_root;
                             }
                             var_op_func(op,var,last_op,ret_root)  ;
                             }
@@ -609,12 +600,12 @@ test6 string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))^tan(log2(x+5))^se
 string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))*tan(log2(x+5))^(sec(x*asin(1/(x+1)))+5*"
                    "csc((x^3+2*x)/4))^cotan(exp(x/2))*acos(1/(x+2)^0.5)";
 
-issue
+issue with
 string operation = "1/x+1*((x^2+4*x+1/x^2-1)*log(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
 
 */
 
-string operation = "1/x+1*((x^2+4*x+1/x^2*1)*log(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
+string operation = "1/x+1*((x^2+4*x+1/x^2-1)*log(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
         calculus_tree tree(operation);
         cout<<tree;
         return 0 ;
