@@ -1,8 +1,8 @@
 #include "calculus_tree.h"
-    const int keyword_count =12 ;
+    const int keyword_count =13 ;
 
     const string key_words[keyword_count]={"sin","cos","tan","sec","csc","cotan",
-                              "asin","acos","atan","exp","ln","log"};
+                              "asin","acos","atan","exp","ln","i","log"};
 
 
     node * node::get_node(const string &symbol){
@@ -237,33 +237,33 @@
         }
     }
 
-string calculus_tree::expression(node* ptr) const {
-    if(root){
-        bool found_keyword = false;
-        string ret_exp = "";
-        if(ptr == NULL){
-            ptr = root;
-        }
-        if(is_keyword(ptr)){
-            ret_exp += ptr->symbol;
-            found_keyword = true;
-        }
-        if(ptr->left){
-            ret_exp += "(";
-            ret_exp += expression(ptr->left);
-            if(ptr->right){
-                ret_exp += ptr->symbol;
-                ret_exp += expression(ptr->right);
+    string calculus_tree::expression(node* ptr) const {
+        if(root){
+            bool found_keyword = false;
+            string ret_exp = "";
+            if(ptr == NULL){
+                ptr = root;
             }
-            ret_exp += ")";
+            if(is_keyword(ptr)){
+                ret_exp += ptr->symbol;
+                found_keyword = true;
+            }
+            if(ptr->left){
+                ret_exp += "(";
+                ret_exp += expression(ptr->left);
+                if(ptr->right){
+                    ret_exp += ptr->symbol;
+                    ret_exp += expression(ptr->right);
+                }
+                ret_exp += ")";
+            }
+            else if(!found_keyword){
+                ret_exp += ptr->symbol;
+            }
+            return ret_exp;
         }
-        else if(!found_keyword){
-            ret_exp += ptr->symbol;
-        }
-        return ret_exp;
+        return "";
     }
-    return "";
-}
     bool calculus_tree::is_op(const string&expression,unsigned int pos ) {
         switch(expression[pos]){
             case '+':return true ;break;
@@ -597,9 +597,10 @@ string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))^tan(log2(x+5))*sec(x*as
 test6 string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))^tan(log2(x+5))^sec(x*asin(1/(x+1)))/"
                    "csc((x^3+2*x)/4)*(cotan(exp(x/2))+acos(1/(x+2)^0.5))";
 
-*/
 string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))*tan(log2(x+5))^(sec(x*asin(1/(x+1)))+5*"
                    "csc((x^3+2*x)/4))^cotan(exp(x/2))*acos(1/(x+2)^0.5)";
+*/
+    string operation = "5+i(6*x+y)";
         calculus_tree tree(operation);
         cout<<tree;
         system("pause");
