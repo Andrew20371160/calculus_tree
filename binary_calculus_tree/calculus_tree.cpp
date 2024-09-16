@@ -1,8 +1,14 @@
 #include "calculus_tree.h"
-    const int keyword_count =13 ;
+    const int function_count =16 ;
+    const int keyword_count =17;
+    enum  {
+        SIN,COS,TAN,SEC,CSC,COTAN,ASIN,ACOS,ATAN,EXP,LN,SINH,
+        COSH,TANH,I,LOG,PI
+    };
 
     const string key_words[keyword_count]={"sin","cos","tan","sec","csc","cotan",
-                              "asin","acos","atan","exp","ln","i","log"};
+                              "asin","acos","atan","exp","ln","sinh","cosh","tanh","i","log","pi"};
+
 
 
     node * node::get_node(const string &symbol){
@@ -218,7 +224,7 @@
             if(ptr == NULL){
                 ptr = root;
             }
-            if(is_keyword(ptr)){
+            if(is_function(ptr)!=-1){
                 cout<<ptr->symbol;
                 found_keyword = true;
             }
@@ -244,7 +250,7 @@
             if(ptr == NULL){
                 ptr = root;
             }
-            if(is_keyword(ptr)){
+            if(is_function(ptr)!=-1){
                 ret_exp += ptr->symbol;
                 found_keyword = true;
             }
@@ -313,7 +319,6 @@
             node * last_op = NULL ;
             node * ret_root = NULL ;
             node * var = NULL;
-            node * temp = NULL ;
             string op  ="" ;
             bool new_op = false;
             while(start<expression.length() && expression[start]!=')'){
@@ -382,7 +387,7 @@
             }
             last_op->exchange_parent(op);
             if(last_op==ret_root){
-                ret_root =ret_root ->parent ;
+                ret_root =ret_root->parent ;
             }
             last_op=last_op->parent;
         }
@@ -390,7 +395,7 @@
 
     node*calculus_tree::parse_block(const string &expression,unsigned int &start){
         if(start<expression.length()){
-            if(is_keyword(expression,start)){
+            if(is_function(expression,start)!=-1){
                 return parse_function(expression,start);
             }
             else if(expression[start]=='('){
@@ -409,7 +414,6 @@
         if(start<expression.length()){
             node*ret_root = NULL ;
             node*block =NULL ;
-            node*temp = NULL ;
             node*last_op= NULL ;
             string op ="";
             //extract the thing
@@ -449,31 +453,31 @@
     return NULL ;
     }
 
-    bool calculus_tree:: is_keyword(const string&expression ,unsigned int pos){
+    int calculus_tree:: is_function(const string&expression ,unsigned int pos){
          string temp=  extract(expression,pos);
          if(temp.substr(0,3)=="log"){
-            return 1 ;
+            return LOG ;
          }
-         for(int i =0 ; i <keyword_count-1;i++){
+         for(int i =0 ; i <function_count-1;i++){
             if(temp==key_words[i]){
-                return 1;
+                return i;
             }
          }
-         return 0 ;
+         return -1 ;
     }
 
-    bool calculus_tree:: is_keyword(node*&ptr)const{
+    int calculus_tree:: is_function(node*&ptr)const{
         if(ptr){
              if(ptr->symbol.substr(0,3)=="log"){
-                return 1 ;
+                return LOG ;
              }
-             for(int i =0 ; i <keyword_count-1;i++){
+             for(int i =0 ; i <function_count-1;i++){
                 if(ptr->symbol==key_words[i]){
-                    return 1;
+                    return i;
                 }
              }
         }
-         return 0 ;
+         return -1 ;
     }
 
     //assuming it's a keywrod AND its a function
@@ -489,6 +493,51 @@
         }
         return NULL;
     }
+    /*
+    some evaluation functions
+    */
+    bool calculus_tree::is_num(const string &var){
+        if(var.length()){
+            unsigned int i=0 ;
+            unsigned int dot_counter = 0 ;
+            while(i<var.length()){
+                if(!(var[i]>='0'&&var[i]<='9')){
+                    if(var[i]!='.'){
+                       return false ;
+                    }
+                    else{
+                        if(dot_counter){
+                            return false ;
+                        }
+                        else{
+                            dot_counter=1;
+                        }
+                    }
+                }
+                i++;
+            }
+            return true ;
+        }
+        return false ;
+    }
+    double calculus_tree::evaluate_function(const unsigned int &fn,const long double&var,const,unsigned int base ){
+        switch(fn){
+            case PI : return M_PI ;
+            case EXP: return exp(var);
+            case SIN: return sin(var);
+            case COS: return cos(var);
+            case TAN: return tan(var);
+            case ASIN: return asin(var);
+            case ACOS: return acos(var);
+            case ATAN: return atan(var);
+            case LN: return log(var);
+            case SINH: return sinh(var);
+            case COSH: return cosh(var);
+            case TANH: return tanh(var);
+            case LOG : return log(var) / log(base);
+        }
+    }
+
 
 #include <chrono>
     int main(){
@@ -518,10 +567,15 @@ string operation = "(cos(acos(1/(x+5*(exp(3*y)^atan(x^3+y^2-4)))))+ln(sec(2*x-co
 
 f(x,y)=(sin(acos(1/(x+exp(2*y))))+ln(sec(x^2-y))+cos(x^3)/(tan(y^2-3*x)))*(asin(x+y)^2)-atan(exp(x*y))
 ((((sin(acos((1/(x+exp((2*y))))))^ln(sec(((x^2)-y))))*(cos((x^3))/tan(((y^2)^(3*x)))))*(asin((x+y))^2))-atan(exp((x*y))))
+
+f(x,y)=
+sin(acos(1/(x+5*exp(y)))^tan(ln(x^8+y^2))^cos(exp(atan(x*y)))/sec(x^4+y^3))*(asin(x+y)^3+ln(sec(5*x-4*y))-tan(cos(x^5-y^3)))/(cotan(x^6+y^6)+exp(tan(ln(x+y^2))))+log(atan(exp(x*y^2)))+sin(ln(cos(exp(x^3+y^2))))+(sec(x^2-y)*exp(cos(x*y))+ln(tan(x^4+y)))+cos(atan(x^5+y^6)+sec(3*x-2*y))*(asin(cos(x^3))+ln(sec(5*y+x^3))-tan(cos(x^5)))+exp(tan(x*ln(cos(2*y)))/(cos(x^2+y)+sec(x*y)))-sin(log(cotan(atan(2*x-y))+cos(ln(exp(x^2*y^3)))))+(sec(2*x-3*y)/tan(exp(x*y)))+cos(exp(2*atan(x^2*y)))/(ln(3*x-2*y)+tan(sec(x+y^2)))*atan(cos(log(x*exp(y^2)))+sec(cos(3*x*ln(y^3))))+exp(ln(tan(x^4-y^5)))*cos(atan(x+ln(y)))-sin(cotan(log(x^6+y^3)))*exp(sec(tan(2*x-y^2)))+cos(ln(x^2)*tan(exp(x*y^3)))/(sin(3*x^2+y^5))+exp(log(atan(x*y^4)+sec(ln(x*y^3))))*(sec(ln(3*x+y))+cos(tan(x*exp(y))))+cos(log(x+tan(exp(y*x^4)))*ln(atan(x*y)))-sin(exp(x^3)*cos(tan(x^2+y^4)))+(cos(ln(x^3*y^3))*exp(ln(cotan(x+y^2))))/(tan(log(x^2+y^2))+sec(cos(3*x*y)))+atan(log(x^2+y^6))+sec(cos(exp(atan(x+y^4))))+sin(atan(exp(x^4-y^3)))*cos(ln(cos(exp(x^2*y))))+log(cotan(atan(2*x-y^2))+sec(ln(exp(x^3+y^2))))-exp(cos(ln(tan(2*x+y)))+tan(sec(x^2+y^3)))+sin(atan(exp(x*y)))/(cos(x^5+y^5))+ln(cotan(atan(x^3+y^6)))*cos(exp(sec(tan(x^2-y^2))))+cos(ln(x^4+y^4))*exp(cotan(ln(2*x-y)))-sin(log(cotan(exp(x^5+y^3)))+sec(tan(2*x+y^6)))+tan(cos(x^6-y^4)*sec(ln(cotan(x+y^2))))/(cos(log(x^4+y^6))+exp(ln(cotan(x+y^5))))+sec(log(x^3+y^6))*cos(atan(exp(x^4+y^3)))-sin(log(cotan(atan(x^3+y^5)))+sec(cos(exp(x+y^6))))+exp(tan(log(x^5+y^2))+sec(atan(x+y^3)))
+
 */
 
     string operation ="";
-    cin>>operation;
+    getline(cin,operation);
+    cin.ignore();
     auto start = std::chrono::high_resolution_clock::now();
     calculus_tree tree(operation);
     cout<<tree;
