@@ -25,7 +25,6 @@ class node
     bool append_next(const string&);
     bool append_child(const string&);
     bool append_parent(const string&);
-    bool empty_child(void);
     //where op is new parent of last op
     //and op is new children to parent of last op
     //and then last op becomes parent of last op
@@ -55,8 +54,6 @@ class calculus_tree
         bool is_keyword(const string&expression,unsigned int  ) ;
         node*parse(const string &expression,unsigned int &start);
         node*parse_block(const string &expression,unsigned int &start);
-
-        node*parse_expression(const string&,unsigned int &start);
 
         void remove_root_keep_children(node*&ret_root);
         void fill_children(queue<string>&q ,node*&ret_root);
