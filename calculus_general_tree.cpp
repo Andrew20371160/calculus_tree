@@ -1,4 +1,4 @@
-#include "calculus_tree.h"
+#include "calculus_general_tree.h"
     const int keyword_count =12 ;
 
     const string key_words[keyword_count]={"sin","cos","tan","sec","csc","cotan",
