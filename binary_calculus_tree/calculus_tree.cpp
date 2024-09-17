@@ -520,9 +520,8 @@
         }
         return false ;
     }
-    double calculus_tree::evaluate_function(const unsigned int &fn,const long double&var,const,unsigned int base ){
+    double calculus_tree::evaluate_function(const int fn,const long double var, const  long double base) {
         switch(fn){
-            case PI : return M_PI ;
             case EXP: return exp(var);
             case SIN: return sin(var);
             case COS: return cos(var);
@@ -551,8 +550,7 @@
 
     long double calculus_tree::evaluate_at(string vars_equal){
         if(root){
-            list<string>variables;
-            list<string>values;
+            list<string>variables_and_values;
             string value="";
             string var="";
             if(vars_equal.length()){
@@ -561,24 +559,102 @@
                 while(i<vars_equal.length()){
                     string var = eval_extract(vars_equal,i);
                     if(var.length()){
-                       if(i<vars_equal.length(),vars_equal[i]=='='){
+                       if(i<vars_equal.length()&&vars_equal[i]=='='){
                             i++ ;
                        }
                        if(i<vars_equal.length()){
                            value = eval_extract(vars_equal,i);
                        }
                        if(value.length()&&is_num(value)){
-                            variables.push_back(var);
-                            values.push_back(value);
+                            variables_and_values.push_back(var);
+                            variables_and_values.push_back(value);
                        }
+                       i++;
+                   }
+                   else{
+                        break ;
                    }
                 }
             }
-            return evaluate(root,variables,values) ;
+            return evaluate(root,variables_and_values) ;
         }
         return 0 ;
     }
-    long double calculus_tree::evaluate(node*ptr,const list<string>&vars,const list<string>&vars_values){
+    long double evaluate_operator(char op,const long double&left_operand,const long double&right_operand){
+       switch(op){
+            case '+':return left_operand+right_operand ;
+            case '-':return left_operand-right_operand ;
+            case '*':return left_operand*right_operand ;
+            case '/':{
+                if(right_operand==0){
+                    cout<<"\ndividing by zero\n(default garbage value is -1)";
+                    return -1 ;
+                }
+                else{
+                    return left_operand/right_operand ;
+                }
+            }
+            case '^':return pow(left_operand,right_operand);
+        }
+    }
+    long double calculus_tree::evaluate(node*ptr,const list<string>&variables_and_values){
+        if(root){
+            if(ptr==NULL){
+                ptr= root ;
+            }
+            long double left_operand = 0 ;
+            long double right_operand = 0 ;
+            //visit kids first
+            if(ptr->left){
+                left_operand =evaluate(ptr->left,variables_and_values);
+            }
+            if(ptr->right){
+                right_operand= evaluate(ptr->right,variables_and_values) ;
+            }
+            if(is_op(ptr->symbol,0)){
+                return evaluate_operator(ptr->symbol[0],left_operand,right_operand);
+            }
+            else if(is_num(ptr->symbol)){
+                return stold(ptr->symbol) ;
+            }
+            else if(variables_and_values.size()){
+                list<string>::const_iterator it =variables_and_values.begin() ;
+                while(it!=variables_and_values.end()){
+                    if(*it==ptr->symbol){
+                        ++it ;
+                        return stold(*it);
+                    }
+                    ++it;
+                    ++it;
+                }
+            }
+            else{
+                int fn_code = is_function(ptr);
+                if(fn_code!=-1){
+                    //since one of them must be zero
+                    //since the function is the root of that expression
+                    //f(expression) after evaluating the expression
+                    //i return the value
+                    long double base_log = 10;
+                    if(fn_code==LOG){
+                        if(ptr->symbol.length()>3){
+                            base_log = stold(ptr->symbol.substr(3,ptr->symbol.length()));
+                        }
+                        return evaluate_function(fn_code,(left_operand+right_operand),base_log) ;
+                    }
+                    else{
+                        return evaluate_function(fn_code,(left_operand+right_operand),base_log);
+                    }
+                }
+                else if(ptr->symbol=="pi"){
+                    return M_PI ;
+                }
+                else{
+                    cout<<"\nUNDEFINED";
+                    return -1 ;
+                }
+            }
+        }
         return 0;
     }
 
@@ -617,17 +693,11 @@ sin(acos(1/(x+5*exp(y)))^tan(ln(x^8+y^2))^cos(exp(atan(x*y)))/sec(x^4+y^3))*(asi
 
 */
 
-    string operation ="";
-    getline(cin,operation);
-    cin.ignore();
-    auto start = std::chrono::high_resolution_clock::now();
+    string operation ="x^2*(y^2*z^3-1)/2*x*y-(y*z+x*z)^0.5";
+
     calculus_tree tree(operation);
     cout<<tree;
-    auto end = std::chrono::high_resolution_clock::now();
-
-    std::chrono::duration<double, std::micro> diff = end-start;
-    cout << "Time to build tree: " << diff.count() << " microseconds\n";
-
+    cout<<endl<<tree.evaluate_at("z=1,y=5.666,x=5.546");
         system("pause");
         return 0 ;
     }
