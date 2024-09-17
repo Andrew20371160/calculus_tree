@@ -67,9 +67,9 @@ class calculus_tree
 
         bool is_num(const string &var);
 
-        double evaluate_function(const unsigned int &fn,const long double&var,const,unsigned int base );
+        double evaluate_function(const int fn,const long double var,const long double );
 
-        long double evaluate(node*ptr,const list<string>&vars,const list<string>&vars_values);
+        long double evaluate(node*ptr,const list<string>&vars_and_values);
 
         string eval_extract(const string&,unsigned int &start);
     public:
