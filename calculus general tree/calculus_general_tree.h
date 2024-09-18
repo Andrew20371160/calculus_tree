@@ -47,11 +47,11 @@ class calculus_tree
         node*parse_operation(const string&,unsigned int &start);
         //this extracts operand (whatever its length) or operator
         string extract(const string&,unsigned int &start);
-        bool  is_keyword( node*&ptr)const;
+        int  is_function( node*&ptr)const;
 
         bool remove_node(node*&src) ;
         bool is_op(const string&expression,unsigned int  ) ;
-        bool is_keyword(const string&expression,unsigned int  ) ;
+        int is_function(const string&expression,unsigned int  ) ;
         node*parse(const string &expression,unsigned int &start);
         node*parse_block(const string &expression,unsigned int &start);
 
