@@ -611,47 +611,55 @@
             if(ptr->right){
                 right_operand= evaluate(ptr->right,variables_and_values) ;
             }
-            if(is_op(ptr->symbol,0)){
-                return evaluate_operator(ptr->symbol[0],left_operand,right_operand);
-            }
-            else if(is_num(ptr->symbol)){
-                return stold(ptr->symbol) ;
-            }
-            else if(variables_and_values.size()){
-                list<string>::const_iterator it =variables_and_values.begin() ;
-                while(it!=variables_and_values.end()){
-                    if(*it==ptr->symbol){
-                        ++it ;
-                        return stold(*it);
-                    }
-                    ++it;
-                    ++it;
+            if(ptr->left==NULL&&ptr->right==NULL){
+                if(is_num(ptr->symbol)){
+                    return stold(ptr->symbol) ;
                 }
-            }
-            else{
-                int fn_code = is_function(ptr);
-                if(fn_code!=-1){
-                    //since one of them must be zero
-                    //since the function is the root of that expression
-                    //f(expression) after evaluating the expression
-                    //i return the value
-                    long double base_log = 10;
-                    if(fn_code==LOG){
-                        if(ptr->symbol.length()>3){
-                            base_log = stold(ptr->symbol.substr(3,ptr->symbol.length()));
+                else if(variables_and_values.size()){
+                    list<string>::const_iterator it =variables_and_values.begin() ;
+                    while(it!=variables_and_values.end()){
+                        if(*it==ptr->symbol){
+                            ++it ;
+                            return stold(*it);
                         }
-                        return evaluate_function(fn_code,(left_operand+right_operand),base_log) ;
-                    }
-                    else{
-                        return evaluate_function(fn_code,(left_operand+right_operand),base_log);
+                        ++it;
+                        ++it;
                     }
                 }
                 else if(ptr->symbol=="pi"){
                     return M_PI ;
                 }
                 else{
-                    cout<<"\nUNDEFINED";
+                    cout<<"UNDEFINED";
                     return -1 ;
+                }
+            }
+            else{
+                if(is_op(ptr->symbol,0)){
+                    return evaluate_operator(ptr->symbol[0],left_operand,right_operand);
+                }
+                else{
+                    int fn_code = is_function(ptr);
+                    if(fn_code!=-1){
+                        //since one of them must be zero
+                        //since the function is the root of that expression
+                        //f(expression) after evaluating the expression
+                        //i return the value
+                        long double base_log = 10;
+                        if(fn_code==LOG){
+                            if(ptr->symbol.length()>3){
+                                base_log = stold(ptr->symbol.substr(3,ptr->symbol.length()));
+                            }
+                            return evaluate_function(fn_code,(left_operand+right_operand),base_log) ;
+                        }
+                        else{
+                            return evaluate_function(fn_code,(left_operand+right_operand),base_log);
+                        }
+                    }
+                    else{
+                        cout<<"\nUNDEFINED";
+                        return -1 ;
+                    }
                 }
             }
         }
@@ -697,7 +705,7 @@ sin(acos(1/(x+5*exp(y)))^tan(ln(x^8+y^2))^cos(exp(atan(x*y)))/sec(x^4+y^3))*(asi
 
     calculus_tree tree(operation);
     cout<<tree;
-    cout<<endl<<tree.evaluate_at("z=1,y=5.666,x=5.546");
+    cout<<endl<<tree.evaluate_at("z=5.22246,y=2.659721,x=106.55");
         system("pause");
         return 0 ;
     }
