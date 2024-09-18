@@ -560,7 +560,7 @@
             unsigned int dot_counter = 0 ;
             while(i<var.length()){
                 if(!(var[i]>='0'&&var[i]<='9')){
-                    if(var[i]=='-'){
+                    if(var[i]=='-'||var[i]=='+'){
                         i++;
                     }
                     else if(var[i]!='.'){
@@ -624,7 +624,6 @@
             string value="";
             string var="";
             if(vars_equal.length()){
-
                 unsigned int i =0;
                 while(i<vars_equal.length()){
                     string var = eval_extract(vars_equal,i);
@@ -664,14 +663,16 @@
             if(ptr==NULL){
                 ptr= root ;
             }
-            complex<long double> left_operand = 0 ;
-            complex<long double> right_operand = 0 ;
+            complex<long double> left_operand = (0,0) ;
+            complex<long double> right_operand = (0,0) ;
             //visit kids first
             if(ptr->left){
                 left_operand =evaluate(ptr->left,variables_and_values);
+                cout<<endl<<"left of "<<ptr->symbol<<" = "<<left_operand<<endl;
             }
             if(ptr->right){
                 right_operand= evaluate(ptr->right,variables_and_values) ;
+                cout<<endl<<"right of "<<ptr->symbol<<" = "<<right_operand<<endl;
             }
             if(ptr->left==NULL&&ptr->right==NULL){
                 if(is_num(ptr->symbol)){
@@ -696,7 +697,7 @@
                 }
                 else{
                     cout<<"UNDEFINED";
-                    return -1 ;
+                    return 0 ;
                 }
             }
             else{
@@ -710,10 +711,10 @@
                         //since the function is the root of that expression
                         //f(expression) after evaluating the expression
                         //i return the value
-                        complex<long double> base_log = 10;
+                        complex<long double> base_log = (10,0);
                         if(fn_code==LOG){
                             if(ptr->symbol.length()>3){
-                                base_log = stold(ptr->symbol.substr(3));
+                                base_log = (stold(ptr->symbol.substr(3)),0);
                             }
                             return evaluate_function(fn_code,(left_operand+right_operand),base_log) ;
                         }
