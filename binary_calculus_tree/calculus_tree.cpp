@@ -1,13 +1,38 @@
 #include "calculus_tree.h"
-    const int function_count =16 ;
-    const int keyword_count =17;
-    enum  {
-        SIN,COS,TAN,SEC,CSC,COTAN,ASIN,ACOS,ATAN,EXP,LN,SINH,
-        COSH,TANH,I,LOG,PI
-    };
 
-    const string key_words[keyword_count]={"sin","cos","tan","sec","csc","cotan",
-                              "asin","acos","atan","exp","ln","sinh","cosh","tanh","i","log","pi"};
+    const int function_count =21 ;
+    const int keyword_count =23;
+
+    enum  {
+        SQRT,
+        ABS,
+        SIN,
+        COS,
+        TAN,
+        SEC,
+        CSC,
+        COTAN,
+        ASIN,
+        ACOS,
+        ATAN,
+        EXP,
+        LN,
+        SINH,
+        COSH,
+        TANH,
+        ASINH,
+        ACOSH,
+        ATANH,
+        I,
+        LOG,
+        PI,
+        E,
+    };
+    const string key_words[keyword_count]={"sqrt","abs","sin","cos","tan",
+                                            "sec","csc","cotan","asin","acos",
+                                            "atan","exp","ln","sinh","cosh",
+                                            "tanh","asinh","acosh","atanh","i",
+                                            "log","pi","e"};
 
 
 
@@ -312,7 +337,6 @@
         return var ;
     }
 
-
     node* calculus_tree::parse_parenthese(const string& expression, unsigned int &start) {
         if(expression[start]=='('){
             start++;
@@ -520,20 +544,33 @@
         }
         return false ;
     }
-    double calculus_tree::evaluate_function(const int fn,const long double var, const  long double base) {
+    complex<long double> calculus_tree::evaluate_function(const int fn,const complex<long double> var, const  complex<long double> base) {
         switch(fn){
             case EXP: return exp(var);
+            case LN: return log(var);
             case SIN: return sin(var);
             case COS: return cos(var);
+            case I :{
+                return complex<long double>(0,1)*var;
+
+            }
             case TAN: return tan(var);
+            case SQRT: return pow(var,0.5);
+            case ABS : return abs(var);
+            case LOG : return log(var) / log(base);
+            case SEC: return complex<long double>(1)/cos(var) ;
+            case CSC:return complex<long double>(1)/sin(var) ;
+            case COTAN: return complex<long double>(1)/tan(var);
             case ASIN: return asin(var);
             case ACOS: return acos(var);
             case ATAN: return atan(var);
-            case LN: return log(var);
             case SINH: return sinh(var);
             case COSH: return cosh(var);
             case TANH: return tanh(var);
-            case LOG : return log(var) / log(base);
+            case ASINH: return asinh(var);
+            case ACOSH: return acosh(var);
+            case ATANH: return atanh(var);
+
         }
     }
 
@@ -548,7 +585,7 @@
         return var ;
     }
 
-    long double calculus_tree::evaluate_at(string vars_equal){
+    complex<long double> calculus_tree::evaluate_at(string vars_equal){
         if(root){
             list<string>variables_and_values;
             string value="";
@@ -580,30 +617,22 @@
         }
         return 0 ;
     }
-    long double evaluate_operator(char op,const long double&left_operand,const long double&right_operand){
+    complex<long double> evaluate_operator(char op,const complex<long double>&left_operand,const complex<long double>&right_operand){
        switch(op){
             case '+':return left_operand+right_operand ;
             case '-':return left_operand-right_operand ;
             case '*':return left_operand*right_operand ;
-            case '/':{
-                if(right_operand==0){
-                    cout<<"\ndividing by zero\n(default garbage value is -1)";
-                    return -1 ;
-                }
-                else{
-                    return left_operand/right_operand ;
-                }
-            }
+            case '/':return left_operand/right_operand ;
             case '^':return pow(left_operand,right_operand);
         }
     }
-    long double calculus_tree::evaluate(node*ptr,const list<string>&variables_and_values){
+    complex<long double> calculus_tree::evaluate(node*ptr,const list<string>&variables_and_values){
         if(root){
             if(ptr==NULL){
                 ptr= root ;
             }
-            long double left_operand = 0 ;
-            long double right_operand = 0 ;
+            complex<long double> left_operand = 0 ;
+            complex<long double> right_operand = 0 ;
             //visit kids first
             if(ptr->left){
                 left_operand =evaluate(ptr->left,variables_and_values);
@@ -629,6 +658,9 @@
                 else if(ptr->symbol=="pi"){
                     return M_PI ;
                 }
+                else if(ptr->symbol=="e"){
+                    return exp(1) ;
+                }
                 else{
                     cout<<"UNDEFINED";
                     return -1 ;
@@ -645,10 +677,10 @@
                         //since the function is the root of that expression
                         //f(expression) after evaluating the expression
                         //i return the value
-                        long double base_log = 10;
+                        complex<long double> base_log = 10;
                         if(fn_code==LOG){
                             if(ptr->symbol.length()>3){
-                                base_log = stold(ptr->symbol.substr(3,ptr->symbol.length()));
+                                base_log = stold(ptr->symbol.substr(3));
                             }
                             return evaluate_function(fn_code,(left_operand+right_operand),base_log) ;
                         }
@@ -701,11 +733,10 @@ sin(acos(1/(x+5*exp(y)))^tan(ln(x^8+y^2))^cos(exp(atan(x*y)))/sec(x^4+y^3))*(asi
 
 */
 
-    string operation ="x^2*(y^2*z^3-1)/2*x*y-(y*z+x*z)^0.5";
-
+    string operation = "(2.55+i(x*2/53+18))";
     calculus_tree tree(operation);
     cout<<tree;
-    cout<<endl<<tree.evaluate_at("z=5.22246,y=2.659721,x=106.55");
+    cout<<endl<<tree.evaluate_at("x=0.555");
         system("pause");
         return 0 ;
     }
