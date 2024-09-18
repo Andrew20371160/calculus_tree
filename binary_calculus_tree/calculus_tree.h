@@ -8,7 +8,7 @@
 #include <list>
 #include <math.h>
 #include <cmath>
-
+#include <complex>
 #include <string>
 using namespace std ;
 
@@ -39,22 +39,12 @@ class node
 what are operations
 *+-/()^
 */
-enum  {
-    SIN,COS,TAN,SEC,CSC,COTAN,ASIN,ACOS,ATAN,EXP,LN,SINH,
-    COSH,TANH,I,LOG,PI
-};
+
 
 class calculus_tree
 {
     private :
         node *root  ;
-
-        int function_count ;
-        int keyword_count;
-
-        string *key_words;
-
-
         //this function parse an expression between 2 paranthese
         //then return it's root
         node*parse_parenthese(const string&,unsigned int &start);
@@ -77,13 +67,18 @@ class calculus_tree
         void var_op_func(const string&op,const string&var,node*&last_op,node*&ret_root);
 
         bool is_num(const string &var);
+        /*
+        since the output could generate a complex number
+        (e.g. sqrt(-ve number)
+        using complex numbers makes sense
+        */
+        complex<long double> evaluate_function(const int fn,const complex<long double> var,const complex<long double>);
 
-        double evaluate_function(const int fn,const long double var,const long double );
-
-        long double evaluate(node*ptr,const list<string>&vars_and_values);
+        complex<long double> evaluate(node*ptr,const list<string>&vars_and_values);
 
         string eval_extract(const string&,unsigned int &start);
 
+        complex<long double> evaluate_power(const complex<long double> &var,const complex<long double> &exponent);
 
     public:
         calculus_tree(void);
@@ -108,7 +103,7 @@ class calculus_tree
         if there are no variables then call it as it is
         evaluate_at
         */
-        long double evaluate_at(string vars_equal="");
+        complex<long double> evaluate_at(string vars_equal="");
 };
 
 
