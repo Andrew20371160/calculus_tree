@@ -1,8 +1,14 @@
 #include "calculus_general_tree.h"
-    const int keyword_count =12 ;
+    const int function_count =16 ;
+    const int keyword_count =17;
+
+    enum  {
+        SIN,COS,TAN,SEC,CSC,COTAN,ASIN,ACOS,ATAN,EXP,LN,SINH,
+        COSH,TANH,I,LOG,PI
+    };
 
     const string key_words[keyword_count]={"sin","cos","tan","sec","csc","cotan",
-                              "asin","acos","atan","exp","ln","log"};
+                              "asin","acos","atan","exp","ln","sinh","cosh","tanh","i","log","pi"};
 
 
     node * node::get_node(const string &symbol){
@@ -226,7 +232,7 @@
             if(ptr == NULL){
                 ptr = root;
             }
-            if(is_keyword(ptr)){
+            if(is_function(ptr)!=-1){
                 cout<<ptr->symbol;
             }
                 if(ptr->children){
@@ -255,7 +261,7 @@ string calculus_tree::expression(node* ptr) const {
         if(ptr == NULL){
             ptr = root;
         }
-        if(is_keyword(ptr)){
+        if(is_function(ptr)){
             ret_exp+=ptr->symbol;
         }
             if(ptr->children){
@@ -330,7 +336,6 @@ string calculus_tree::expression(node* ptr) const {
             node * last_op = NULL ;
             node * ret_root = NULL ;
             node * var = NULL;
-            node * temp = NULL ;
             string op  ="" ;
             bool new_op = false;
             while(start<expression.length() && expression[start]!=')'){
@@ -369,9 +374,6 @@ string calculus_tree::expression(node* ptr) const {
                     }
                 }
                 else{
-                    if(new_op){
-                        start--;
-                    }
                     return ret_root;
                 }
             }
@@ -396,12 +398,12 @@ string calculus_tree::expression(node* ptr) const {
             //where op is new parent of last op
             //and op is new children to parent of last op
             //and then last op becomes parent of last op
-            while(last_op->parent&&(precedence(op,0)-precedence(last_op->parent->symbol,0)<=0)){
+            while(last_op->parent&&((precedence(op,0)-precedence(last_op->parent->symbol,0))<=0)){
                 last_op=last_op->parent;
             }
             last_op->exchange_parent(op);
             if(last_op==ret_root){
-                ret_root =ret_root ->parent ;
+                ret_root =ret_root->parent ;
             }
             last_op=last_op->parent;
         }
@@ -419,13 +421,13 @@ string calculus_tree::expression(node* ptr) const {
             string op = "";
             bool new_op= false ;
             bool new_var = false;
-            if(!is_op(expression,start)&&!is_keyword(expression,start)){
+            if(!is_op(expression,start)&&!is_function(expression,start)!=-1){
                 var = extract(expression,start);
             }
             if(is_op(expression,start)&&expression[start]!='('&&expression[start]!=')'){
                 op=extract(expression,start);
             }
-            if(expression[start]=='('||is_keyword(expression,start)){
+            if(expression[start]=='('||is_function(expression,start)!=-1){
                 //expression is -> x+(
                 start--;
                 return ret_root->get_node(var);
@@ -437,7 +439,7 @@ string calculus_tree::expression(node* ptr) const {
                 while(start<expression.length()){
                     new_var =false ;
                     new_op = false ;
-                    if(!is_op(expression,start)&&!is_keyword(expression,start)){
+                    if(!is_op(expression,start)&&!is_function(expression,start)!=-1){
                         var = extract(expression,start);
                         new_var = true ;
                     }
@@ -447,7 +449,7 @@ string calculus_tree::expression(node* ptr) const {
                     }
                     if(new_var){
                         if(new_op){
-                            if(expression[start]=='('||expression[start]==')'||is_keyword(expression,start)){
+                            if(expression[start]=='('||expression[start]==')'||is_function(expression,start)!=-1){
                                 //expression is -> x+(
                                 start--;
                                 last_op->append_child(var);
@@ -477,42 +479,17 @@ string calculus_tree::expression(node* ptr) const {
         return NULL ;
     }
 
-
-
-    void calculus_tree::var_op_func(const string&op,const string&var,node*&last_op,node*&ret_root){
-        node *temp = NULL;
-        int diff = precedence(op,0)-precedence(last_op->symbol,0);
-        if(diff>0||op=="^"){
-            temp = temp->get_node(op) ;
-            temp->append_child(var) ;
-            last_op->append_child(temp) ;
-            last_op = last_op->children;
-        }
-        else{
-            last_op->append_child(var);
-            //where op is new parent of last op
-            //and op is new children to parent of last op
-            //and then last op becomes parent of last op
-            while(last_op->parent&&(precedence(op,0)-precedence(last_op->parent->symbol,0)<=0)){
-                last_op=last_op->parent;
-            }
-            last_op->exchange_parent(op);
-            if(last_op==ret_root){
-                ret_root =ret_root ->parent ;
-            }
-            last_op=last_op->parent;
-        }
-    }
     node*calculus_tree::parse_block(const string &expression,unsigned int &start){
         if(start<expression.length()){
-            if(is_keyword(expression,start)){
+            if(is_function(expression,start)!=-1){
                 return parse_function(expression,start);
             }
             else if(expression[start]=='('){
                 return parse_parenthese(expression,start);
             }
             else{
-                return parse_expression(expression,start);
+                node *temp = NULL;
+                return temp->get_node(extract(expression,start));
             }
         }
         return NULL ;
@@ -523,7 +500,6 @@ string calculus_tree::expression(node* ptr) const {
         if(start<expression.length()){
             node*ret_root = NULL ;
             node*block =NULL ;
-            node*temp = NULL ;
             node*last_op= NULL ;
             string op ="";
             //extract the thing
@@ -553,47 +529,41 @@ string calculus_tree::expression(node* ptr) const {
                             return ret_root  ;
                         }
                     }
+                    else{
+                        return ret_root;
+                    }
                 }
             }
             return ret_root ;
         }
     return NULL ;
     }
-    void calculus_tree::remove_root_keep_children(node*&ret_root){
-        if(ret_root){
-            node *temp= ret_root ;
-            ret_root=ret_root->children;
-            temp->children=NULL;
-            ret_root->parent=NULL;
-            remove_node(temp);
-        }
-    }
 
-    bool calculus_tree:: is_keyword(const string&expression ,unsigned int pos){
+    int calculus_tree:: is_function(const string&expression ,unsigned int pos){
          string temp=  extract(expression,pos);
          if(temp.substr(0,3)=="log"){
-            return 1 ;
+            return LOG ;
          }
-         for(int i =0 ; i <keyword_count-1;i++){
+         for(int i =0 ; i <function_count-1;i++){
             if(temp==key_words[i]){
-                return 1;
+                return i;
             }
          }
-         return 0 ;
+         return -1 ;
     }
 
-    bool calculus_tree:: is_keyword(node*&ptr)const{
+    int calculus_tree:: is_function(node*&ptr)const{
         if(ptr){
              if(ptr->symbol.substr(0,3)=="log"){
-                return 1 ;
+                return LOG ;
              }
-             for(int i =0 ; i <keyword_count-1;i++){
+             for(int i =0 ; i <function_count-1;i++){
                 if(ptr->symbol==key_words[i]){
-                    return 1;
+                    return i;
                 }
              }
         }
-         return 0 ;
+         return -1 ;
     }
 
     //assuming it's a keywrod AND its a function
