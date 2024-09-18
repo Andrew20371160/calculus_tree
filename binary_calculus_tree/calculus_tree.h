@@ -39,11 +39,22 @@ class node
 what are operations
 *+-/()^
 */
+enum  {
+    SIN,COS,TAN,SEC,CSC,COTAN,ASIN,ACOS,ATAN,EXP,LN,SINH,
+    COSH,TANH,I,LOG,PI
+};
 
 class calculus_tree
 {
     private :
         node *root  ;
+
+        int function_count ;
+        int keyword_count;
+
+        string *key_words;
+
+
         //this function parse an expression between 2 paranthese
         //then return it's root
         node*parse_parenthese(const string&,unsigned int &start);
@@ -72,6 +83,8 @@ class calculus_tree
         long double evaluate(node*ptr,const list<string>&vars_and_values);
 
         string eval_extract(const string&,unsigned int &start);
+
+
     public:
         calculus_tree(void);
         calculus_tree(const string&expression);
