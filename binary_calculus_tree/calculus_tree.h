@@ -180,6 +180,7 @@ class calculus_tree
         DataType evaluate(node*ptr,const list<string>&vars_and_values);
 
         string eval_extract(const string&,unsigned int &start);
+        
 
     public:
         calculus_tree(void);
@@ -205,6 +206,7 @@ class calculus_tree
         evaluate_at
         */
         DataType evaluate_at(string vars_equal="");
+
 };
 
 
