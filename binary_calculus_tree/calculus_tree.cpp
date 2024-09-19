@@ -661,6 +661,9 @@
         else{
             cout<<"\nUNDEFINED\n";
             cout<<ptr->symbol;
+
+            remove_tree();
+
             exit(0);
         }
     }
@@ -722,6 +725,7 @@
                     else{
                         cout<<"\nUNDEFINED\n";
                         cout<<ptr->symbol;
+                        remove_tree();
                         exit(0);
                     }
                 }
@@ -729,7 +733,7 @@
         }
         return 0;
     }
-
+    
 
 #include <chrono>
 int main(){
@@ -765,7 +769,7 @@ int main(){
 
     */
 
-    string operation = "e^(5+i)";
+    string operation = "-i*e^(i*2)";
     calculus_tree<complex<long double>> tree(operation);
     cout<<tree;
     cout<<endl<<tree.evaluate_at("x=0.555");
