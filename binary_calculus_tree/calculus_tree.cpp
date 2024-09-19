@@ -192,8 +192,8 @@
         }
          return false;
     }
-
-    bool calculus_tree::remove_node(node*&src) {
+    template<typename DataType>
+    bool calculus_tree<DataType>::remove_node(node*&src) {
         if(src){
             src->disconnect_self();
 
@@ -220,21 +220,23 @@
     /*
     calculus tree part
     */
-    calculus_tree::~calculus_tree(){
+    template<typename DataType>
+    calculus_tree<DataType>::~calculus_tree(){
         remove_node(root);
         root= NULL;
     }
-
-    calculus_tree ::calculus_tree(const string&expression){
+    template<typename DataType>
+    calculus_tree<DataType> ::calculus_tree(const string&expression){
         unsigned int start= 0;
         root =parse(expression,start) ;
     }
-
-    calculus_tree::calculus_tree(void){
+    template<typename DataType>
+    calculus_tree<DataType>::calculus_tree(void){
         root=NULL;
     }
 
-    bool calculus_tree::remove_tree(void){
+    template<typename DataType>
+    bool calculus_tree<DataType>::remove_tree(void){
         if(root){
             remove_node(root);
             root =NULL;
@@ -243,7 +245,8 @@
         return 0 ;
     }
 
-    void calculus_tree::print(node* ptr) const {
+    template<typename DataType>
+    void calculus_tree<DataType>::print(node* ptr) const {
         if(root){
             bool found_keyword = false;
             if(ptr == NULL){
@@ -268,7 +271,8 @@
         }
     }
 
-    string calculus_tree::expression(node* ptr) const {
+    template<typename DataType>
+    string calculus_tree<DataType>::expression(node* ptr) const {
         if(root){
             bool found_keyword = false;
             string ret_exp = "";
@@ -295,7 +299,9 @@
         }
         return "";
     }
-    bool calculus_tree::is_op(const string&expression,unsigned int pos ) {
+
+    template<typename DataType>
+    bool calculus_tree<DataType>::is_op(const string&expression,unsigned int pos ) {
         switch(expression[pos]){
             case '+':return true ;break;
             case '-':return true ;break;
@@ -307,8 +313,10 @@
         }
         return false ;
     }
+
     //+- ,*/ ,^, () & functions ,
-    int calculus_tree::precedence(const string&expression,unsigned int pos){
+    template<typename DataType>
+    int calculus_tree<DataType>::precedence(const string&expression,unsigned int pos){
             switch(expression[pos]){
                 case '^':return 3 ;
                 case '*':return 2 ;
@@ -320,7 +328,8 @@
 
     //this extracts operand (whatever its length) or operator
     //start goes to second operand or operator
-    string calculus_tree::extract(const string&expression,unsigned int &start){
+    template<typename DataType>
+    string calculus_tree<DataType>::extract(const string&expression,unsigned int &start){
         string var="";
         if(start<expression.length()){
             unsigned int original_start = start;
@@ -337,8 +346,8 @@
         }
         return var ;
     }
-
-    node* calculus_tree::parse_parenthese(const string& expression, unsigned int &start) {
+    template<typename DataType>
+    node* calculus_tree<DataType>::parse_parenthese(const string& expression, unsigned int &start) {
         if(expression[start]=='('){
             start++;
             node * last_op = NULL ;
@@ -393,7 +402,8 @@
         return NULL ;
     }
 
-    void calculus_tree::var_op_func(const string&op,node*&var,node*&last_op,node*&ret_root){
+    template<typename DataType>
+    void calculus_tree<DataType>::var_op_func(const string&op,node*&var,node*&last_op,node*&ret_root){
         node *temp = NULL;
         int diff = precedence(op,0)-precedence(last_op->symbol,0);
         if(diff>0||op=="^"){
@@ -418,7 +428,8 @@
         }
     }
 
-    node*calculus_tree::parse_block(const string &expression,unsigned int &start){
+    template<typename DataType>
+    node*calculus_tree<DataType>::parse_block(const string &expression,unsigned int &start){
         if(start<expression.length()){
             if(is_function(expression,start)!=-1){
                 return parse_function(expression,start);
@@ -450,7 +461,8 @@
                                 signed_var=true;
                             }
                             if(temp&&signed_var){
-                                node *ret_root = ret_root->get_node("*");
+                                node *ret_root =NULL;
+                                ret_root=ret_root->get_node("*");
                                 ret_root->append_child(op+"1");
                                 ret_root->append_child(temp) ;
                                 temp= ret_root;
@@ -468,7 +480,8 @@
     }
     //this forms the complete tree from an expression and returns
     //its root
-    node*calculus_tree::parse(const string &expression,unsigned int &start){
+    template<typename DataType>
+    node*calculus_tree<DataType>::parse(const string &expression,unsigned int &start){
         if(start<expression.length()){
             node*ret_root = NULL ;
             node*block =NULL ;
@@ -508,10 +521,11 @@
             }
             return ret_root ;
         }
-    return NULL ;
+        return NULL ;
     }
 
-    int calculus_tree:: is_function(const string&expression ,unsigned int pos){
+    template<typename DataType>
+    int calculus_tree<DataType>:: is_function(const string&expression ,unsigned int pos){
          string temp=  extract(expression,pos);
          if(temp.substr(0,3)=="log"){
             return LOG ;
@@ -523,8 +537,8 @@
          }
          return -1 ;
     }
-
-    int calculus_tree:: is_function(node*&ptr)const{
+    template<typename DataType>
+    int calculus_tree<DataType>:: is_function(node*&ptr)const{
         if(ptr){
              if(ptr->symbol.substr(0,3)=="log"){
                 return LOG ;
@@ -539,7 +553,8 @@
     }
 
     //assuming it's a keywrod AND its a function
-    node*calculus_tree::parse_function(const string&expression,unsigned int &start){
+    template<typename DataType>
+    node*calculus_tree<DataType>::parse_function(const string&expression,unsigned int &start){
         if(start<expression.length()){
             string var = extract(expression,start);
             node*ret_root = parse_parenthese(expression,start);
@@ -554,7 +569,8 @@
     /*
     some evaluation functions
     */
-    bool calculus_tree::is_num(const string &var){
+    template<typename DataType>
+    bool calculus_tree<DataType>::is_num(const string &var){
         if(var.length()){
             unsigned int i=0 ;
             unsigned int dot_counter = 0 ;
@@ -581,20 +597,21 @@
         }
         return false ;
     }
-    complex<long double> calculus_tree::evaluate_function(const int fn,const complex<long double> var, const  complex<long double> base) {
+
+    template<typename DataType>
+    DataType calculus_tree<DataType>::evaluate_function(const int fn,const DataType var, const  DataType base) {
         switch(fn){
             case EXP: return exp(var);
             case LN: return log(var);
             case SIN: return sin(var);
             case COS: return cos(var);
-            case I :return complex<long double>(0,1)*var;
             case TAN: return tan(var);
             case SQRT: return pow(var,0.5);
             case ABS : return abs(var);
             case LOG : return log(var) / log(base);
-            case SEC: return complex<long double>(1)/cos(var) ;
-            case CSC:return complex<long double>(1)/sin(var) ;
-            case COTAN: return complex<long double>(1)/tan(var);
+            case SEC: return DataType(1)/cos(var) ;
+            case CSC:return DataType(1)/sin(var) ;
+            case COTAN: return DataType(1)/tan(var);
             case ASIN: return asin(var);
             case ACOS: return acos(var);
             case ATAN: return atan(var);
@@ -604,10 +621,13 @@
             case ASINH: return asinh(var);
             case ACOSH: return acosh(var);
             case ATANH: return atanh(var);
+            #ifdef COMPLEX_MODE
+                case I :return complex<long double>(0,1)*var;
+            #endif
         }
     }
-
-    string calculus_tree::eval_extract(const string&expression,unsigned int &start){
+    template<typename DataType>
+    string calculus_tree<DataType>::eval_extract(const string&expression,unsigned int &start){
         string var="";
         if(start<expression.length()){
             while(start<expression.length()&&expression[start]!='='&&expression[start]!=','){
@@ -617,8 +637,8 @@
         }
         return var ;
     }
-
-    complex<long double> calculus_tree::evaluate_at(string vars_equal){
+    template<typename DataType>
+    DataType calculus_tree<DataType>::evaluate_at(string vars_equal){
         if(root){
             list<string>variables_and_values;
             string value="";
@@ -649,7 +669,8 @@
         }
         return 0 ;
     }
-    complex<long double> evaluate_operator(char op,const complex<long double>&left_operand,const complex<long double>&right_operand){
+    template<typename DataType>
+    DataType calculus_tree<DataType>::evaluate_operator(char op,const DataType&left_operand,const DataType&right_operand){
        switch(op){
             case '+':return left_operand+right_operand ;
             case '-':return left_operand-right_operand ;
@@ -658,46 +679,47 @@
             case '^':return pow(left_operand,right_operand);
         }
     }
-    complex<long double> calculus_tree::evaluate(node*ptr,const list<string>&variables_and_values){
+
+    template<typename DataType>
+    DataType calculus_tree<DataType>::evaluate(node*ptr,const list<string>&variables_and_values){
         if(root){
             if(ptr==NULL){
                 ptr= root ;
             }
-            complex<long double> left_operand = (0,0) ;
-            complex<long double> right_operand = (0,0) ;
+            DataType left_operand = DataType(0) ;
+            DataType right_operand = DataType(0)  ;
             //visit kids first
             if(ptr->left){
                 left_operand =evaluate(ptr->left,variables_and_values);
-                cout<<endl<<"left of "<<ptr->symbol<<" = "<<left_operand<<endl;
             }
             if(ptr->right){
                 right_operand= evaluate(ptr->right,variables_and_values) ;
-                cout<<endl<<"right of "<<ptr->symbol<<" = "<<right_operand<<endl;
             }
             if(ptr->left==NULL&&ptr->right==NULL){
                 if(is_num(ptr->symbol)){
-                    return stold(ptr->symbol) ;
+                    return DataType(stold(ptr->symbol)) ;
                 }
                 else if(variables_and_values.size()){
                     list<string>::const_iterator it =variables_and_values.begin() ;
                     while(it!=variables_and_values.end()){
                         if(*it==ptr->symbol){
                             ++it ;
-                            return stold(*it);
+                            return DataType(stold(*it));
                         }
                         ++it;
                         ++it;
                     }
                 }
                 else if(ptr->symbol=="pi"){
-                    return M_PI ;
+                    return DataType(M_PI) ;
                 }
                 else if(ptr->symbol=="e"){
-                    return exp(1) ;
+                    return DataType(exp(1)) ;
                 }
                 else{
-                    cout<<"UNDEFINED";
-                    return 0 ;
+                    cout<<"\nUNDEFINED\n";
+                    cout<<ptr->symbol;
+                    exit(0);
                 }
             }
             else{
@@ -711,10 +733,10 @@
                         //since the function is the root of that expression
                         //f(expression) after evaluating the expression
                         //i return the value
-                        complex<long double> base_log = (10,0);
+                        DataType base_log = DataType(10);
                         if(fn_code==LOG){
                             if(ptr->symbol.length()>3){
-                                base_log = (stold(ptr->symbol.substr(3)),0);
+                                base_log = DataType(stold(ptr->symbol.substr(3)));
                             }
                             return evaluate_function(fn_code,(left_operand+right_operand),base_log) ;
                         }
@@ -723,8 +745,9 @@
                         }
                     }
                     else{
-                        cout<<"\nUNDEFINED";
-                        return -1 ;
+                        cout<<"\nUNDEFINED\n";
+                        cout<<ptr->symbol;
+                        exit(0);
                     }
                 }
             }
@@ -767,8 +790,8 @@ int main(){
 
     */
 
-    string operation = "-x^2+2";
-    calculus_tree tree(operation);
+    string operation = "-(x^2)+2";
+    calculus_tree<complex<long double>> tree(operation);
     cout<<tree;
     cout<<endl<<tree.evaluate_at("x=0.555");
         system("pause");
