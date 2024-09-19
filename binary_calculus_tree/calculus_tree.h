@@ -2,15 +2,6 @@
 
 #define _calculus_tree_h_
 
-
-
-// Uncomment the following line to enable complex mode
-//NOTE:you must define the calculus tree datatype to be complex<>
-//(e.g   calculus_tree<complex<long double>> tree();)
-
-#define COMPLEX_MODE 1
-
-
 #include <iostream>
 #include <queue>
 #include <stack>
@@ -20,6 +11,106 @@
 #include <complex>
 #include <string>
 using namespace std ;
+
+
+
+
+// Uncomment the following line to enable complex mode
+
+#define COMPLEX_MODE 1
+
+
+/*
+NOTE:you must define the calculus tree datatype to be complex<>
+(e.g   calculus_tree<complex<long double>> tree();)
+
+complex mode allows you to enter expressions like
+5+i*5 or 5+img(5)
+
+img is treated as a function so you can do this -> img(x^2+.......)
+i is treated as a constant so you must do this -> expresiion*i or i* expression
+*/
+
+#ifdef COMPLEX_MODE
+    const int function_count =21 ;
+    const int keyword_count =24;
+
+    enum  {
+        SQRT,
+        ABS,
+        SIN,
+        COS,
+        TAN,
+        SEC,
+        CSC,
+        COTAN,
+        ASIN,
+        ACOS,
+        ATAN,
+        EXP,
+        LN,
+        SINH,
+        COSH,
+        TANH,
+        ASINH,
+        ACOSH,
+        ATANH,
+        IMG,
+        I,
+        LOG,
+        PI,
+        E,
+    };
+    const string key_words[keyword_count]={"sqrt","abs","sin","cos","tan",
+                                            "sec","csc","cotan","asin","acos",
+                                            "atan","exp","ln","sinh","cosh",
+                                            "tanh","asinh","acosh","atanh","img",
+                                            "log","pi","e","i"};
+
+
+#else
+    const int function_count =20 ;
+    const int keyword_count =23;
+
+    enum  {
+        SQRT,
+        ABS,
+        SIN,
+        COS,
+        TAN,
+        SEC,
+        CSC,
+        COTAN,
+        ASIN,
+        ACOS,
+        ATAN,
+        EXP,
+        LN,
+        SINH,
+        COSH,
+        TANH,
+        ASINH,
+        ACOSH,
+        ATANH,
+        LOG,
+        PI,
+        E
+    };
+    const string key_words[keyword_count]={"sqrt","abs","sin","cos","tan",
+                                            "sec","csc","cotan","asin","acos",
+                                            "atan","exp","ln","sinh","cosh",
+                                            "tanh","asinh","acosh","atanh",
+                                            "log","pi","e"};
+#endif
+
+
+
+
+
+
+
+
+
 
 class node
 {
@@ -77,6 +168,7 @@ class calculus_tree
         void var_op_func(const string&op,const string&var,node*&last_op,node*&ret_root);
         DataType evaluate_operator(char op,const DataType&left_operand,const DataType&right_operand);
 
+        DataType evaluate_constant(node*);
         bool is_num(const string &var);
         /*
         since the output could generate a complex number
