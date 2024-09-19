@@ -2,6 +2,15 @@
 
 #define _calculus_tree_h_
 
+
+
+// Uncomment the following line to enable complex mode
+//NOTE:you must define the calculus tree datatype to be complex<>
+//(e.g   calculus_tree<complex<long double>> tree();)
+
+#define COMPLEX_MODE 1
+
+
 #include <iostream>
 #include <queue>
 #include <stack>
@@ -14,6 +23,7 @@ using namespace std ;
 
 class node
 {
+    template<typename DataType>
     friend class calculus_tree;
     string symbol ;
 
@@ -40,7 +50,7 @@ what are operations
 *+-/()^
 */
 
-
+template<typename DataType>
 class calculus_tree
 {
     private :
@@ -51,7 +61,7 @@ class calculus_tree
         node*parse_operation(const string&,unsigned int &start);
         //this extracts operand (whatever its length) or operator
         string extract(const string&,unsigned int &start);
-        int  is_function( node*&ptr)const;
+        int is_function( node*&ptr)const;
 
         bool remove_node(node*&src) ;
         bool is_op(const string&expression,unsigned int  ) ;
@@ -65,6 +75,7 @@ class calculus_tree
         int precedence(const string&expression,unsigned int pos);
         void var_op_func(const string&op,node*&var,node*&last_op,node*&ret_root);
         void var_op_func(const string&op,const string&var,node*&last_op,node*&ret_root);
+        DataType evaluate_operator(char op,const DataType&left_operand,const DataType&right_operand);
 
         bool is_num(const string &var);
         /*
@@ -72,13 +83,11 @@ class calculus_tree
         (e.g. sqrt(-ve number)
         using complex numbers makes sense
         */
-        complex<long double> evaluate_function(const int fn,const complex<long double> var,const complex<long double>);
+        DataType evaluate_function(const int fn,const DataType var,const DataType);
 
-        complex<long double> evaluate(node*ptr,const list<string>&vars_and_values);
+        DataType evaluate(node*ptr,const list<string>&vars_and_values);
 
         string eval_extract(const string&,unsigned int &start);
-
-        complex<long double> evaluate_power(const complex<long double> &var,const complex<long double> &exponent);
 
     public:
         calculus_tree(void);
@@ -103,7 +112,7 @@ class calculus_tree
         if there are no variables then call it as it is
         evaluate_at
         */
-        complex<long double> evaluate_at(string vars_equal="");
+        DataType evaluate_at(string vars_equal="");
 };
 
 
