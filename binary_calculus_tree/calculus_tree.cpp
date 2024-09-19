@@ -1,40 +1,5 @@
 #include "calculus_tree.h"
 
-    const int function_count =21 ;
-    const int keyword_count =23;
-
-    enum  {
-        SQRT,
-        ABS,
-        SIN,
-        COS,
-        TAN,
-        SEC,
-        CSC,
-        COTAN,
-        ASIN,
-        ACOS,
-        ATAN,
-        EXP,
-        LN,
-        SINH,
-        COSH,
-        TANH,
-        ASINH,
-        ACOSH,
-        ATANH,
-        I,
-        LOG,
-        PI,
-        E,
-    };
-    const string key_words[keyword_count]={"sqrt","abs","sin","cos","tan",
-                                            "sec","csc","cotan","asin","acos",
-                                            "atan","exp","ln","sinh","cosh",
-                                            "tanh","asinh","acosh","atanh","i",
-                                            "log","pi","e"};
-
-
 
     node * node::get_node(const string &symbol){
         node*ret_node = NULL;
@@ -622,7 +587,7 @@
             case ACOSH: return acosh(var);
             case ATANH: return atanh(var);
             #ifdef COMPLEX_MODE
-                case I :return complex<long double>(0,1)*var;
+                case IMG :return complex<long double>(0,1)*var;
             #endif
         }
     }
@@ -681,6 +646,26 @@
     }
 
     template<typename DataType>
+    DataType calculus_tree<DataType>::evaluate_constant(node*ptr){
+        if(ptr->symbol=="pi"){
+            return DataType(M_PI) ;
+        }
+        else if(ptr->symbol=="e"){
+            return DataType(exp(1)) ;
+        }
+        #ifdef COMPLEX_MODE
+            else if(ptr->symbol=="i"){
+                return complex<long double>(0,1) ;
+            }
+        #endif
+        else{
+            cout<<"\nUNDEFINED\n";
+            cout<<ptr->symbol;
+            exit(0);
+        }
+    }
+
+    template<typename DataType>
     DataType calculus_tree<DataType>::evaluate(node*ptr,const list<string>&variables_and_values){
         if(root){
             if(ptr==NULL){
@@ -710,17 +695,7 @@
                         ++it;
                     }
                 }
-                else if(ptr->symbol=="pi"){
-                    return DataType(M_PI) ;
-                }
-                else if(ptr->symbol=="e"){
-                    return DataType(exp(1)) ;
-                }
-                else{
-                    cout<<"\nUNDEFINED\n";
-                    cout<<ptr->symbol;
-                    exit(0);
-                }
+                return evaluate_constant(ptr);
             }
             else{
                 if(is_op(ptr->symbol,0)){
@@ -790,7 +765,7 @@ int main(){
 
     */
 
-    string operation = "-(x^2)+2";
+    string operation = "e^(5+i)";
     calculus_tree<complex<long double>> tree(operation);
     cout<<tree;
     cout<<endl<<tree.evaluate_at("x=0.555");
