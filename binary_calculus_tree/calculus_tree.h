@@ -157,7 +157,7 @@ class calculus_tree
         bool remove_node(node*&src) ;
         bool is_op(const string&expression,unsigned int  ) ;
         int is_function(const string&expression,unsigned int  ) ;
-        node*parse(const string &expression,unsigned int &start);
+        node*create_tree(const string &expression,unsigned int &start);
         node*parse_block(const string &expression,unsigned int &start);
 
         void remove_root_keep_children(node*&ret_root);
@@ -179,17 +179,26 @@ class calculus_tree
 
         DataType evaluate(node*ptr,const list<string>&vars_and_values);
 
+        string diff(node*ptr,const string&var);
+
+
         string eval_extract(const string&,unsigned int &start);
-        
+        node * copy_tree(node*);
 
     public:
         calculus_tree(void);
         calculus_tree(const string&expression);
+        calculus_tree(const calculus_tree&);
+        calculus_tree& operator=(const calculus_tree&);
+
         ~calculus_tree();
+
+        void set_exp(const string &expression);
 
         bool remove_tree(void);
 
-        string differentiate(void)const;
+        calculus_tree diff_with(const string&variable)const;
+
         string integrate(void)const;
         void print(node*ptr = NULL)const;
         string expression(node*ptr = NULL)const;
