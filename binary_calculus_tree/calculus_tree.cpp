@@ -157,6 +157,56 @@
         }
          return false;
     }
+
+    template<typename DataType>
+    node * calculus_tree<DataType>::copy_tree(node*src_root){
+        if(src_root){
+            node *ret_root = NULL ;
+             ret_root = ret_root->get_node(src_root->symbol);
+            if(src_root->left){
+                ret_root->left = copy_tree(src_root->left);
+                if(ret_root->left){
+                    ret_root->left->parent = ret_root ;
+                }
+            }
+            if(src_root->right){
+                ret_root->right = copy_tree(src_root->right);
+                if(ret_root->right){
+                    ret_root->right->parent = ret_root ;
+                }
+            }
+            return ret_root ;
+        }
+        return NULL ;
+    }
+    template<typename DataType>
+    calculus_tree<DataType> ::calculus_tree(const calculus_tree<DataType>&src_tree){
+        root =NULL ;
+        if(src_tree.root){
+            root = copy_tree(src_tree.root);
+        }
+    }
+    template<typename DataType>
+    void calculus_tree<DataType> ::set_exp(const string &expression){
+        if(root){
+            remove_tree();
+        }
+        unsigned int start= 0;
+        root = create_tree(expression,start);
+    }
+
+    template<typename DataType>
+    calculus_tree<DataType>& calculus_tree<DataType>::operator=(const calculus_tree&src_tree){
+        if(root){
+            remove_node(root);
+            root =NULL;
+        }
+        if(src_tree.root){
+            root = copy_tree(src_tree.root) ;
+        }
+        return *this ;
+    }
+
     template<typename DataType>
     bool calculus_tree<DataType>::remove_node(node*&src) {
         if(src){
@@ -193,7 +243,7 @@
     template<typename DataType>
     calculus_tree<DataType> ::calculus_tree(const string&expression){
         unsigned int start= 0;
-        root =parse(expression,start) ;
+        root =create_tree(expression,start) ;
     }
     template<typename DataType>
     calculus_tree<DataType>::calculus_tree(void){
@@ -446,7 +496,7 @@
     //this forms the complete tree from an expression and returns
     //its root
     template<typename DataType>
-    node*calculus_tree<DataType>::parse(const string &expression,unsigned int &start){
+    node*calculus_tree<DataType>::create_tree(const string &expression,unsigned int &start){
         if(start<expression.length()){
             node*ret_root = NULL ;
             node*block =NULL ;
@@ -661,10 +711,6 @@
         else{
             cout<<"\nUNDEFINED\n";
             cout<<ptr->symbol;
-
-            remove_tree();
-
-            exit(0);
         }
     }
 
@@ -725,8 +771,6 @@
                     else{
                         cout<<"\nUNDEFINED\n";
                         cout<<ptr->symbol;
-                        remove_tree();
-                        exit(0);
                     }
                 }
             }
@@ -770,8 +814,16 @@ int main(){
     */
 
     string operation = "-i*e^(i*2)";
-    calculus_tree<complex<long double>> tree(operation);
+    calculus_tree<complex<long double>> tree("x^2+2*x+1");
+
+    calculus_tree<complex<long double>> t2;
+
+    t2.set_exp(operation);
+
     cout<<tree;
+    cout<<t2;
+
+
     cout<<endl<<tree.evaluate_at("x=0.555");
         system("pause");
         return 0 ;
