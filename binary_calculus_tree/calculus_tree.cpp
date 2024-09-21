@@ -552,6 +552,7 @@
          }
          return -1 ;
     }
+
     template<typename DataType>
     int calculus_tree<DataType>:: is_function(node*&ptr)const{
         if(ptr){
@@ -641,6 +642,7 @@
             #endif
         }
     }
+
     template<typename DataType>
     string calculus_tree<DataType>::eval_extract(const string&expression,unsigned int &start){
         string var="";
@@ -652,6 +654,7 @@
         }
         return var ;
     }
+
     template<typename DataType>
     DataType calculus_tree<DataType>::evaluate_at(string vars_equal){
         if(root){
@@ -684,6 +687,7 @@
         }
         return 0 ;
     }
+
     template<typename DataType>
     DataType calculus_tree<DataType>::evaluate_operator(char op,const DataType&left_operand,const DataType&right_operand){
        switch(op){
@@ -777,7 +781,235 @@
         }
         return 0;
     }
-    
+
+
+
+    template<typename DataType>
+    string calculus_tree<DataType>::simplify_mult(const string&v1,const string &v2){
+        if(v1=="0"){
+            return "0";
+        }
+        else if(v2=="0"){
+            return "0";
+        }
+        else{
+            return "("+v1+")*("+v2+")";
+        }
+    }
+
+    template<typename DataType>
+    string calculus_tree<DataType>::simplify_div(const string&v1,const string &v2){
+        if(v1=="0"&&v2=="0"){
+            return "nan";
+        }
+        else if(v1=="0"){
+            return "0";
+        }
+        else if(v2=="0"){
+            return "inf";
+        }
+        return "(("+v1+")/("+v2+"))";
+    }
+
+    template<typename DataType>
+    string calculus_tree<DataType>::simplify_add(const string&v1,const string &v2){
+        if(v1=="0"&&v2=="0"){
+            return "0";
+        }
+        else if(v1=="0"){
+            return "("+v2+")";
+        }
+        else if(v2=="0"){
+            return "("+v1+")";
+        }
+        return "(("+v1+")+("+v2+"))";
+    }
+
+    template<typename DataType>
+    string calculus_tree<DataType>::simplify_sub(const string&v1,const string &v2){
+        if(v1=="0"&&v2=="0"){
+            return "0";
+        }
+        else if(v1=="0"){
+            return "(-1*("+v2+"))";
+        }
+        else if(v2=="0"){
+            return "("+v1+")";
+        }
+        return "(("+v1+")-("+v2+"))";
+    }
+
+    template<typename DataType>
+    string calculus_tree<DataType>::diff_plus_minus(node*ptr,const string&var){
+        string left_prime =diff(ptr->left,var) ;
+        string right_prime =diff(ptr->right,var) ;
+        if(ptr->symbol=="-"){
+            return simplify_sub(left_prime,right_prime);
+        }
+        else{
+            return simplify_add(left_prime,right_prime);
+        }
+    }
+
+    template<typename DataType>
+    string calculus_tree<DataType>::diff_mult(node*ptr,const string&var){
+        string left =expression(ptr->left);
+        string left_prime = diff(ptr->left,var);
+
+        string right =expression(ptr->right);
+        string right_prime =diff(ptr->right,var);
+
+        left = simplify_mult(left,right_prime);
+        right = simplify_mult(right,left_prime);
+
+        return simplify_add(left,right);
+    }
+
+    template<typename DataType>
+    string calculus_tree<DataType>::diff_div(node*ptr,const string&var){
+        string right =expression(ptr->right);
+        if(right!="0"){
+            string left_prime = diff(ptr->left,var);
+            //-
+            string left =expression(ptr->left);
+            string right_prime =diff(ptr->right,var);
+
+            left_prime = simplify_mult(left,right_prime);
+            right_prime = simplify_mult(right,left_prime);
+            return simplify_div(simplify_sub(left_prime,right_prime),"("+right+")^2");
+        }
+        return "inf";
+    }
+
+    template<typename DataType>
+    string calculus_tree<DataType>::diff_op(node*ptr,const string&var){
+        switch(ptr->symbol[0]){
+            case '+': return diff_plus_minus(ptr,var);
+            case '-': return diff_plus_minus(ptr,var);
+            case '*': return diff_mult(ptr,var);
+            case '/': return diff_div(ptr,var) ;
+            //we'll see for ^ later
+            case '^':{
+                if(is_num(ptr->right->symbol)){
+                    long double  exponent = stold(ptr->right->symbol);
+
+                    if(exponent==0){
+                        return "0" ;
+                    }
+                    else if(exponent==1){
+                        return "(" + diff(ptr->left,var) + ")";
+                    }
+                    else{
+                        return "(("+ptr->right->symbol+"*"+diff(ptr->left,var)+"*"+expression(ptr->left)+"^"+to_string(exponent-1)+"))";
+                    }
+                }
+                else{
+                    //f'= f*(right*(left'/left) +ln(left)*right')
+                    // Assuming ptr->left corresponds to g(x) and ptr->right corresponds to h(x)
+                string left_f = expression(ptr->left);
+                string right_f = expression(ptr->right);
+                string left_f_prime = diff(ptr->left,var);
+                string right_f_prime = diff(ptr->right,var);
+
+                return "((" + left_f + "^" + right_f + ")*(" + right_f + "*(" + left_f_prime + "/" + left_f + ") + ln(" + left_f + ")*" + right_f_prime + "))";
+                }
+            }
+        }
+    }
+
+
+    template<typename DataType>
+    string calculus_tree<DataType>::diff_function(const int fn,node*ptr,const string&var ){
+        switch(fn){
+            case EXP: return "("+diff(ptr->left,var)+")*("+expression(ptr)+")";
+            case LN: return  "("+diff(ptr->left,var)+")/"+expression(ptr->left);
+            case SIN: return "("+diff(ptr->left,var)+")*cos"+expression(ptr->left);
+            case COS: return "-1*("+diff(ptr->left,var)+")*sin("+expression(ptr->left)+")";
+            case TAN:   {
+                string inner = expression(ptr->left);
+                return "("+diff(ptr->left,var)+")*(sec"+inner+"^2)" ;
+            }
+            case SEC: {
+                string inner = expression(ptr->left);
+                return "("+diff(ptr->left,var)+")*(sec"+inner+"*tan"+inner+")" ;
+            }
+            case CSC:{
+                string inner = expression(ptr->left);
+                return "-1*("+diff(ptr->left,var)+")*(csc"+inner+"*cotan"+inner+")" ;
+            }
+            case COTAN: {
+                string inner = expression(ptr->left);
+                return "-1*("+diff(ptr->left,var)+")*(cotan"+inner+"^2)" ;
+            }
+            case SQRT: {
+                string inner = expression(ptr->left);
+                return  "-0.5*"+diff(ptr->left,var)+inner+"^-1.5";
+            }
+            case ABS : {
+                //assuming it's >0
+                return diff(ptr->left,var);
+            }
+            //f'(x) = g'(x) / (g(x) * ln(b))
+
+            case LOG : return  "("+diff(ptr->left,var)+")/("+expression(ptr->left)+"*ln"+ptr->symbol.substr(3)+")";
+
+            case ASIN: return "(" + diff(ptr->left,var) + ")/sqrt(1-"+expression(ptr->left)+"^2";
+
+            case ACOS: return "-1*(" + diff(ptr->left,var) + ")/sqrt(1-("+expression(ptr->left)+")^2)";
+            case ATAN: return "("+diff(ptr->left,var) + ")/(1+("+expression(ptr->left) +")^2)";
+            case SINH: return "("+diff(ptr->left,var) + ")*cosh(" + expression(ptr->left) + ")";
+            case COSH: return "("+diff(ptr->left,var) + ")*sinh(" + expression(ptr->left) + ")";
+            case TANH: return "("+diff(ptr->left,var) + ")*(1-tanh(" + expression(ptr->left) + ")^2)";
+            case ASINH: return "("+diff(ptr->left,var) + ")*(1/sqrt(" + expression(ptr->left) + "^2+1))";
+            case ACOSH: return "("+diff(ptr->left,var) + ")*(1/sqrt(" + expression(ptr->left) + "^2-1))";
+            case ATANH: return "("+diff(ptr->left,var) + ")*(1/(1-" + expression(ptr->left) + "^2))";
+            case IMG : return "img"+diff(ptr->left,var) ;
+        }
+    }
+
+
+    template<typename DataType>
+    string calculus_tree<DataType>::diff(node*ptr,const string&var){
+        if(root){
+            if(ptr==NULL){
+                ptr= root ;
+            }
+            if(ptr->left||ptr->right){
+                if(is_op(ptr->symbol,0)){
+                    return diff_op(ptr,var);
+                }
+                else {
+                    int fn_code = is_function(ptr);
+                    if(fn_code!=-1){
+                        return diff_function(fn_code,ptr,var);
+                    }
+                }
+            }
+            else{
+                if(is_num(ptr->symbol)||var!=ptr->symbol){
+                    return "0";
+                }
+                else{
+                    return "1"  ;
+                }
+            }
+        }
+        else{
+            return "0" ;
+        }
+    }
+
+    template<typename DataType>
+    calculus_tree<DataType> calculus_tree<DataType>::diff_with(const string&variable){
+        unsigned int st = 0 ;
+        if(root==NULL){
+            string str ="0";
+            return calculus_tree(str) ;
+        }
+        else{
+            return calculus_tree(diff(root,variable));
+        }
+    }
 
 #include <chrono>
 int main(){
@@ -813,18 +1045,12 @@ int main(){
 
     */
 
-    string operation = "-i*e^(i*2)";
-    calculus_tree<complex<long double>> tree("x^2+2*x+1");
-
-    calculus_tree<complex<long double>> t2;
-
-    t2.set_exp(operation);
-
-    cout<<tree;
-    cout<<t2;
+    string operation = "sin(x^(x+1))";
+    calculus_tree<complex<long double>> tree(operation);
+    string var = "x";
+    cout<<tree.diff(NULL,var);
 
 
-    cout<<endl<<tree.evaluate_at("x=0.555");
-        system("pause");
-        return 0 ;
+    cout<<endl;
+    system("pause");
 }
