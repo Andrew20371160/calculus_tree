@@ -59,7 +59,7 @@ i is treated as a constant so you must do this -> expresiion*i or i* expression
         I,
         LOG,
         PI,
-        E,
+        E
     };
     const string key_words[keyword_count]={"sqrt","abs","sin","cos","tan",
                                             "sec","csc","cotan","asin","acos",
@@ -168,6 +168,7 @@ class calculus_tree
         void var_op_func(const string&op,const string&var,node*&last_op,node*&ret_root);
         DataType evaluate_operator(char op,const DataType&left_operand,const DataType&right_operand);
 
+
         DataType evaluate_constant(node*);
         bool is_num(const string &var);
         /*
@@ -179,11 +180,20 @@ class calculus_tree
 
         DataType evaluate(node*ptr,const list<string>&vars_and_values);
 
-        string diff(node*ptr,const string&var);
+        string diff_function(const int fn,node*ptr,const string&var );
+        string diff_op(node*ptr,const string&var);
 
 
         string eval_extract(const string&,unsigned int &start);
         node * copy_tree(node*);
+
+        string simplify_add(const string&v1,const string &v2);
+        string simplify_sub(const string&v1,const string &v2);
+        string simplify_mult(const string&v1,const string &v2);
+        string simplify_div(const string&v1,const string &v2);
+        string diff_plus_minus(node*ptr,const string&var);
+        string diff_mult(node*ptr,const string&var);
+        string diff_div(node*ptr,const string&var);
 
     public:
         calculus_tree(void);
@@ -195,9 +205,11 @@ class calculus_tree
 
         void set_exp(const string &expression);
 
+        string diff(node*ptr,const string&var);
+
         bool remove_tree(void);
 
-        calculus_tree diff_with(const string&variable)const;
+        calculus_tree diff_with(const string&variable);
 
         string integrate(void)const;
         void print(node*ptr = NULL)const;
