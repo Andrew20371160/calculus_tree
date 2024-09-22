@@ -110,6 +110,10 @@ i is treated as a constant so you must do this -> expresiion*i or i* expression
 
 
 
+    template<typename T>
+    ostream& operator<<(ostream& stream, const set<T>& mySet) ;
+    template<typename T>
+    ostream& operator<<(ostream& stream, const list<T>& mySet) ;
 
 
 
@@ -216,17 +220,14 @@ class calculus_tree
 
         list<calculus_tree> gradient(void);
 
-        set<string> independent_variables(void);
+        calculus_tree divergence(list<calculus_tree<DataType>>&gradient_field);
+        calculus_tree laplacian(void);
 
+        set<string> independent_variables(void);
 
         string integrate(void)const;
         void print(node*ptr = NULL)const;
         string expression(node*ptr = NULL)const;
-        friend ostream& operator<<(ostream& os, const calculus_tree& obj) {
-
-            os << obj.expression();
-            return os;
-        }
         /*
         if the tree contains variables like x ,y,c1,v2....
         and you want to evaluate the tree
@@ -235,7 +236,11 @@ class calculus_tree
         evaluate_at
         */
         DataType evaluate_at(string vars_equal="");
+        friend ostream& operator<<(ostream& os, const calculus_tree& obj) {
 
+                os << obj.expression();
+                return os;
+        }
 };
 
 
