@@ -1,6 +1,26 @@
 #include "calculus_tree.h"
 
 
+    template<typename T>
+    ostream& operator<<(ostream& stream, const set<T>& mySet) {
+        stream << '{';
+        for(typename set<T>::const_iterator it = mySet.begin(); it != mySet.end(); ++it) {
+            stream << *it << ' ';
+        }
+        stream << '}';
+        return stream;
+    }
+
+    template<typename T>
+    ostream& operator<<(ostream& stream, const list<T>& mySet) {
+        stream << '<';
+        for(typename list<T>::const_iterator it = mySet.begin(); it != mySet.end(); ++it) {
+            stream << *it <<"\n,";
+        }
+        stream << '>';
+        return stream;
+    }
+
     node * node::get_node(const string &symbol){
         node*ret_node = NULL;
         ret_node = new node ;
@@ -583,7 +603,7 @@
         return NULL;
     }
     /*
-    some evaluation functions
+    evaluation functions
     */
     template<typename DataType>
     bool calculus_tree<DataType>::is_num(const string &var){
@@ -1017,6 +1037,50 @@
             }
         }
     }
+    template<typename DataType>
+    void calculus_tree<DataType>::independent_variables_tour(node*ptr,set<string>&ret_set){
+        if(ptr){
+           if(ptr->left){
+                independent_variables_tour(ptr->left,ret_set);
+           }
+           if(ptr->right){
+                independent_variables_tour(ptr->right,ret_set);
+           }
+           if(ptr->left==NULL&&ptr->right==NULL){
+                if(!is_num(ptr->symbol)){
+                    ret_set.insert(ptr->symbol);
+                }
+           }
+        }
+    }
+
+
+    template<typename DataType>
+    set<string> calculus_tree<DataType>::independent_variables(void){
+        if(root){
+            set<string>ret_set ;
+            independent_variables_tour(root,ret_set);
+            return ret_set;
+        }
+        else{
+            return set<string>();
+        }
+    }
+    template<typename DataType>
+    list<calculus_tree<DataType>> calculus_tree<DataType>::gradient(void){
+        list<calculus_tree<DataType>> gradient_vector ;
+        if(root){
+            set<string>ind_vars= independent_variables();
+            if(!ind_vars.empty()){
+                for(set<string>::iterator it = ind_vars.begin();it!=ind_vars.end();++it){
+                    gradient_vector.push_back(diff_with(*it));
+                }
+            }
+        }
+        return gradient_vector;
+
+    }
+
 
 #include <chrono>
 int main(){
@@ -1053,10 +1117,9 @@ int main(){
     string operation = "(3*x^5+sin(2*x)-4*x*log(x))^2*(e^(x^2)*tan(x))/(sqrt(x^3+5)-cos(3*x))";
     */
 
-    string operation = "(3*x^5+sin(2*x)-4*x*log10(x))^2";
+    string operation = "(3*x^5+sin(2*x)-4*x*log10(y))^2";
     calculus_tree<complex<long double>> tree(operation);
-    string var = "x";
-    cout<<tree.diff_with(var);
+    cout<<tree.gradient();
 
 
     cout<<endl;
