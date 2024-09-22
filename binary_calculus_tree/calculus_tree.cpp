@@ -377,6 +377,7 @@
                 while(start<expression.length()&&!is_op(expression,start)){
                     start++;
                 }
+
                 var = expression.substr(original_start, start - original_start);
             }
         }
@@ -736,6 +737,7 @@
         else{
             cout<<"\nUNDEFINED\n";
             cout<<ptr->symbol;
+            return 0;
         }
     }
 
@@ -796,6 +798,7 @@
                     else{
                         cout<<"\nUNDEFINED\n";
                         cout<<ptr->symbol;
+                        return 0 ;
                     }
                 }
             }
@@ -823,6 +826,7 @@
                 return calculus_tree<DataType>() ;
             }
         }
+
         template<typename DataType>
 
         calculus_tree<DataType> calculus_tree<DataType>:: operator-(const calculus_tree<DataType>&src)const {
@@ -1212,21 +1216,8 @@
     calculus_tree<DataType> calculus_tree<DataType>::divergence(list<calculus_tree<DataType>>&gradient_field){
         if(root){
             if(!gradient_field.empty()){
-                set<string>dell_operator =  gradient_field.front().gradient_field();
-                set<string>temp_set ;
-                if(dell_operator.size()<gradient_field.size()){
-                    typename list<calculus_tree<DataType>>::iterator gradient_iterator =  gradient_field.begin();
-                    ++gradient_iterator;
-                    for(;gradient_iterator!=gradient_field.end() ; ++gradient_iterator ){
-                        temp_set = *gradient_iterator ;
-                        for(set<string>::iterator set_it = temp_set.begin();set_it!=temp_set.end();++set_it){
-                            dell_operator.insert(*set_it) ;
-                        }
-                        if(dell_operator.size()==gradient_field.size()){
-                            break;
-                        }
-                    }
-                }
+                set<string>dell_operator = independent_variables(gradient_field) ;
+
                 typename list<calculus_tree<DataType>>::iterator gradient_iterator =  gradient_field.begin();
                 set<string>::iterator dell_iterator = dell_operator.begin();
 
@@ -1244,6 +1235,50 @@
         }
         return calculus_tree<DataType>();
     }
+
+    template<typename DataType>
+    set<string> calculus_tree<DataType>::independent_variables(list<calculus_tree<DataType>>&gradient_field){
+        if(gradient_field.size()){
+            set<string>dell_operator =  gradient_field.front().independent_variables();
+            set<string>temp_set ;
+            if(dell_operator.size()<gradient_field.size()){
+                typename list<calculus_tree<DataType>>::iterator gradient_iterator =  gradient_field.begin();
+                ++gradient_iterator;
+                for(;gradient_iterator!=gradient_field.end() ; ++gradient_iterator ){
+                    temp_set = *gradient_iterator ;
+                    for(set<string>::iterator set_it = temp_set.begin();set_it!=temp_set.end();++set_it){
+                        dell_operator.insert(*set_it) ;
+                    }
+                    if(dell_operator.size()==gradient_field.size()){
+                        break;
+                    }
+                }
+            }
+            return dell_operator ;
+        }
+    return set<string>() ;
+    }
+    template<typename DataType>
+    list<calculus_tree<DataType>> calculus_tree<DataType>::curl(list<calculus_tree<DataType>>&gradient_field){
+        if(gradient_field.size()==3){
+            set<DataType> dell_operator = independent_variables(gradient_field) ;
+            if(dell_operator.length()==3){
+                typename list<calculus_tree<DataType>>::iterator gradient_iterator =  gradient_field.begin();
+                set<string>::iterator dell_iterator = dell_operator.begin();
+
+                list<calculus_tree<DataType>>ret_vec ;
+
+                while(dell_iterator != dell_operator.end() && gradient_iterator != gradient_field.end()){
+                    ret_vec.push_back(diff((*gradient_iterator).root,*dell_iterator));
+                    ++dell_iterator;
+                    ++gradient_iterator;
+                }
+                return ret_vec ;
+            }
+        }
+        return list<calculus_tree<DataType>>() ;
+    }
+
 #include <chrono>
 int main(){
 
