@@ -894,7 +894,7 @@
                         return "(" + diff(ptr->left,var) + ")";
                     }
                     else{
-                        return "("+ptr->right->symbol+"*"+diff(ptr->left,var)+"*"+expression(ptr->left)+"^"+to_string(exponent-1)+")";
+                        return simplify_mult(simplify_mult(ptr->right->symbol,diff(ptr->left,var)),expression(ptr->left)+"^"+to_string(exponent-1));
                     }
                 }
                 else{
@@ -929,11 +929,11 @@
             }
             case CSC:{
                 string inner = expression(ptr->left);
-                return simplify_mult("-1",(diff(ptr->left,var),"(csc"+inner+"*"+"cotan"+inner+")")) ;
+                return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"(csc"+inner+"*"+"cotan"+inner+")")) ;
             }
             case COTAN: {
                 string inner = expression(ptr->left);
-                return simplify_mult("-1",(diff(ptr->left,var),"cotan"+inner+"^2")) ;
+                return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"cotan"+inner+"^2")) ;
             }
             case SQRT: {
                 string inner = expression(ptr->left);
@@ -945,7 +945,15 @@
             }
             //f'(x) = g'(x) / (g(x) * ln(b))
 
-            case LOG : return  simplify_div(diff(ptr->left,var),expression(ptr->left)+"*ln("+ptr->symbol.substr(3)+")");
+            case LOG : {
+                string base = ptr->symbol.substr(3);
+                if(base.length()){
+                   return  simplify_div(diff(ptr->left,var),simplify_mult(expression(ptr->left),"ln("+ptr->symbol.substr(3)+")"));
+                }
+                else{
+                    return  simplify_div(diff(ptr->left,var),simplify_mult(expression(ptr->left),"ln(10)"));
+                }
+            };
 
             case ASIN: return simplify_div(diff(ptr->left,var),"sqrt(1-"+expression(ptr->left)+"^2)");
 
@@ -1042,11 +1050,12 @@ int main(){
     f(x,y)=
     sin(acos(1/(x+5*exp(y)))^tan(ln(x^8+y^2))^cos(exp(atan(x*y)))/sec(x^4+y^3))*(asin(x+y)^3+ln(sec(5*x-4*y))-tan(cos(x^5-y^3)))/(cotan(x^6+y^6)+exp(tan(ln(x+y^2))))+log(atan(exp(x*y^2)))+sin(ln(cos(exp(x^3+y^2))))+(sec(x^2-y)*exp(cos(x*y))+ln(tan(x^4+y)))+cos(atan(x^5+y^6)+sec(3*x-2*y))*(asin(cos(x^3))+ln(sec(5*y+x^3))-tan(cos(x^5)))+exp(tan(x*ln(cos(2*y)))/(cos(x^2+y)+sec(x*y)))-sin(log(cotan(atan(2*x-y))+cos(ln(exp(x^2*y^3)))))+(sec(2*x-3*y)/tan(exp(x*y)))+cos(exp(2*atan(x^2*y)))/(ln(3*x-2*y)+tan(sec(x+y^2)))*atan(cos(log(x*exp(y^2)))+sec(cos(3*x*ln(y^3))))+exp(ln(tan(x^4-y^5)))*cos(atan(x+ln(y)))-sin(cotan(log(x^6+y^3)))*exp(sec(tan(2*x-y^2)))+cos(ln(x^2)*tan(exp(x*y^3)))/(sin(3*x^2+y^5))+exp(log(atan(x*y^4)+sec(ln(x*y^3))))*(sec(ln(3*x+y))+cos(tan(x*exp(y))))+cos(log(x+tan(exp(y*x^4)))*ln(atan(x*y)))-sin(exp(x^3)*cos(tan(x^2+y^4)))+(cos(ln(x^3*y^3))*exp(ln(cotan(x+y^2))))/(tan(log(x^2+y^2))+sec(cos(3*x*y)))+atan(log(x^2+y^6))+sec(cos(exp(atan(x+y^4))))+sin(atan(exp(x^4-y^3)))*cos(ln(cos(exp(x^2*y))))+log(cotan(atan(2*x-y^2))+sec(ln(exp(x^3+y^2))))-exp(cos(ln(tan(2*x+y)))+tan(sec(x^2+y^3)))+sin(atan(exp(x*y)))/(cos(x^5+y^5))+ln(cotan(atan(x^3+y^6)))*cos(exp(sec(tan(x^2-y^2))))+cos(ln(x^4+y^4))*exp(cotan(ln(2*x-y)))-sin(log(cotan(exp(x^5+y^3)))+sec(tan(2*x+y^6)))+tan(cos(x^6-y^4)*sec(ln(cotan(x+y^2))))/(cos(log(x^4+y^6))+exp(ln(cotan(x+y^5))))+sec(log(x^3+y^6))*cos(atan(exp(x^4+y^3)))-sin(log(cotan(atan(x^3+y^5)))+sec(cos(exp(x+y^6))))+exp(tan(log(x^5+y^2))+sec(atan(x+y^3)))
 
+    string operation = "(3*x^5+sin(2*x)-4*x*log(x))^2*(e^(x^2)*tan(x))/(sqrt(x^3+5)-cos(3*x))";
     */
 
-    string operation = "e^sin(x*(x+1))";
+    string operation = "(3*x^5+sin(2*x)-4*x*log10(x))^2";
     calculus_tree<complex<long double>> tree(operation);
-    string var = "y";
+    string var = "x";
     cout<<tree.diff_with(var);
 
 
