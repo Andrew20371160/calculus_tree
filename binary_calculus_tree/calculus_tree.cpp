@@ -1092,7 +1092,7 @@
                 typename list<calculus_tree<DataType>>::iterator gradient_iterator = gradient_field.begin();
                 string laplac_str = "";
                 while(dell_iterator != ind_vars.end() && gradient_iterator != gradient_field.end()){
-                    laplac_str += diff(*gradient_iterator->root,*dell_iterator);
+                    laplac_str += diff((*gradient_iterator).root,*dell_iterator);
                     ++dell_iterator;
                     ++gradient_iterator;
                     if(dell_iterator != ind_vars.end()){
@@ -1129,7 +1129,7 @@
 
                 string div_str = "";
                 while(dell_iterator != dell_operator.end() && gradient_iterator != gradient_field.end()){
-                    div_str += diff(*gradient_iterator->root,*dell_iterator);
+                    div_str += diff((*gradient_iterator).root,*dell_iterator);
                     ++dell_iterator;
                     ++gradient_iterator;
                     if(dell_iterator != dell_operator.end()){
@@ -1176,9 +1176,9 @@ int main(){
     string operation = "(3*x^5+sin(2*x)-4*x*log(x))^2*(e^(x^2)*tan(x))/(sqrt(x^3+5)-cos(3*x))";
     */
 
-    string operation = "(3*x^5+sin(2*x)-4*x*log10(y))^2";
+    string operation = "x^2+y^2+z^2";
     calculus_tree<complex<long double>> tree(operation);
-    cout<<tree.gradient();
+    cout<<tree.laplacian();
 
 
     cout<<endl;
