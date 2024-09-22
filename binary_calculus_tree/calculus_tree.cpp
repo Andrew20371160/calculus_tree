@@ -867,7 +867,6 @@
         string right =expression(ptr->right);
         if(right!="0"){
             string left_prime = diff(ptr->left,var);
-            //-
             string left =expression(ptr->left);
             string right_prime =diff(ptr->right,var);
 
@@ -904,9 +903,9 @@
                     // Assuming ptr->left corresponds to g(x) and ptr->right corresponds to h(x)
                     string left = expression(ptr->left);
                     string right = expression(ptr->right);
-                    string left_prime = "("+diff(ptr->left,var)+")";
-                    string right_prime = "("+diff(ptr->right,var)+")";
-                    return "(("+left+"^"+right+")*("+right+"*"+"("+left_prime+"/"+left+")"+"+ln("+left+")*"+right_prime+"))";
+                    string left_prime = diff(ptr->left,var);
+                    string right_prime = diff(ptr->right,var);
+                    return "(("+left+"^"+right+")*"+simplify_add(simplify_mult(right,simplify_div(left_prime,left)),simplify_mult("ln("+left+")",right_prime))+")";
 
                 }
             }
@@ -1040,7 +1039,7 @@ int main(){
 
     */
 
-    string operation = "sin(x^(x+1))";
+    string operation = "e^sin(x*(x+1))";
     calculus_tree<complex<long double>> tree(operation);
     string var = "x";
     cout<<tree.diff_with(var);
