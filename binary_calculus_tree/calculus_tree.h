@@ -34,7 +34,7 @@ i is treated as a constant so you must do this -> expresiion*i or i* expression
 
 #ifdef COMPLEX_MODE
     const int function_count =21 ;
-    const int keyword_count =24;
+    const int keyword_count =26;
 
     enum  {
         SQRT,
@@ -60,18 +60,20 @@ i is treated as a constant so you must do this -> expresiion*i or i* expression
         I,
         LOG,
         PI,
-        E
+        E,
+        INF_ERR,
+        NAN_ERR
     };
     const string key_words[keyword_count]={"sqrt","abs","sin","cos","tan",
                                             "sec","csc","cotan","asin","acos",
                                             "atan","exp","ln","sinh","cosh",
                                             "tanh","asinh","acosh","atanh","img",
-                                            "log","pi","e","i"};
+                                            "log","pi","e","i","inf","nan"};
 
 
 #else
     const int function_count =20 ;
-    const int keyword_count =23;
+    const int keyword_count =25;
 
     enum  {
         SQRT,
@@ -95,13 +97,15 @@ i is treated as a constant so you must do this -> expresiion*i or i* expression
         ATANH,
         LOG,
         PI,
-        E
+        E,
+        INF_ERR,
+        NAN_ERR
     };
     const string key_words[keyword_count]={"sqrt","abs","sin","cos","tan",
                                             "sec","csc","cotan","asin","acos",
                                             "atan","exp","ln","sinh","cosh",
                                             "tanh","asinh","acosh","atanh",
-                                            "log","pi","e"};
+                                            "log","pi","e","inf","nan"};
 #endif
 
 
@@ -190,7 +194,7 @@ class calculus_tree
 
 
         string eval_extract(const string&,unsigned int &start);
-        node * copy_tree(node*);
+        node * copy_tree(const node*);
 
         string simplify_add(const string&v1,const string &v2);
         string simplify_sub(const string&v1,const string &v2);
@@ -208,6 +212,13 @@ class calculus_tree
         calculus_tree(const string&expression);
         calculus_tree(const calculus_tree&);
         calculus_tree& operator=(const calculus_tree&);
+
+        calculus_tree operator+(const calculus_tree&)const ;
+        calculus_tree operator-(const calculus_tree&)const ;
+        calculus_tree operator*(const calculus_tree&)const ;
+        calculus_tree operator/(const calculus_tree&)const ;
+
+        calculus_tree operator^(const calculus_tree&)const ;
 
         ~calculus_tree();
 
