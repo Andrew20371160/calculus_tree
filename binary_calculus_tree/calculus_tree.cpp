@@ -883,7 +883,6 @@
             case '-': return diff_plus_minus(ptr,var);
             case '*': return diff_mult(ptr,var);
             case '/': return diff_div(ptr,var) ;
-            //we'll see for ^ later
             case '^':{
                 if(is_num(ptr->right->symbol)){
                     long double  exponent = stold(ptr->right->symbol);
@@ -905,7 +904,7 @@
                     string right = expression(ptr->right);
                     string left_prime = diff(ptr->left,var);
                     string right_prime = diff(ptr->right,var);
-                    return "(("+left+"^"+right+")*"+simplify_add(simplify_mult(right,simplify_div(left_prime,left)),simplify_mult("ln("+left+")",right_prime))+")";
+                    return simplify_mult("("+left+"^"+right+")",simplify_add(simplify_mult(right,simplify_div(left_prime,left)),simplify_mult("ln("+left+")",right_prime)));
 
                 }
             }
@@ -916,29 +915,29 @@
     template<typename DataType>
     string calculus_tree<DataType>::diff_function(const int fn,node*ptr,const string&var ){
         switch(fn){
-            case EXP: return "(("+diff(ptr->left,var)+")*"+expression(ptr)+")";
-            case LN: return  "(("+diff(ptr->left,var)+")/"+expression(ptr->left)+")";
-            case SIN: return "(("+diff(ptr->left,var)+")*cos"+expression(ptr->left)+")";
-            case COS: return "(-1*("+diff(ptr->left,var)+")*sin"+expression(ptr->left)+")";
+            case EXP: return simplify_mult(diff(ptr->left,var),expression(ptr));
+            case LN: return  simplify_div(diff(ptr->left,var),expression(ptr->left));
+            case SIN: return simplify_mult(diff(ptr->left,var),"cos"+expression(ptr->left));
+            case COS: return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"sin"+expression(ptr->left)));
             case TAN:   {
                 string inner = expression(ptr->left);
-                return "(("+diff(ptr->left,var)+")*sec"+inner+"^2)" ;
+                return simplify_mult(diff(ptr->left,var),"sec"+inner+"^2") ;
             }
             case SEC: {
                 string inner = expression(ptr->left);
-                return "(("+diff(ptr->left,var)+")*sec"+inner+"*tan"+inner+")" ;
+                return simplify_mult(diff(ptr->left,var),"(sec"+inner+"*tan"+inner+")") ;
             }
             case CSC:{
                 string inner = expression(ptr->left);
-                return "(-1*("+diff(ptr->left,var)+")*csc"+inner+"*cotan"+inner+")" ;
+                return simplify_mult("-1",(diff(ptr->left,var),"(csc"+inner+"*"+"cotan"+inner+")")) ;
             }
             case COTAN: {
                 string inner = expression(ptr->left);
-                return "(-1*("+diff(ptr->left,var)+")*cotan"+inner+"^2)" ;
+                return simplify_mult("-1",(diff(ptr->left,var),"cotan"+inner+"^2")) ;
             }
             case SQRT: {
                 string inner = expression(ptr->left);
-                return  "(-0.5*("+diff(ptr->left,var)+")"+inner+"^-1.5)";
+                return   simplify_mult("-0.5",simplify_mult(diff(ptr->left,var),inner+"^-1.5"));
             }
             case ABS : {
                 //assuming it's >0
@@ -946,18 +945,18 @@
             }
             //f'(x) = g'(x) / (g(x) * ln(b))
 
-            case LOG : return  "(("+diff(ptr->left,var)+")/("+expression(ptr->left)+"*ln("+ptr->symbol.substr(3)+")))";
+            case LOG : return  simplify_div(diff(ptr->left,var),expression(ptr->left)+"*ln("+ptr->symbol.substr(3)+")");
 
-            case ASIN: return "((" + diff(ptr->left,var) + ")/sqrt(1-"+expression(ptr->left)+"^2))";
+            case ASIN: return simplify_div(diff(ptr->left,var),"sqrt(1-"+expression(ptr->left)+"^2)");
 
-            case ACOS: return "(-1*(" + diff(ptr->left,var) + ")/sqrt(1-"+expression(ptr->left)+"^2))";
-            case ATAN: return "(("+diff(ptr->left,var) + ")/(1+"+expression(ptr->left) +"^2))";
-            case SINH: return "(("+diff(ptr->left,var) + ")*cosh" + expression(ptr->left) + ")";
-            case COSH: return "(("+diff(ptr->left,var) + ")*sinh" + expression(ptr->left) + ")";
-            case TANH: return "(("+diff(ptr->left,var) + ")*(1-tanh" + expression(ptr->left) + "^2))";
-            case ASINH: return "(("+diff(ptr->left,var) + ")*(1/sqrt(" + expression(ptr->left) +"^2+1)))";
-            case ACOSH: return "(("+diff(ptr->left,var) + ")*(1/sqrt(" + expression(ptr->left) + "^2-1)))";
-            case ATANH: return "(("+diff(ptr->left,var) + ")*(1/(1-" + expression(ptr->left) + "^2)))";
+            case ACOS: return simplify_mult("-1",simplify_div(diff(ptr->left,var),"sqrt(1-"+expression(ptr->left)+"^2)"));
+            case ATAN: return simplify_div(diff(ptr->left,var),"(1+"+expression(ptr->left) +"^2)");
+            case SINH: return simplify_mult(diff(ptr->left,var),"cosh" + expression(ptr->left));
+            case COSH: return simplify_mult(diff(ptr->left,var),"sinh" + expression(ptr->left));
+            case TANH: return simplify_mult(diff(ptr->left,var),"(1-tanh" + expression(ptr->left) + "^2)");
+            case ASINH: return simplify_mult(diff(ptr->left,var),"(1/sqrt(" + expression(ptr->left) +"^2+1))");
+            case ACOSH: return simplify_mult(diff(ptr->left,var),"(1/sqrt(" + expression(ptr->left) + "^2-1))");
+            case ATANH: return simplify_mult(diff(ptr->left,var),"(1/(1-" + expression(ptr->left) + "^2))");
             case IMG : return "img("+diff(ptr->left,var)+")" ;
         }
     }
@@ -1001,7 +1000,13 @@
             return calculus_tree(str) ;
         }
         else{
-            return calculus_tree(diff(root,variable));
+            unsigned int temp_start =0;
+            if(variable.length()&&!is_num(variable)&&!is_op(variable,temp_start)){
+                return calculus_tree(diff(root,variable));
+            }
+            else{
+                cout<<"\nCan't differentiate with respect to : "<<variable<<"\n";
+            }
         }
     }
 
@@ -1041,7 +1046,7 @@ int main(){
 
     string operation = "e^sin(x*(x+1))";
     calculus_tree<complex<long double>> tree(operation);
-    string var = "x";
+    string var = "y";
     cout<<tree.diff_with(var);
 
 
