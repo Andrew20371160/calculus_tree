@@ -231,6 +231,9 @@ class calculus_tree
 
         list<calculus_tree> gradient(void);
 
+        list<calculus_tree<DataType>> curl(list<calculus_tree<DataType>>&gradient_field);
+        set<string> independent_variables(list<calculus_tree<DataType>>&gradient_field);
+
         calculus_tree divergence(list<calculus_tree<DataType>>&gradient_field);
         calculus_tree laplacian(void);
 
