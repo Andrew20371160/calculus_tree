@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <queue>
+#include <set>
 #include <stack>
 #include <list>
 #include <math.h>
@@ -196,6 +197,8 @@ class calculus_tree
         string diff_div(node*ptr,const string&var);
         string diff(node*ptr,const string&var);
 
+        void independent_variables_tour(node*ptr,set<string>&ret_set);
+
     public:
         calculus_tree(void);
         calculus_tree(const string&expression);
@@ -210,6 +213,11 @@ class calculus_tree
         bool remove_tree(void);
 
         calculus_tree diff_with(const string&variable);
+
+        list<calculus_tree> gradient(void);
+
+        set<string> independent_variables(void);
+
 
         string integrate(void)const;
         void print(node*ptr = NULL)const;
