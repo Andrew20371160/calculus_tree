@@ -194,6 +194,7 @@ class calculus_tree
         string diff_plus_minus(node*ptr,const string&var);
         string diff_mult(node*ptr,const string&var);
         string diff_div(node*ptr,const string&var);
+        string diff(node*ptr,const string&var);
 
     public:
         calculus_tree(void);
@@ -205,7 +206,6 @@ class calculus_tree
 
         void set_exp(const string &expression);
 
-        string diff(node*ptr,const string&var);
 
         bool remove_tree(void);
 
