@@ -1,6 +1,7 @@
 #include "calculus_tree.h"
 
 
+
     template<typename T>
     ostream& operator<<(ostream& stream, const set<T>& mySet) {
         stream << '{';
@@ -1066,22 +1067,80 @@
             return set<string>();
         }
     }
+
     template<typename DataType>
     list<calculus_tree<DataType>> calculus_tree<DataType>::gradient(void){
-        list<calculus_tree<DataType>> gradient_vector ;
+        list<calculus_tree<DataType>> gradient_field ;
         if(root){
             set<string>ind_vars= independent_variables();
             if(!ind_vars.empty()){
                 for(set<string>::iterator it = ind_vars.begin();it!=ind_vars.end();++it){
-                    gradient_vector.push_back(diff_with(*it));
+                    gradient_field.push_back(diff_with(*it));
                 }
             }
         }
-        return gradient_vector;
-
+        return gradient_field;
     }
 
+    template<typename DataType>
+    calculus_tree<DataType> calculus_tree<DataType>::laplacian(void){
+        if(root){
+            set<string> ind_vars = independent_variables();
+            if(!ind_vars.empty()){
+                list<calculus_tree<DataType>> gradient_field = gradient();
+                set<string>::iterator dell_iterator = ind_vars.begin();
+                typename list<calculus_tree<DataType>>::iterator gradient_iterator = gradient_field.begin();
+                string laplac_str = "";
+                while(dell_iterator != ind_vars.end() && gradient_iterator != gradient_field.end()){
+                    laplac_str += diff(*gradient_iterator->root,*dell_iterator);
+                    ++dell_iterator;
+                    ++gradient_iterator;
+                    if(dell_iterator != ind_vars.end()){
+                        laplac_str += "+";
+                    }
+                }
+                return calculus_tree(laplac_str);
+            }
+        }
+        return calculus_tree<DataType>();
+    }
 
+    template<typename DataType>
+    calculus_tree<DataType> calculus_tree<DataType>::divergence(list<calculus_tree<DataType>>&gradient_field){
+        if(root){
+            if(!gradient_field.empty()){
+                set<string>dell_operator =  gradient_field.front().gradient_field();
+                set<string>temp_set ;
+                if(dell_operator.size()<gradient_field.size()){
+                    typename list<calculus_tree<DataType>>::iterator gradient_iterator =  gradient_field.begin();
+                    ++gradient_iterator;
+                    for(;gradient_iterator!=gradient_field.end() ; ++gradient_iterator ){
+                        temp_set = *gradient_iterator ;
+                        for(set<string>::iterator set_it = temp_set.begin();set_it!=temp_set.end();++set_it){
+                            dell_operator.insert(*set_it) ;
+                        }
+                        if(dell_operator.size()==gradient_field.size()){
+                            break;
+                        }
+                    }
+                }
+                typename list<calculus_tree<DataType>>::iterator gradient_iterator =  gradient_field.begin();
+                set<string>::iterator dell_iterator = dell_operator.begin();
+
+                string div_str = "";
+                while(dell_iterator != dell_operator.end() && gradient_iterator != gradient_field.end()){
+                    div_str += diff(*gradient_iterator->root,*dell_iterator);
+                    ++dell_iterator;
+                    ++gradient_iterator;
+                    if(dell_iterator != dell_operator.end()){
+                        div_str += "+";
+                    }
+                }
+                return calculus_tree(div_str);
+            }
+        }
+        return calculus_tree<DataType>();
+    }
 #include <chrono>
 int main(){
 
