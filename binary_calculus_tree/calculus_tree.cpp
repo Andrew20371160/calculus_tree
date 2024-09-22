@@ -180,7 +180,7 @@
     }
 
     template<typename DataType>
-    node * calculus_tree<DataType>::copy_tree(node*src_root){
+    node * calculus_tree<DataType>::copy_tree(const node*src_root){
         if(src_root){
             node *ret_root = NULL ;
              ret_root = ret_root->get_node(src_root->symbol);
@@ -803,7 +803,110 @@
         return 0;
     }
 
+        template<typename DataType>
 
+        calculus_tree<DataType> calculus_tree<DataType>:: operator+(const calculus_tree<DataType>&src)const{
+            if(root&&src.root){
+                calculus_tree<DataType>ret_tree = *this ;
+                ret_tree.root->append_parent("+");
+                ret_tree.root->append_next(src);
+                ret_tree.root = root->parent;
+                return ret_tree ;
+            }
+            else if(root){
+                return *this ;
+            }
+            else if(src.root){
+                return src ;
+            }
+            else{
+                return calculus_tree<DataType>() ;
+            }
+        }
+        template<typename DataType>
+
+        calculus_tree<DataType> calculus_tree<DataType>:: operator-(const calculus_tree<DataType>&src)const {
+            if(root&&src.root){
+                calculus_tree<DataType>ret_tree = *this ;
+                ret_tree.root->append_parent("-");
+                ret_tree.root->append_next(src);
+                ret_tree.root = root->parent;
+                return ret_tree ;
+            }
+            else if(root){
+                return *this ;
+            }
+            else if(src.root){
+                calculus_tree<DataType> ret_tree ;
+                node *ret_root=ret_root->get_node("*");
+                ret_root->append_child("-1");
+                ret_root->right = src.copy_tree(src.root);
+                ret_tree.root =ret_root ;
+                return ret_tree;
+            }
+            else{
+                return calculus_tree<DataType>() ;
+            }
+        }
+        template<typename DataType>
+        calculus_tree<DataType> calculus_tree<DataType>:: operator*(const calculus_tree<DataType>&src)const {
+            if(root&&src.root){
+                calculus_tree<DataType>ret_tree = *this ;
+                ret_tree.root->append_parent("*");
+                ret_tree.root->append_next(src);
+                ret_tree.root = root->parent;
+                return ret_tree;
+            }
+            else{
+                return calculus_tree<DataType>() ;
+            }
+        }
+        template<typename DataType>
+
+        calculus_tree<DataType> calculus_tree<DataType>:: operator/(const calculus_tree<DataType>&src)const {
+            if(root&&src.root){
+                calculus_tree<DataType>ret_tree = *this ;
+                ret_tree.root->append_parent("/");
+                ret_tree.root->append_next(src);
+                ret_tree.root = root->parent;
+                return ret_tree;
+            }
+            else if(root){
+                return calculus_tree<DataType>("inf");
+            }
+            else if(src.root){
+                return calculus_tree<DataType>("0");
+            }
+            else{
+                return calculus_tree<DataType>("nan");
+            }
+        }
+        template<typename DataType>
+
+        calculus_tree<DataType> calculus_tree<DataType>:: operator^(const calculus_tree<DataType>&src)const {
+             if(root&&src.root){
+                calculus_tree<DataType>ret_tree = *this ;
+                ret_tree.root->append_parent("^");
+                ret_tree.root->append_next(src);
+                ret_tree.root = root->parent;
+                return ret_tree;
+            }
+            else if(root){
+                if(stold(root->symbol)!=0){
+                    return calculus_tree<DataType>("1");
+                }
+                return calculus_tree<DataType>("nan");
+            }
+            else if(src.root){
+                if(stold(src.root->symbol)!=0){
+                    return calculus_tree<DataType>("0");
+                    }
+                    return calculus_tree<DataType>("nan");
+                }
+            else{
+                return calculus_tree<DataType>("nan");
+            }
+        }
 
     template<typename DataType>
     string calculus_tree<DataType>::simplify_mult(const string&v1,const string &v2){
