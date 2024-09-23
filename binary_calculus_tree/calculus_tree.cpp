@@ -1045,26 +1045,33 @@
         switch(fn){
             case EXP: return simplify_mult(diff(ptr->left,var),expression(ptr));
             case LN: return  simplify_div(diff(ptr->left,var),expression(ptr->left));
-            case SIN: return simplify_mult(diff(ptr->left,var),"cos"+expression(ptr->left));
-            case COS: return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"sin"+expression(ptr->left)));
+            case SIN: {
+                string inner = "("+expression(ptr->left)+")";
+
+                return simplify_mult(diff(ptr->left,var),"cos"+inner);
+            }
+            case COS:{
+                string inner = "("+expression(ptr->left)+")";
+                return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"sin"+inner));
+            }
             case TAN:   {
-                string inner = expression(ptr->left);
+                string inner = "("+expression(ptr->left)+")";
                 return simplify_mult(diff(ptr->left,var),"sec"+inner+"^2") ;
             }
             case SEC: {
-                string inner = expression(ptr->left);
+                string inner = "("+expression(ptr->left)+")";
                 return simplify_mult(diff(ptr->left,var),"(sec"+inner+"*tan"+inner+")") ;
             }
             case CSC:{
-                string inner = expression(ptr->left);
+                string inner = "("+expression(ptr->left)+")";
                 return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"(csc"+inner+"*"+"cotan"+inner+")")) ;
             }
             case COTAN: {
-                string inner = expression(ptr->left);
+                string inner = "("+expression(ptr->left)+")";
                 return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"cotan"+inner+"^2")) ;
             }
             case SQRT: {
-                string inner = expression(ptr->left);
+                string inner = "("+expression(ptr->left)+")";
                 return   simplify_mult("-0.5",simplify_mult(diff(ptr->left,var),inner+"^-1.5"));
             }
             case ABS : {
@@ -1312,11 +1319,14 @@ int main(){
     sin(acos(1/(x+5*exp(y)))^tan(ln(x^8+y^2))^cos(exp(atan(x*y)))/sec(x^4+y^3))*(asin(x+y)^3+ln(sec(5*x-4*y))-tan(cos(x^5-y^3)))/(cotan(x^6+y^6)+exp(tan(ln(x+y^2))))+log(atan(exp(x*y^2)))+sin(ln(cos(exp(x^3+y^2))))+(sec(x^2-y)*exp(cos(x*y))+ln(tan(x^4+y)))+cos(atan(x^5+y^6)+sec(3*x-2*y))*(asin(cos(x^3))+ln(sec(5*y+x^3))-tan(cos(x^5)))+exp(tan(x*ln(cos(2*y)))/(cos(x^2+y)+sec(x*y)))-sin(log(cotan(atan(2*x-y))+cos(ln(exp(x^2*y^3)))))+(sec(2*x-3*y)/tan(exp(x*y)))+cos(exp(2*atan(x^2*y)))/(ln(3*x-2*y)+tan(sec(x+y^2)))*atan(cos(log(x*exp(y^2)))+sec(cos(3*x*ln(y^3))))+exp(ln(tan(x^4-y^5)))*cos(atan(x+ln(y)))-sin(cotan(log(x^6+y^3)))*exp(sec(tan(2*x-y^2)))+cos(ln(x^2)*tan(exp(x*y^3)))/(sin(3*x^2+y^5))+exp(log(atan(x*y^4)+sec(ln(x*y^3))))*(sec(ln(3*x+y))+cos(tan(x*exp(y))))+cos(log(x+tan(exp(y*x^4)))*ln(atan(x*y)))-sin(exp(x^3)*cos(tan(x^2+y^4)))+(cos(ln(x^3*y^3))*exp(ln(cotan(x+y^2))))/(tan(log(x^2+y^2))+sec(cos(3*x*y)))+atan(log(x^2+y^6))+sec(cos(exp(atan(x+y^4))))+sin(atan(exp(x^4-y^3)))*cos(ln(cos(exp(x^2*y))))+log(cotan(atan(2*x-y^2))+sec(ln(exp(x^3+y^2))))-exp(cos(ln(tan(2*x+y)))+tan(sec(x^2+y^3)))+sin(atan(exp(x*y)))/(cos(x^5+y^5))+ln(cotan(atan(x^3+y^6)))*cos(exp(sec(tan(x^2-y^2))))+cos(ln(x^4+y^4))*exp(cotan(ln(2*x-y)))-sin(log(cotan(exp(x^5+y^3)))+sec(tan(2*x+y^6)))+tan(cos(x^6-y^4)*sec(ln(cotan(x+y^2))))/(cos(log(x^4+y^6))+exp(ln(cotan(x+y^5))))+sec(log(x^3+y^6))*cos(atan(exp(x^4+y^3)))-sin(log(cotan(atan(x^3+y^5)))+sec(cos(exp(x+y^6))))+exp(tan(log(x^5+y^2))+sec(atan(x+y^3)))
 
     string operation = "(3*x^5+sin(2*x)-4*x*log(x))^2*(e^(x^2)*tan(x))/(sqrt(x^3+5)-cos(3*x))";
+        string operation = "e^(cos(x)*ln(x^2)-sin(x^2)/tan(x))^3+(x^5/(2+cos(x)))-sqrt(3*x^4)+(2^x/(1+x^2))*(ln(x)-x^3)";
+
     */
 
-    string operation = "x^2+y^2+z^2";
+    string operation = "e^(cos(x)*ln(x^2)-sin(x^2)/tan(x))^3+(x^5/(2+cos(x)))-sqrt(3*x^4)+(2^x/(1+x^2))*(ln(x)-x^3)";
     calculus_tree<complex<long double>> tree(operation);
-    cout<<tree.laplacian();
+    //cout<<tree;
+    cout<<tree.diff_with("x");
 
 
     cout<<endl;
