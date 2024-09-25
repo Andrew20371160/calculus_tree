@@ -648,6 +648,14 @@
         }
         return false ;
     }
+    template<typename DataType>
+    bool calculus_tree<DataType>::is_constant(const string &var){
+        if(var.length()){
+            return (var=="e"||var=="i"||var=="pi"||is_num(var));
+        }
+        return false ;
+    }
+
 
     template<typename DataType>
     DataType calculus_tree<DataType>::evaluate_function(const int fn,const DataType var, const  DataType base) {
@@ -751,7 +759,7 @@
             }
         #endif
         else{
-            cout<<ptr->symbol<<" is the issue";
+            cout<<endl<<ptr->symbol<<" is the issue";
             return 0;
         }
     }
@@ -996,11 +1004,13 @@
 
     template<typename DataType>
     string calculus_tree<DataType>::diff_mult(node*ptr,const string&var){
+        //3*expression
+        //3*expression'+expression*0
+        //expression*3
         string left =expression(ptr->left);
-        string left_prime = diff(ptr->left,var);
-
         string right =expression(ptr->right);
         string right_prime =diff(ptr->right,var);
+        string left_prime = diff(ptr->left,var);;
 
         return simplify_add(simplify_mult(left,right_prime),simplify_mult(right,left_prime));
     }
@@ -1302,8 +1312,8 @@
             ret_curl[0] = diff_with(gradient_field[2].root,independent_variables[1])
                         +"-"+diff_with(gradient_field[1].root,independent_variables[2]);
 
-            ret_curl[1] = diff_with(gradient_field[2].root,independent_variables[0])
-                        +"-"+diff_with(gradient_field[0].root,independent_variables[2]);
+            ret_curl[1] = "-1*("+diff_with(gradient_field[2].root,independent_variables[0])
+                        +"-"+diff_with(gradient_field[0].root,independent_variables[2])+")";
 
             ret_curl[2] = diff_with(gradient_field[1].root,independent_variables[0])
             +"-"+diff_with(gradient_field[0].root,independent_variables[1]);
@@ -1312,7 +1322,6 @@
         return vector<calculus_tree<DataType>>();
     }
 
-#include <algorithm>
 #include <chrono>
 int main(){
 
@@ -1358,8 +1367,13 @@ int main(){
 
     calculus_tree<long double> tree(operation),tree2;
     cout<<tree;
-    for(int i = 0 ;i<10;i++){
-       tree =tree.diff_with("x");
+
+    for(int i = 0; i < 10; i++){
+        auto start = std::chrono::high_resolution_clock::now();
+        tree = tree.diff_with("x");
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> diff = end - start;
+        std::cout << "Time taken for differentiation " << i+1 << ": " << diff.count() << " ms" << std::endl;
     }
     cout<<endl<<tree;
 
