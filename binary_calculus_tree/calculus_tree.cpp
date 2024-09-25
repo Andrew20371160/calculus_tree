@@ -1436,6 +1436,38 @@
         return vector<calculus_tree<DataType>>();
     }
 
+    template<typename DataType>
+    bool calculus_tree<DataType>::save(const string&filePath) {
+        if(root){
+            ofstream file(filePath);
+            if (file.is_open()) {
+                file << expression();
+                file.close();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    template<typename DataType>
+    bool calculus_tree<DataType>::load(const string&filePath) {
+        ifstream file(filePath);
+        if (file.is_open()) {
+            if(root){
+                remove_tree();
+            }
+            string line;
+            string expression = "";
+            while (getline(file, line)) {
+                expression += line;
+            }
+            set_exp(expression);
+            file.close();
+            return true;
+        }
+        return false;
+    }
+
 #include <chrono>
 int main(){
 
@@ -1477,21 +1509,15 @@ int main(){
     "ln(3060513257434037/1125899906842624)*((6*cos(x))/x-3*ln(x^2)*sin(x)-(6*x*cos(x^2))/tan(x)"
     "+(3*sin(x^2)*(tan(x)^2+1))/tan(x)^2)+(x^5*sin(x))/(cos(x)+2)^2-(2*3^(1/2)*x^3)/(x^4)^(1/2)+(2^x*ln(2)*(ln(x)-x^3))/(x^2+1)-(2*2^x*x*(ln(x)-x^3))/(x^2+1)^2";
     */
-    string operation ="e^(cos(x)*ln(x^2)-sin(x^2)/tan(x))^3+(x^5/(2+cos(x)))-sqrt(3*x^4)+(2^x/(1+x^2))*(ln(x)-x^3)";
+    string operation ="e^(cos(x)*ln(x^2)-sin(x^2)/tan(x))^3";
 
     calculus_tree<long double> tree(operation),tree2;
-
+    int i =0 ;
     for(int i = 0; i < 10; i++){
-        auto start = std::chrono::high_resolution_clock::now();
-
+        string filePath = "E:\\pythonProject\\mathematical tree\\file" + to_string(i) + ".txt";
         tree = tree.diff_with("x");
-
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double, std::milli> diff_time = end - start;
-
-        cout << "Time taken for differentiation "<<i<<" :" << diff_time.count() << " ms" << endl;
+        tree.save(filePath);
     }
-
     cout<<endl<<tree.diff_with("x").evaluate_at("x=3");
 
 
