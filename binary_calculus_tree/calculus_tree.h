@@ -11,6 +11,8 @@
 #include <cmath>
 #include <complex>
 #include <string>
+#include <fstream>
+
 using namespace std ;
 
 
@@ -241,6 +243,8 @@ class calculus_tree
         vector<string> independent_variables(void);
         bool is_constant(const string &var);
         bool is_constant(node*ptr);
+        bool load(const string&filePath);
+        bool save(const string&filePath);
 
         string integrate(void)const;
         void print(node*ptr = NULL)const;
