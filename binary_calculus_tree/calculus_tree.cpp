@@ -656,6 +656,14 @@
         return false ;
     }
 
+    template<typename DataType>
+    bool calculus_tree<DataType>::is_constant(node*ptr){
+        if(ptr){
+            return (ptr->symbol=="e"||ptr->symbol=="i"||ptr->symbol=="pi"||is_num(ptr->symbol));
+        }
+        return false ;
+    }
+
 
     template<typename DataType>
     DataType calculus_tree<DataType>::evaluate_function(const int fn,const DataType var, const  DataType base) {
@@ -1001,34 +1009,42 @@
             return simplify_add(left_prime,right_prime);
         }
     }
-
     template<typename DataType>
-    string calculus_tree<DataType>::diff_mult(node*ptr,const string&var){
-        //3*expression
-        //3*expression'+expression*0
-        //expression*3
-        string left =expression(ptr->left);
-        string right =expression(ptr->right);
-        string right_prime =diff(ptr->right,var);
-        string left_prime = diff(ptr->left,var);;
+    string calculus_tree<DataType>::diff_mult(node* ptr, const string& var) {
+        string left = "0";
+        string right = "0";
+        string right_prime = "0";
+        string left_prime = "0";
 
-        return simplify_add(simplify_mult(left,right_prime),simplify_mult(right,left_prime));
+        if (is_function(ptr->left->symbol,0) || (ptr->left->symbol == var)) {
+            left_prime = diff(ptr->left, var);
+            right = expression(ptr->right);
+        }
+        if (is_function(ptr->right->symbol,0)||(ptr->right->symbol==var)) {
+            right_prime = diff(ptr->right, var);
+            left = expression(ptr->left);
+        }
+        return simplify_add(simplify_mult(left, right_prime), simplify_mult(right, left_prime));
     }
+
 
     template<typename DataType>
     string calculus_tree<DataType>::diff_div(node*ptr,const string&var){
-        string right =expression(ptr->right);
-        if(right!="0"){
-            //f =left/right
-            //f' = (right*left'-left*right')/right^2
-            string left_prime = diff(ptr->left,var);
-            string left =expression(ptr->left);
-            string right_prime =diff(ptr->right,var);
-
-            return simplify_div(simplify_sub(simplify_mult(right,left_prime),
-                                            simplify_mult(left,right_prime)),"("+right+")^2");
+        //f =left/right
+        //f' = (right*left'-left*right')/right^2
+        string left_prime = "0";
+        string left ="0";
+        string right_prime ="0";
+        string right=expression(ptr->right) ;
+        if (is_function(ptr->left->symbol,0) || (ptr->left->symbol == var)) {
+            left_prime = diff(ptr->left, var);
         }
-        return "inf";
+        if (is_function(ptr->right->symbol,0)||(ptr->right->symbol==var)) {
+            right_prime = diff(ptr->right, var);
+            left = expression(ptr->left);
+        }
+        return simplify_div(simplify_sub(simplify_mult(right,left_prime),
+                                        simplify_mult(left,right_prime)),"("+right+")^2");
     }
 
     template<typename DataType>
@@ -1057,10 +1073,22 @@
                     //lin(f) = right*ln(left)
                     //f'/f = right*(left'/left)+in(left)*right'
                     //f' = left^right*(right*(left'/left)+in(left)*right')
-                    string left = expression(ptr->left);
-                    string right = expression(ptr->right);
-                    string left_prime = diff(ptr->left,var);
-                    string right_prime = diff(ptr->right,var);
+
+                    string left = "0";
+                    string right = "0";
+                    string left_prime = "0";
+                    string right_prime = "0";
+                    if (is_function(ptr->left->symbol,0) || (ptr->left->symbol == var)) {
+                        left_prime = diff(ptr->left, var);
+                        left = expression(ptr->left) ;
+                        right = expression(ptr->right);
+                    }
+                    if (is_function(ptr->right->symbol,0)||(ptr->right->symbol==var)) {
+                        right_prime = diff(ptr->right, var);
+                        if(!left.size()){
+                            left = expression(ptr->left);
+                        }
+                    }
                     return simplify_mult("("+left+")^("+right+")",simplify_add(
                                         simplify_mult(right,simplify_div(left_prime,left))
                                         ,simplify_mult("ln("+left+")",right_prime)));
@@ -1073,91 +1101,177 @@
     template<typename DataType>
     string calculus_tree<DataType>::diff_function(const int fn,node*ptr,const string&var ){
         switch(fn){
-            case EXP: return simplify_mult(diff(ptr->left,var),expression(ptr));
-            case LN: return  simplify_div(diff(ptr->left,var),expression(ptr->left));
+            case EXP: {
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                    return simplify_mult(diff(ptr->left,var),expression(ptr));
+                }
+                return "0";
+            }
+            case LN: {
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                    return  simplify_div(diff(ptr->left,var),expression(ptr->left));
+                }
+                return "0";
+            }
             case SIN: {
-                string inner = "("+expression(ptr->left)+")";
-                return simplify_mult(diff(ptr->left,var),"cos"+inner);
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                    string inner = "("+expression(ptr->left)+")";
+                    return simplify_mult(diff(ptr->left,var),"cos"+inner);
+                }
+                return "0";
             }
             case COS:{
-                string inner = "("+expression(ptr->left)+")";
-                return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"sin"+inner));
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                    string inner = "("+expression(ptr->left)+")";
+                    return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"sin"+inner));
+                }
+                return  "0" ;
             }
             case TAN:   {
-                string inner = "("+expression(ptr->left)+")";
-                return simplify_mult(diff(ptr->left,var),"sec"+inner+"^2") ;
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                    string inner = "("+expression(ptr->left)+")";
+                    return simplify_mult(diff(ptr->left,var),"sec"+inner+"^2") ;
+                }
+                return "0";
             }
             case SEC: {
-                string inner = "("+expression(ptr->left)+")";
-                return simplify_mult(diff(ptr->left,var),"(sec"+inner+"*tan"+inner+")") ;
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                    string inner = "("+expression(ptr->left)+")";
+                    return simplify_mult(diff(ptr->left,var),"(sec"+inner+"*tan"+inner+")") ;
+                }
+                return "0";
             }
             case CSC:{
-                string inner = "("+expression(ptr->left)+")";
-                return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"(csc"+inner+"*cotan"+inner+")")) ;
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+
+                    string inner = "("+expression(ptr->left)+")";
+                    return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"(csc"+inner+"*cotan"+inner+")")) ;
+                }
+                return "0";
             }
             case COTAN: {
-                string inner = "("+expression(ptr->left)+")";
-                return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"csc"+inner+"^2")) ;
+
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+
+                    string inner = "("+expression(ptr->left)+")";
+                    return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"csc"+inner+"^2")) ;
+                }
+                return "0";
             }
             case SQRT: {
-                string inner = "("+expression(ptr->left)+")";
-                return   simplify_mult("0.5",simplify_mult(diff(ptr->left,var),inner+"^-0.5"));
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+
+                    string inner = "("+expression(ptr->left)+")";
+                    return  simplify_mult("0.5",simplify_mult(diff(ptr->left,var),inner+"^-0.5"));
+                }
+                return "0";
             }
             case ABS : {
-                //assuming it's >0
-                return "("+diff(ptr->left,var)+")";
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+
+                    //assuming it's >0
+                    return "("+diff(ptr->left,var)+")";
+                }
+                return "0";
             }
             //f'(x) = g'(x) / (g(x) * ln(b))
 
             case LOG : {
-                string base = ptr->symbol.substr(3);
-                if(base.length()){
-                   return  simplify_div(diff(ptr->left,var),simplify_mult(expression(ptr->left),"ln("+ptr->symbol.substr(3)+")"));
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+
+                    string base = ptr->symbol.substr(3);
+                    if(base.length()){
+
+                       return  simplify_div(diff(ptr->left,var),simplify_mult(expression(ptr->left),"ln("+ptr->symbol.substr(3)+")"));
+                    }
+                    else{
+                        return  simplify_div(diff(ptr->left,var),simplify_mult(expression(ptr->left),"ln(10)"));
+                    }
                 }
-                else{
-                    return  simplify_div(diff(ptr->left,var),simplify_mult(expression(ptr->left),"ln(10)"));
-                }
+                return "0";
             }
             case ASIN:{
-                 string inner = "("+expression(ptr->left)+")";
-                 return simplify_div(diff(ptr->left,var),"sqrt(1-"+inner+"^2)");
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+
+                     string inner = "("+expression(ptr->left)+")";
+                     return simplify_div(diff(ptr->left,var),"sqrt(1-"+inner+"^2)");
+                 }
+                 return "0";
             }
             case ACOS:{
-                 string inner = "("+expression(ptr->left)+")";
-                 return simplify_mult("-1",simplify_div(diff(ptr->left,var),"sqrt(1-"+inner+"^2)"));
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+
+                     string inner = "("+expression(ptr->left)+")";
+                     return simplify_mult("-1",simplify_div(diff(ptr->left,var),"sqrt(1-"+inner+"^2)"));
+                 }
+                 return "0";
                 }
             case ATAN:{
-                string inner = "("+expression(ptr->left)+")";
-                return simplify_div(diff(ptr->left,var),"(1+"+inner+"^2)");
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+
+                    string inner = "("+expression(ptr->left)+")";
+                    return simplify_div(diff(ptr->left,var),"(1+"+inner+"^2)");
+                }
+                return "0";
                 }
             case SINH: {
-                string inner = "("+expression(ptr->left)+")";
-                return simplify_mult(diff(ptr->left,var),"cosh" + inner);
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+
+                    string inner = "("+expression(ptr->left)+")";
+                    return simplify_mult(diff(ptr->left,var),"cosh" + inner);
+                }
+                return "0";
                     }
             case COSH: {
-                string inner = "("+expression(ptr->left)+")";
-                return simplify_mult(diff(ptr->left,var),"sinh" + inner);
-                    }
-            case TANH: {
-                string inner = "("+expression(ptr->left)+")";
-                return simplify_mult(diff(ptr->left,var),"(1-tanh" + inner + "^2)");
-                    }
-            case ASINH:{
-                string inner = "("+expression(ptr->left)+")";
-                return simplify_mult(diff(ptr->left,var),"(1/sqrt(" + inner +"^2+1))");
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                    string inner = "("+expression(ptr->left)+")";
+                    return simplify_mult(diff(ptr->left,var),"sinh" + inner);
                 }
-            case ACOSH: {
-                string inner = "("+expression(ptr->left)+")";
+                return "0";
+            }
+            case TANH: {
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
 
-                return simplify_mult(diff(ptr->left,var),"(1/sqrt(" + inner +"^2-1))");
-                    }
+                    string inner = "("+expression(ptr->left)+")";
+                    return simplify_mult(diff(ptr->left,var),"(1-tanh" + inner + "^2)");
+                }
+                return "0";
+                }
+            case ASINH:{
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+
+                    string inner = "("+expression(ptr->left)+")";
+                    return simplify_mult(diff(ptr->left,var),"(1/sqrt(" + inner +"^2+1))");
+                }
+                return "0";
+            }
+            case ACOSH: {
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+
+                    string inner = "("+expression(ptr->left)+")";
+
+                    return simplify_mult(diff(ptr->left,var),"(1/sqrt(" + inner +"^2-1))");
+                }
+            return "0";
+            }
             case ATANH:{
-                string inner = "("+expression(ptr->left)+")";
-                return simplify_mult(diff(ptr->left,var),"(1/(1-"+inner+"^2))");
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+
+                    string inner = "("+expression(ptr->left)+")";
+                    return simplify_mult(diff(ptr->left,var),"(1/(1-"+inner+"^2))");
+
+                }
+                return "0";
                 }
             #ifdef COMPLEX_MODE
-            case IMG : return "img("+diff(ptr->left,var)+")" ;
+            case IMG :{
+                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
 
+
+                   return "img("+diff(ptr->left,var)+")" ;
+                }
+                return "0";
+            }
             #endif // COMPLEX_MODE
         }
     }
@@ -1363,19 +1477,22 @@ int main(){
     "ln(3060513257434037/1125899906842624)*((6*cos(x))/x-3*ln(x^2)*sin(x)-(6*x*cos(x^2))/tan(x)"
     "+(3*sin(x^2)*(tan(x)^2+1))/tan(x)^2)+(x^5*sin(x))/(cos(x)+2)^2-(2*3^(1/2)*x^3)/(x^4)^(1/2)+(2^x*ln(2)*(ln(x)-x^3))/(x^2+1)-(2*2^x*x*(ln(x)-x^3))/(x^2+1)^2";
     */
-    string operation ="3*e^(ln(x^2)*cos(x)-sin(x^2)*cotan(x))^3*(ln(x^2)*cos(x)-sin(x^2)*cotan(x))^2*(-ln(x^2)*sin(x)-2*x*cos(x^2)*cotan(x)+sin(x^2)*csc(x)^2+(2*cos(x))/x)";
+    string operation ="e^(cos(x)*ln(x^2)-sin(x^2)/tan(x))^3+(x^5/(2+cos(x)))-sqrt(3*x^4)+(2^x/(1+x^2))*(ln(x)-x^3)";
 
     calculus_tree<long double> tree(operation),tree2;
-    cout<<tree;
 
     for(int i = 0; i < 10; i++){
         auto start = std::chrono::high_resolution_clock::now();
+
         tree = tree.diff_with("x");
+
         auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double, std::milli> diff = end - start;
-        std::cout << "Time taken for differentiation " << i+1 << ": " << diff.count() << " ms" << std::endl;
+        std::chrono::duration<double, std::milli> diff_time = end - start;
+
+        cout << "Time taken for differentiation "<<i<<" :" << diff_time.count() << " ms" << endl;
     }
-    cout<<endl<<tree;
+
+    cout<<endl<<tree.diff_with("x").evaluate_at("x=3");
 
 
     tree2.set_exp("3*e^(ln(x^2)*cos(x)-sin(x^2)*cotan(x))^3*(ln(x^2)*cos(x)-sin(x^2)*cotan(x))^2*(-ln(x^2)*sin(x)-2*x*cos(x^2)*cotan(x)+sin(x^2)*csc(x)^2+(2*cos(x))/x)");
