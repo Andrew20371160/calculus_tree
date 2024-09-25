@@ -239,6 +239,7 @@ class calculus_tree
         calculus_tree laplacian(const vector<string>&ind_vars);
 
         vector<string> independent_variables(void);
+        bool is_constant(const string &var);
 
         string integrate(void)const;
         void print(node*ptr = NULL)const;
