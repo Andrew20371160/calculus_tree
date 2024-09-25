@@ -18,7 +18,7 @@ using namespace std ;
 
 // Uncomment the following line to enable complex mode
 
-#define COMPLEX_MODE 1
+//#define COMPLEX_MODE 1
 
 
 /*
@@ -206,7 +206,7 @@ class calculus_tree
         string diff(node*ptr,const string&var);
 
         void independent_variables_tour(node*ptr,set<string>&ret_set);
-
+        bool is_keyword(const string&expression ,unsigned int pos);
     public:
         calculus_tree(void);
         calculus_tree(const string&expression);
@@ -229,15 +229,16 @@ class calculus_tree
 
         calculus_tree diff_with(const string&variable);
 
-        list<calculus_tree> gradient(void);
+        vector<calculus_tree<DataType>> gradient(const vector<string>&ind_vars);
 
-        list<calculus_tree<DataType>> curl(list<calculus_tree<DataType>>&gradient_field);
-        set<string> independent_variables(list<calculus_tree<DataType>>&gradient_field);
+        vector<calculus_tree<DataType>> curl(vector<calculus_tree<DataType>>&gradient_field,
+                                                            const vector<string>&independent_variables);
 
-        calculus_tree divergence(list<calculus_tree<DataType>>&gradient_field);
-        calculus_tree laplacian(void);
+        calculus_tree divergence(vector<calculus_tree<DataType>>&gradient_field,
+                                                            const vector<string>&independent_variables);
+        calculus_tree laplacian(const vector<string>&ind_vars);
 
-        set<string> independent_variables(void);
+        vector<string> independent_variables(void);
 
         string integrate(void)const;
         void print(node*ptr = NULL)const;
