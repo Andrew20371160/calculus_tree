@@ -240,6 +240,7 @@ class calculus_tree
 
         vector<string> independent_variables(void);
         bool is_constant(const string &var);
+        bool is_constant(node*ptr);
 
         string integrate(void)const;
         void print(node*ptr = NULL)const;
