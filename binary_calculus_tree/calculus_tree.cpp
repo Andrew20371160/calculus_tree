@@ -1016,7 +1016,7 @@
             string right_prime =diff(ptr->right,var);
 
             return simplify_div(simplify_sub(simplify_mult(right,left_prime),
-                                            simplify_mult(left,right_prime)),right+"^2");
+                                            simplify_mult(left,right_prime)),"("+right+")^2");
         }
         return "inf";
     }
@@ -1107,8 +1107,7 @@
                 else{
                     return  simplify_div(diff(ptr->left,var),simplify_mult(expression(ptr->left),"ln(10)"));
                 }
-            };
-
+            }
             case ASIN:{
                  string inner = "("+expression(ptr->left)+")";
                  return simplify_div(diff(ptr->left,var),"sqrt(1-"+inner+"^2)");
@@ -1368,19 +1367,9 @@ int main(){
     cout<<tree;
     tree =tree.diff_with("x");
     cout<<endl<<tree.evaluate_at("x=3")<<endl<<endl;
-    string from_c =tree.expression();
-    string to_matlab ="";
-    for(unsigned int i = 0 ;i<from_c.length();i++){
-        if(from_c[i]=='l'){
-            to_matlab+="log";
-            i++;
-        }
-        else{
-            to_matlab+=from_c[i];
-        }
-    }
-    cout<<endl<<endl<<to_matlab;
-    tree2.set_exp("(3060513257434037/1125899906842624)^(3*ln(x^2)*cos(x)-(3*sin(x^2))/tan(x))*ln(3060513257434037/1125899906842624)*((6*cos(x))/x-3*ln(x^2)*sin(x)-(6*x*cos(x^2))/tan(x)+(3*sin(x^2)*(tan(x)^2+1))/tan(x)^2)");
+
+
+    tree2.set_exp("3*e^(ln(x^2)*cos(x)-sin(x^2)*cotan(x))^3*(ln(x^2)*cos(x)-sin(x^2)*cotan(x))^2*(-ln(x^2)*sin(x)-2*x*cos(x^2)*cotan(x)+sin(x^2)*csc(x)^2+(2*cos(x))/x)");
     cout<<tree2.evaluate_at("x=3");
     return 0;
 }
