@@ -1220,25 +1220,32 @@
 
 
     template<typename DataType>
-    set<string> calculus_tree<DataType>::independent_variables(void){
+    vector<string> calculus_tree<DataType>::independent_variables(void){
         if(root){
             set<string>ret_set ;
             independent_variables_tour(root,ret_set);
-            return ret_set;
+            vector<string> ret_vec(ret_set.size());
+            unsigned int  i = 0 ;
+            for(set<string>::iterator it = ret_set.begin();it!=ret_set.end();++it){
+                ret_vec[i] = *it;
+                i++;
+            }
+            return ret_vec;
         }
         else{
-            return set<string>();
+            return vector<string>();
         }
     }
 
     template<typename DataType>
-    list<calculus_tree<DataType>> calculus_tree<DataType>::gradient(void){
-        list<calculus_tree<DataType>> gradient_field ;
+    vector<calculus_tree<DataType>> calculus_tree<DataType>::gradient(const vector<string>&ind_vars){
+        vector<calculus_tree<DataType>> gradient_field ;
         if(root){
-            set<string>ind_vars= independent_variables();
             if(!ind_vars.empty()){
-                for(set<string>::iterator it = ind_vars.begin();it!=ind_vars.end();++it){
-                    gradient_field.push_back(diff_with(*it));
+                gradient_field.resize(ind_vars.size());
+                unsigned int  i = 0 ;
+                for(;i<ind_vars.size();i++){
+                    gradient_field[i] = diff_with(ind_vars[i]);
                 }
             }
         }
@@ -1246,22 +1253,16 @@
     }
 
     template<typename DataType>
-    calculus_tree<DataType> calculus_tree<DataType>::laplacian(void){
+    calculus_tree<DataType> calculus_tree<DataType>::laplacian(const vector<string>&ind_vars){
         if(root){
-            set<string> ind_vars = independent_variables();
             if(!ind_vars.empty()){
-                list<calculus_tree<DataType>> gradient_field = gradient();
-                set<string>::iterator dell_iterator = ind_vars.begin();
-                typename list<calculus_tree<DataType>>::iterator gradient_iterator = gradient_field.begin();
+                vector<calculus_tree<DataType>> gradient_field = gradient(ind_vars);
                 string laplac_str = "";
-                while(dell_iterator != ind_vars.end() && gradient_iterator != gradient_field.end()){
-                    laplac_str += diff((*gradient_iterator).root,*dell_iterator);
-                    ++dell_iterator;
-                    ++gradient_iterator;
-                    if(dell_iterator != ind_vars.end()){
+                for(unsigned int i =0;i<gradient_field.size();i++){
+                    laplac_str += diff(gradient_field[i].root,ind_vars[i]);
                         laplac_str += "+";
-                    }
                 }
+                laplac_str.pop_back();
                 return calculus_tree(laplac_str);
             }
         }
@@ -1269,56 +1270,48 @@
     }
 
     template<typename DataType>
-    calculus_tree<DataType> calculus_tree<DataType>::divergence(list<calculus_tree<DataType>>&gradient_field){
+    calculus_tree<DataType> calculus_tree<DataType>::divergence(vector<calculus_tree<DataType>>&gradient_field,
+                                                            const vector<string>&independent_variables){
         if(root){
             if(!gradient_field.empty()){
-                set<string>dell_operator = independent_variables(gradient_field) ;
-
-                typename list<calculus_tree<DataType>>::iterator gradient_iterator =  gradient_field.begin();
-                set<string>::iterator dell_iterator = dell_operator.begin();
-
-                string div_str = "";
-                while(dell_iterator != dell_operator.end() && gradient_iterator != gradient_field.end()){
-                    div_str += diff((*gradient_iterator).root,*dell_iterator);
-                    ++dell_iterator;
-                    ++gradient_iterator;
-                    if(dell_iterator != dell_operator.end()){
+                if(independent_variables.size()==gradient_field.size()){
+                    string div_str = "";
+                    for(unsigned int i =0;i<gradient_field.size();i++){
+                        div_str += diff(gradient_field[i].root,independent_variables[i]);
                         div_str += "+";
                     }
+                    div_str.pop_back();
+                    return calculus_tree(div_str);
                 }
-                return calculus_tree(div_str);
             }
         }
         return calculus_tree<DataType>();
     }
 
-    template<typename DataType>
-    set<string> calculus_tree<DataType>::independent_variables(list<calculus_tree<DataType>>&gradient_field){
-        if(gradient_field.size()){
-            set<string>dell_operator =  gradient_field.front().independent_variables();
-            set<string>temp_set ;
-            if(dell_operator.size()<gradient_field.size()){
-                typename list<calculus_tree<DataType>>::iterator gradient_iterator =  gradient_field.begin();
-                ++gradient_iterator;
-                for(;gradient_iterator!=gradient_field.end() ; ++gradient_iterator ){
-                    temp_set = *gradient_iterator ;
-                    for(set<string>::iterator set_it = temp_set.begin();set_it!=temp_set.end();++set_it){
-                        dell_operator.insert(*set_it) ;
-                    }
-                    if(dell_operator.size()==gradient_field.size()){
-                        break;
-                    }
-                }
-            }
-            return dell_operator ;
-        }
-    return set<string>() ;
-    }
     /*
     i     j     k
+    0     1     2
     d/dx d/dy d/dz
     fx    fy   fz
     */
+    template<typename DataType>
+    vector<calculus_tree<DataType>> calculus_tree<DataType>::curl(vector<calculus_tree<DataType>>&gradient_field,
+                                                            const vector<string>&independent_variables){
+        if(gradient_field.size()==3){
+            vector<calculus_tree<DataType>> ret_curl(3);
+            ret_curl[0] = diff_with(gradient_field[2].root,independent_variables[1])
+                        +"-"+diff_with(gradient_field[1].root,independent_variables[2]);
+
+            ret_curl[1] = diff_with(gradient_field[2].root,independent_variables[0])
+                        +"-"+diff_with(gradient_field[0].root,independent_variables[2]);
+
+            ret_curl[2] = diff_with(gradient_field[1].root,independent_variables[0])
+            +"-"+diff_with(gradient_field[0].root,independent_variables[1]);
+            return ret_curl;
+        }
+        return vector<calculus_tree<DataType>>();
+    }
+
 #include <algorithm>
 #include <chrono>
 int main(){
@@ -1361,15 +1354,20 @@ int main(){
     "ln(3060513257434037/1125899906842624)*((6*cos(x))/x-3*ln(x^2)*sin(x)-(6*x*cos(x^2))/tan(x)"
     "+(3*sin(x^2)*(tan(x)^2+1))/tan(x)^2)+(x^5*sin(x))/(cos(x)+2)^2-(2*3^(1/2)*x^3)/(x^4)^(1/2)+(2^x*ln(2)*(ln(x)-x^3))/(x^2+1)-(2*2^x*x*(ln(x)-x^3))/(x^2+1)^2";
     */
-    string operation ="e^(cos(x)*ln(x^2)-sin(x^2)/tan(x))^3";
+    string operation ="3*e^(ln(x^2)*cos(x)-sin(x^2)*cotan(x))^3*(ln(x^2)*cos(x)-sin(x^2)*cotan(x))^2*(-ln(x^2)*sin(x)-2*x*cos(x^2)*cotan(x)+sin(x^2)*csc(x)^2+(2*cos(x))/x)";
 
     calculus_tree<long double> tree(operation),tree2;
     cout<<tree;
-    tree =tree.diff_with("x");
-    cout<<endl<<tree.evaluate_at("x=3")<<endl<<endl;
+    for(int i = 0 ;i<10;i++){
+       tree =tree.diff_with("x");
+    }
+    cout<<endl<<tree;
 
 
     tree2.set_exp("3*e^(ln(x^2)*cos(x)-sin(x^2)*cotan(x))^3*(ln(x^2)*cos(x)-sin(x^2)*cotan(x))^2*(-ln(x^2)*sin(x)-2*x*cos(x^2)*cotan(x)+sin(x^2)*csc(x)^2+(2*cos(x))/x)");
     cout<<tree2.evaluate_at("x=3");
+
+
+    system("pause");
     return 0;
 }
