@@ -192,6 +192,43 @@
         }
         return NULL ;
     }
+    //this extracts operand (whatever its length) or operator
+    //start goes to second operand or operator
+    template<typename DataType>
+    string calculus_tree<DataType>::preprocess_extract(const string&expression,unsigned int &start){
+        string var="";
+        if(start<expression.length()){
+            skip_spaces(expression,start);
+            unsigned int original_start = start;
+            if(is_op(expression,start)){
+                var+=expression[start];
+                start++;
+                skip_spaces(expression,start);
+            }
+            else if(expression[start]>='0'&&expression[start]<='9'){
+                while(start<expression.length()&&expression[start]>='0'&&expression[start]<='9'&&!is_op(expression,start)&&expression[start]!=' '){
+                    start++;
+                }
+                if(expression[start]=='.'){
+                    //for floating point numbers
+                    start++ ;
+                }
+                while(start<expression.length()&&expression[start]>='0'&&expression[start]<='9'&&!is_op(expression,start)&&expression[start]!=' '){
+                    start++;
+                }
+                var = expression.substr(original_start, start - original_start);
+                skip_spaces(expression,start);
+            }
+            else{
+                while(start<expression.length()&&!is_op(expression,start)&&expression[start]!=' '){
+                    start++;
+                }
+                var = expression.substr(original_start, start - original_start);
+                skip_spaces(expression,start);
+            }
+        }
+        return var ;
+    }
     template<typename DataType>
     bool calculus_tree<DataType>::is_known_constant(const string &expression){
         return expression=="pi"||expression=="i"||expression=="e" ;
@@ -271,7 +308,7 @@
         bool valid = true ;
         //ERROR=-1,VAR_CONST,FUNCTION,OPERATOR,OPEN_BRACKET,CLOSE_BRACKET
         if(previous_token>VAR_CONST&&previous_token<CLOSE_BRACKET){
-            cout<<"\nError:can't have ("<<token<<") immediately before ')'";
+            cout<<"\nError:can't have a function or *,(,/,+,-,^ immediately before ')'";
             valid =false;
         }
         return valid;
@@ -320,11 +357,11 @@
         int previous_token =-1 ;
         int current_token =-1 ;
         bool error_state = false;
-        temp =extract(expression,i);
+        temp =preprocess_extract(expression,i);
         previous_token = token_type(temp,open_brackets_c) ;
         ret_exp +=temp  ;
         while(i<expression.length()&&open_brackets_c>=0){
-            temp = extract(expression,i);
+            temp = preprocess_extract(expression,i);
             current_token = token_type(temp,open_brackets_c) ;
                 if(open_brackets_c>-1){
                     switch(current_token){
@@ -383,7 +420,12 @@
                 ret_exp +=temp  ;
                 previous_token = current_token ;
             }
-
+            //ERROR=-1,VAR_CONST,FUNCTION,OPERATOR,OPEN_BRACKET,CLOSE_BRACKET
+            if(current_token>VAR_CONST&&current_token<CLOSE_BRACKET){
+                cout<<"Error: can't end an expression with ("<<temp<<")";
+                cout<<"\nError at "<<(i-temp.size());
+                return "0";
+            }
         return ret_exp;
     }
 
@@ -559,33 +601,29 @@
     string calculus_tree<DataType>::extract(const string&expression,unsigned int &start){
         string var="";
         if(start<expression.length()){
-            skip_spaces(expression,start);
             unsigned int original_start = start;
             if(is_op(expression,start)){
                 var+=expression[start];
                 start++;
-                skip_spaces(expression,start);
             }
             else if(expression[start]>='0'&&expression[start]<='9'){
-                while(start<expression.length()&&expression[start]>='0'&&expression[start]<='9'&&!is_op(expression,start)&&expression[start]!=' '){
+                while(start<expression.length()&&expression[start]>='0'&&expression[start]<='9'&&!is_op(expression,start)){
                     start++;
                 }
                 if(expression[start]=='.'){
                     //for floating point numbers
                     start++ ;
                 }
-                while(start<expression.length()&&expression[start]>='0'&&expression[start]<='9'&&!is_op(expression,start)&&expression[start]!=' '){
+                while(start<expression.length()&&expression[start]>='0'&&expression[start]<='9'&&!is_op(expression,start)){
                     start++;
                 }
                 var = expression.substr(original_start, start - original_start);
-                skip_spaces(expression,start);
             }
             else{
-                while(start<expression.length()&&!is_op(expression,start)&&expression[start]!=' '){
+                while(start<expression.length()&&!is_op(expression,start)){
                     start++;
                 }
                 var = expression.substr(original_start, start - original_start);
-                skip_spaces(expression,start);
             }
         }
         return var ;
@@ -734,8 +772,7 @@
             //extract the thing
             ret_root=parse_block(expression,start);
 
-            if(ret_root&&start<expression.length()&&is_op(expression,start)&&expression[start]!='('&&expression[start]!=')'){
-
+            if(ret_root&&start<expression.length()){
                 ret_root->append_parent(extract(expression,start));
                 ret_root=ret_root->parent;
                 last_op = ret_root;
@@ -743,8 +780,7 @@
                     bool new_op= false ;
                     //extract the thing
                     block= parse_block(expression,start) ;
-
-                    if(is_op(expression,start)&&expression[start]!='('&&expression[start]!=')'){
+                    if(is_op(expression,start)){
                         op=extract(expression,start);
                         new_op =true;
                     }
@@ -1045,7 +1081,6 @@
     }
 
         template<typename DataType>
-
         calculus_tree<DataType> calculus_tree<DataType>:: operator+(const calculus_tree<DataType>&src)const{
             if(root&&src.root){
                 calculus_tree<DataType>ret_tree = *this ;
@@ -1717,7 +1752,8 @@ int main(){
     "ln(3060513257434037/1125899906842624)*((6*cos(x))/x-3*ln(x^2)*sin(x)-(6*x*cos(x^2))/tan(x)"
     "+(3*sin(x^2)*(tan(x)^2+1))/tan(x)^2)+(x^5*sin(x))/(cos(x)+2)^2-(2*3^(1/2)*x^3)/(x^4)^(1/2)+(2^x*ln(2)*(ln(x)-x^3))/(x^2+1)-(2*2^x*x*(ln(x)-x^3))/(x^2+1)^2";
     */
-    string operation ="sin(x)^5cos(x)+2";
+
+    string operation ="e^(cos(x)*ln(x^2)-sin(x^2)/tan(x))^3+(x^5/(2+cos(x)))-sqrt(3*x^4)+(2^x/(1+x^2))*(ln(x)-x^3)";
 
     calculus_tree<long double> tree(operation),tree2;
 
