@@ -348,7 +348,6 @@
         5-operand is a token and operator is another token
         6-(x+y)(z+5)->(x+y)*(z+5)
         7- +- are the only operators that can be used to start an expression
-
         */
         unsigned int i = 0  ;
         string ret_exp = "" ;
@@ -426,6 +425,7 @@
                 cout<<"\nError at "<<(i-temp.size());
                 return "0";
             }
+        cout<<"\nProcessed\n";
         return ret_exp;
     }
 
@@ -1665,13 +1665,13 @@
                                                             const vector<string>&independent_variables){
         if(gradient_field.size()==3){
             vector<calculus_tree<DataType>> ret_curl(3);
-            ret_curl[0] = create_tree(simplify_sub(diff(gradient_field[2].root,independent_variables[1])
+            ret_curl[0].root = create_tree(simplify_sub(diff(gradient_field[2].root,independent_variables[1])
                                     ,diff(gradient_field[1].root,independent_variables[2])));
 
-            ret_curl[1] = create_tree(simplify_mult("-1",simplify_sub(diff(gradient_field[2].root,independent_variables[0])
+            ret_curl[1].root = create_tree(simplify_mult("-1",simplify_sub(diff(gradient_field[2].root,independent_variables[0])
                             ,diff(gradient_field[0].root,independent_variables[2]))));
 
-            ret_curl[2] = create_tree(simplify_sub(diff(gradient_field[1].root,independent_variables[0])
+            ret_curl[2].root = create_tree(simplify_sub(diff(gradient_field[1].root,independent_variables[0])
                                         ,diff(gradient_field[0].root,independent_variables[1])));
 
             return ret_curl;
@@ -1704,7 +1704,9 @@
             while (getline(file, line)) {
                 expression += line;
             }
-            set_exp(prepare_exp(expression));
+            expression = prepare_exp(expression) ;
+            unsigned int start = 0;
+            root = create_tree(expression,start);
             file.close();
             return true;
         }
@@ -1753,15 +1755,30 @@ int main(){
     "+(3*sin(x^2)*(tan(x)^2+1))/tan(x)^2)+(x^5*sin(x))/(cos(x)+2)^2-(2*3^(1/2)*x^3)/(x^4)^(1/2)+(2^x*ln(2)*(ln(x)-x^3))/(x^2+1)-(2*2^x*x*(ln(x)-x^3))/(x^2+1)^2";
     */
 
-    string operation ="e^(cos(x)*ln(x^2)-sin(x^2)/tan(x))^3+(x^5/(2+cos(x)))-sqrt(3*x^4)+(2^x/(1+x^2))*(ln(x)-x^3)";
-
-    calculus_tree<long double> tree(operation),tree2;
-
-    cout<<endl<<tree;
-    //tree2.set_exp("3*e^(ln(x^2)*cos(x)-sin(x^2)*cotan(x))^3*(ln(x^2)*cos(x)-sin(x^2)*cotan(x))^2*(-ln(x^2)*sin(x)-2*x*cos(x^2)*cotan(x)+sin(x^2)*csc(x)^2+(2*cos(x))/x)");
-    //cout<<tree2.evaluate_at("x=3");
+    string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))^tan(log2(x+5))*sec(x*asin(1/(x+1)))/"
+                       "csc((x^3+2*x)/4)^cotan(exp(x/2))*acos(1/(x+2)^0.5)";
+    calculus_tree<long double> tree,tree2;
 
 
+    // Start the clock
+    auto start = std::chrono::high_resolution_clock::now();
+
+    tree.load("E:\\pythonProject\\mathematical tree\\file10.txt");
+
+    // Stop the clock and calculate the elapsed time
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    cout << "Time taken by load: " << duration.count() << " microseconds" << endl;
+
+    // Reset and start the clock again
+    start = std::chrono::high_resolution_clock::now();
+
+    cout<<tree.evaluate_at("x=4.3412345");
+
+    // Stop the clock and calculate the elapsed time
+    stop = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    cout << "Time taken by evaluate_at: " << duration.count() << " microseconds" << endl;
     system("pause");
     return 0;
 }
