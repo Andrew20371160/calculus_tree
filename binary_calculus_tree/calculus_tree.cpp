@@ -1557,9 +1557,11 @@
             return calculus_tree(str) ;
         }
         else{
+            calculus_tree<DataType>ret_tree ;
             unsigned int temp_start =0;
             if(variable.length()&&!is_num(variable)&&!is_op(variable,temp_start)&&!is_keyword(variable,0)){
-                return calculus_tree(diff(root,variable));
+                ret_tree.root = create_tree(diff(root,variable));
+                return ret_tree ;
             }
             else{
                 cout<<"\nCan't differentiate with respect to : "<<variable<<"\n";
@@ -1611,7 +1613,7 @@
                 gradient_field.resize(ind_vars.size());
                 unsigned int  i = 0 ;
                 for(;i<ind_vars.size();i++){
-                    gradient_field[i] = diff_with(ind_vars[i]);
+                    gradient_field[i].root = create_tree(diff(root,ind_vars[i]));
                 }
             }
         }
@@ -1622,6 +1624,7 @@
     calculus_tree<DataType> calculus_tree<DataType>::laplacian(const vector<string>&ind_vars){
         if(root){
             if(!ind_vars.empty()){
+                calculus_tree<DataType>ret_tree;
                 vector<calculus_tree<DataType>> gradient_field = gradient(ind_vars);
                 string laplac_str = "";
                 for(unsigned int i =0;i<gradient_field.size();i++){
@@ -1629,7 +1632,8 @@
                     laplac_str += "+";
                 }
                 laplac_str.pop_back();
-                return calculus_tree(laplac_str);
+                ret_tree.root=create_tree(laplac_str);
+                return ret_tree ;
             }
         }
         return calculus_tree<DataType>();
@@ -1638,7 +1642,7 @@
     template<typename DataType>
     calculus_tree<DataType> calculus_tree<DataType>::divergence(vector<calculus_tree<DataType>>&gradient_field,
                                                             const vector<string>&independent_variables){
-        if(root){
+            calculus_tree<DataType>ret_tree;
             if(!gradient_field.empty()){
                 if(independent_variables.size()==gradient_field.size()){
                     string div_str = "";
@@ -1647,11 +1651,11 @@
                         div_str += "+";
                     }
                     div_str.pop_back();
-                    return calculus_tree(div_str);
+                    ret_tree.root= create_tree(div_str);
+
                 }
             }
-        }
-        return calculus_tree<DataType>();
+        return ret_tree;
     }
 
     /*
