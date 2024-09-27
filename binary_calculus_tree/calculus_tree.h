@@ -325,6 +325,7 @@ class calculus_tree
         bool valid_operator_token(unsigned int previous_token, const string&token,string&ret_exp);
 
         void skip_spaces(const string&expression,unsigned int &start);
+        string preprocess_extract(const string&expression,unsigned int &start);
 
     public:
         /*
