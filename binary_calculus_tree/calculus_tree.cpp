@@ -197,7 +197,7 @@
         return expression=="pi"||expression=="i"||expression=="e" ;
     }
     enum{
-        NUMBER=0,CONSTANT,VARIABLE,FUNCTION,OPERATOR,OPEN_BRACKET,CLOSE_BRACKET
+        ERROR=-1,VAR_CONST,FUNCTION,OPERATOR,OPEN_BRACKET,CLOSE_BRACKET
     };
     template<typename DataType>
     unsigned int calculus_tree<DataType>::token_type(const string&token,int &open_brackets_c){
@@ -216,20 +216,91 @@
                 }
             }
         }
-        else if(is_num(token)){
-            return NUMBER;
-        }
-        else if(is_known_constant(token)){
-            return CONSTANT;
-        }
         else if(is_function(token,0)!=-1){
             return FUNCTION ;
         }
-        else{
-            //must be a variable at this point
-            return VARIABLE ;
+        else if(token=="."){
+            return ERROR ;
         }
+        else if(token[0]>='0'&&token[0]<='9'){
+            if(is_num(token)){
+                return VAR_CONST;
+            }
+            return ERROR ;
+        }
+        return VAR_CONST ;
     }
+    template<typename DataType>
+    bool calculus_tree<DataType>::valid_var_const_token(unsigned int previous_token, const string&token,string&ret_exp){
+        bool valid = true ;
+        //ERROR=-1,VAR_CONST,FUNCTION,OPERATOR,OPEN_BRACKET,CLOSE_BRACKET
+        if(previous_token==VAR_CONST){
+            ret_exp+="*";
+        }
+        else if(previous_token==FUNCTION||previous_token==CLOSE_BRACKET){
+            cout<<"\nError:can't have ("<<token<<") immediately after a 'function' or '('";
+            valid =false ;
+        }
+        return valid;
+    }
+    template<typename DataType>
+    bool calculus_tree<DataType>::valid_function_token(unsigned int previous_token, const string&token,string&ret_exp){
+        bool valid = true ;
+        //ERROR=-1,VAR_CONST,FUNCTION,OPERATOR,OPEN_BRACKET,CLOSE_BRACKET
+        if(previous_token==VAR_CONST||previous_token==CLOSE_BRACKET){
+            ret_exp+="*";
+        }
+        else if(previous_token==FUNCTION){
+            cout<<"\nError:can't have a function immediately after a function without parentheses";
+            valid =false ;
+        }
+        return valid;
+    }
+    template<typename DataType>
+    bool calculus_tree<DataType>::valid_open_bracket_token(unsigned int previous_token, const string&token,string&ret_exp){
+        bool valid = true ;
+        //ERROR=-1,VAR_CONST,FUNCTION,OPERATOR,OPEN_BRACKET,CLOSE_BRACKET
+        if(previous_token==VAR_CONST||previous_token==CLOSE_BRACKET){
+            ret_exp+="*";
+        }
+        return valid;
+    }
+
+    template<typename DataType>
+    bool calculus_tree<DataType>::valid_close_bracket_token(unsigned int previous_token, const string&token,string&ret_exp){
+        bool valid = true ;
+        //ERROR=-1,VAR_CONST,FUNCTION,OPERATOR,OPEN_BRACKET,CLOSE_BRACKET
+        if(previous_token>VAR_CONST&&previous_token<CLOSE_BRACKET){
+            cout<<"\nError:can't have ("<<token<<") immediately before ')'";
+            valid =false;
+        }
+        return valid;
+    }
+    template<typename DataType>
+    bool calculus_tree<DataType>::valid_operator_token(unsigned int previous_token, const string&token,string&ret_exp){
+        bool valid = true ;
+        //ERROR=-1,VAR_CONST,FUNCTION,OPERATOR,OPEN_BRACKET,CLOSE_BRACKET
+        switch(previous_token){
+            case FUNCTION:{
+                cout<<"\nError:can't have ("<<token<<") immediately after a function without parentheses";
+                valid= false ;
+            }break ;
+            case OPEN_BRACKET :{
+                if(!(token[0]=='+'||token[0]=='-')){
+                    cout<<"\nError:can't have ("<<token<<") immediately after '('";
+                    valid = false;
+                }
+            }break ;
+            case OPERATOR :{
+                if(!(token[0]=='+'||token[0]=='-')){
+                    cout<<"\nError:can't have ("<<token<<") immediately after '"<<ret_exp[ret_exp.size()-1]<<"'";
+                    valid = false;
+                }
+            }break ;
+        }
+        return valid;
+    }
+
     template<typename DataType>
     string calculus_tree<DataType>::prepare_exp(const string&expression){
         /*
@@ -248,84 +319,69 @@
         int open_brackets_c = 0 ;
         int previous_token =-1 ;
         int current_token =-1 ;
+        bool error_state = false;
         temp =extract(expression,i);
         previous_token = token_type(temp,open_brackets_c) ;
+        ret_exp +=temp  ;
         while(i<expression.length()&&open_brackets_c>=0){
-            ret_exp +=temp  ;
             temp = extract(expression,i);
             current_token = token_type(temp,open_brackets_c) ;
-            if(open_brackets_c!=-1){
-                switch(current_token){
-                    case NUMBER :{
-                        if(previous_token==CLOSE_BRACKET){
-                            cout<<"\nError:can't have a variable immediately after closing bracket";
-                            cout<<"\nError at:"<< (i-temp.length());
-                            return "0" ;
-                        }
-                    }break;
-                    case VARIABLE :{
-                        if(previous_token==NUMBER){
-                            ret_exp+="*";
-                        }
-                        else if(previous_token==CLOSE_BRACKET){
-                            cout<<"\nError:can't have a variable immediately after closing bracket";
-                            cout<<"\nError at:"<< (i-temp.length());
-                            return "0" ;
-                        }
-                    }break ;
-                    case CONSTANT :{
-                        if(previous_token==NUMBER){
-                            ret_exp+="*";
-                        }
-                        else if(previous_token==CLOSE_BRACKET){
-                            cout<<"\nError:can't have a consant immediately after closing bracket";
-                            cout<<"\nError at:"<< (i-temp.length());
-                            return "0" ;
-                        }
-                    }break ;
-                    case FUNCTION:{
-                        if(previous_token==NUMBER||previous_token==CLOSE_BRACKET){
-                            ret_exp +="*";
-                        }
-                    }break ;
-                    case OPEN_BRACKET :{
-                                                    //(exp1)(exp2)
-                        if(previous_token<FUNCTION||previous_token==CLOSE_BRACKET){
-                            ret_exp+="*";
-                        }
-                    }break ;
-                    case CLOSE_BRACKET:{
-                        //FUNCTION,OPERATOR,OPEN_BRACKET
-                        if(previous_token>VARIABLE&&previous_token<CLOSE_BRACKET){
-                            cout<<"\nError:can't have (fucntion or */+-( immediately before )" ;
-                            cout<<"\nError at:"<< (i-temp.length());
-                            return "0" ;
-                        }
-                    }break ;
-                    case OPERATOR :{
-                        if(previous_token==FUNCTION){
-                            cout<<"\nError:can't have (operator immediately after a function " ;
-                            cout<<"\nError at:"<< (i-temp.length());
-                            return "0" ;
-                        }
-                        else if(previous_token==OPEN_BRACKET||previous_token==OPERATOR){
-                            if(!(temp[0]=='+'||temp[0]=='-')){
-                                //not a signed expression
-                                cout<<"\nError:can't have "<<ret_exp[i-1]<<" immediately after (" ;
-                                cout<<"\nError at:"<< (i-temp.length());
-                                return "0" ;
+                if(open_brackets_c>-1){
+                    switch(current_token){
+                        case FUNCTION:{
+                            if(!valid_function_token(previous_token,temp,ret_exp)){
+                                error_state=true;
+                            }
+                        }break ;
+
+                        case OPEN_BRACKET :{
+                            if(!valid_open_bracket_token(previous_token,temp,ret_exp)){
+                                error_state=true;
+                            }
+                        }break ;
+
+                        case CLOSE_BRACKET:{
+                            if(open_brackets_c>-1){
+                                if(!valid_close_bracket_token(previous_token,temp,ret_exp)){
+                                    error_state=true;
+
+                                }
+                            }
+                            else{
+                                cout<<"\nError: closing brackets exceeded opening brackets" ;
+                                error_state=true;
+                            }
+                        }break ;
+
+                        case OPERATOR :{
+                           if(!valid_operator_token(previous_token,temp,ret_exp)){
+                                error_state=true;
+                            }
+                        }break ;
+
+                        case ERROR :{
+                            cout<<"\nError: invalid number "<<temp;
+                            error_state=true;
+                        }break ;
+
+                        default :{
+                            if(!valid_var_const_token(previous_token,temp,ret_exp)){
+                                error_state=true;
                             }
                         }
-                    }break ;
+                    }
+                    if(error_state){
+                        cout<<"\nError at "<<(i-temp.size());
+                        return "0" ;
+                    }
                 }
-            }
                 else{
                     cout<<"\nError: closing brackets exceeded opening brackets" ;
-                    cout<<"\nError at:"<< (i-temp.length());
-                    return "0" ;
+                    cout<<"\nError at "<<(i-temp.size());
+                    return "0";
                 }
+                ret_exp +=temp  ;
                 previous_token = current_token ;
-
             }
 
         return ret_exp;
@@ -491,21 +547,24 @@
             }
             return 1  ;
         }
-
-
+    template<typename DataType>
+    void calculus_tree<DataType>::skip_spaces(const string&expression,unsigned int &start){
+        while(start<expression.size()&&expression[start]==' '){
+            start++;
+        }
+    }
     //this extracts operand (whatever its length) or operator
     //start goes to second operand or operator
     template<typename DataType>
     string calculus_tree<DataType>::extract(const string&expression,unsigned int &start){
         string var="";
         if(start<expression.length()){
-            while(start<expression.size()&&expression[start]==' '){
-                start ++;
-            }
+            skip_spaces(expression,start);
             unsigned int original_start = start;
             if(is_op(expression,start)){
                 var+=expression[start];
                 start++;
+                skip_spaces(expression,start);
             }
             else if(expression[start]>='0'&&expression[start]<='9'){
                 while(start<expression.length()&&expression[start]>='0'&&expression[start]<='9'&&!is_op(expression,start)&&expression[start]!=' '){
@@ -519,12 +578,14 @@
                     start++;
                 }
                 var = expression.substr(original_start, start - original_start);
+                skip_spaces(expression,start);
             }
             else{
                 while(start<expression.length()&&!is_op(expression,start)&&expression[start]!=' '){
                     start++;
                 }
                 var = expression.substr(original_start, start - original_start);
+                skip_spaces(expression,start);
             }
         }
         return var ;
@@ -1092,10 +1153,10 @@
     template<typename DataType>
     string calculus_tree<DataType>::simplify_mult(const string&v1,const string &v2){
         if(v1=="0"){
-            return "0";
+
         }
         else if(v2=="0"){
-            return "0";
+
         }
         else{
             return "(("+v1+")*("+v2+"))";
@@ -1108,7 +1169,7 @@
             return "nan";
         }
         else if(v1=="0"){
-            return "0";
+
         }
         else if(v2=="0"){
             return "inf";
@@ -1119,7 +1180,7 @@
     template<typename DataType>
     string calculus_tree<DataType>::simplify_add(const string&v1,const string &v2){
         if(v1=="0"&&v2=="0"){
-            return "0";
+
         }
         else if(v1=="0"){
             return "("+v2+")";
@@ -1133,7 +1194,7 @@
     template<typename DataType>
     string calculus_tree<DataType>::simplify_sub(const string&v1,const string &v2){
         if(v1=="0"&&v2=="0"){
-            return "0";
+
         }
         else if(v1=="0"){
             return "-1*("+v2+")";
@@ -1251,20 +1312,20 @@
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
                     return simplify_mult(diff(ptr->left,var),expression(ptr));
                 }
-                return "0";
+
             }
             case LN: {
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
                     return  simplify_div(diff(ptr->left,var),expression(ptr->left));
                 }
-                return "0";
+
             }
             case SIN: {
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult(diff(ptr->left,var),"cos"+inner);
                 }
-                return "0";
+
             }
             case COS:{
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
@@ -1278,14 +1339,14 @@
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult(diff(ptr->left,var),"sec"+inner+"^2") ;
                 }
-                return "0";
+
             }
             case SEC: {
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult(diff(ptr->left,var),"(sec"+inner+"*tan"+inner+")") ;
                 }
-                return "0";
+
             }
             case CSC:{
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
@@ -1293,7 +1354,7 @@
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"(csc"+inner+"*cotan"+inner+")")) ;
                 }
-                return "0";
+
             }
             case COTAN: {
 
@@ -1302,7 +1363,7 @@
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"csc"+inner+"^2")) ;
                 }
-                return "0";
+
             }
             case SQRT: {
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
@@ -1310,7 +1371,7 @@
                     string inner = "("+expression(ptr->left)+")";
                     return  simplify_mult("0.5",simplify_mult(diff(ptr->left,var),inner+"^-0.5"));
                 }
-                return "0";
+
             }
             case ABS : {
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
@@ -1318,7 +1379,7 @@
                     //assuming it's >0
                     return "("+diff(ptr->left,var)+")";
                 }
-                return "0";
+
             }
             //f'(x) = g'(x) / (g(x) * ln(b))
 
@@ -1334,7 +1395,7 @@
                         return  simplify_div(diff(ptr->left,var),simplify_mult(expression(ptr->left),"ln(10)"));
                     }
                 }
-                return "0";
+
             }
             case ASIN:{
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
@@ -1342,7 +1403,7 @@
                      string inner = "("+expression(ptr->left)+")";
                      return simplify_div(diff(ptr->left,var),"sqrt(1-"+inner+"^2)");
                  }
-                 return "0";
+
             }
             case ACOS:{
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
@@ -1350,7 +1411,7 @@
                      string inner = "("+expression(ptr->left)+")";
                      return simplify_mult("-1",simplify_div(diff(ptr->left,var),"sqrt(1-"+inner+"^2)"));
                  }
-                 return "0";
+
                 }
             case ATAN:{
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
@@ -1358,7 +1419,7 @@
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_div(diff(ptr->left,var),"(1+"+inner+"^2)");
                 }
-                return "0";
+
                 }
             case SINH: {
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
@@ -1366,14 +1427,14 @@
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult(diff(ptr->left,var),"cosh" + inner);
                 }
-                return "0";
+
                     }
             case COSH: {
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult(diff(ptr->left,var),"sinh" + inner);
                 }
-                return "0";
+
             }
             case TANH: {
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
@@ -1381,7 +1442,7 @@
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult(diff(ptr->left,var),"(1-tanh" + inner + "^2)");
                 }
-                return "0";
+
                 }
             case ASINH:{
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
@@ -1389,7 +1450,7 @@
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult(diff(ptr->left,var),"(1/sqrt(" + inner +"^2+1))");
                 }
-                return "0";
+
             }
             case ACOSH: {
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
@@ -1398,7 +1459,7 @@
 
                     return simplify_mult(diff(ptr->left,var),"(1/sqrt(" + inner +"^2-1))");
                 }
-            return "0";
+
             }
             case ATANH:{
                 if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
@@ -1407,7 +1468,7 @@
                     return simplify_mult(diff(ptr->left,var),"(1/(1-"+inner+"^2))");
 
                 }
-                return "0";
+
                 }
             #ifdef COMPLEX_MODE
             case IMG :{
@@ -1416,7 +1477,7 @@
 
                    return "img("+diff(ptr->left,var)+")" ;
                 }
-                return "0";
+
             }
             #endif // COMPLEX_MODE
         }
@@ -1442,7 +1503,7 @@
             }
             else{
                 if(is_num(ptr->symbol)||var!=ptr->symbol){
-                    return "0";
+
                 }
                 else{
                     return "1"  ;
@@ -1656,11 +1717,11 @@ int main(){
     "ln(3060513257434037/1125899906842624)*((6*cos(x))/x-3*ln(x^2)*sin(x)-(6*x*cos(x^2))/tan(x)"
     "+(3*sin(x^2)*(tan(x)^2+1))/tan(x)^2)+(x^5*sin(x))/(cos(x)+2)^2-(2*3^(1/2)*x^3)/(x^4)^(1/2)+(2^x*ln(2)*(ln(x)-x^3))/(x^2+1)-(2*2^x*x*(ln(x)-x^3))/(x^2+1)^2";
     */
-    string operation ="x/ - 2 . 2( x + sin( x) )( x+ 2 )";
+    string operation ="sin(x)^5cos(x)+2";
 
     calculus_tree<long double> tree(operation),tree2;
 
-    cout<<tree;
+    cout<<endl<<tree;
     //tree2.set_exp("3*e^(ln(x^2)*cos(x)-sin(x^2)*cotan(x))^3*(ln(x^2)*cos(x)-sin(x^2)*cotan(x))^2*(-ln(x^2)*sin(x)-2*x*cos(x^2)*cotan(x)+sin(x^2)*csc(x)^2+(2*cos(x))/x)");
     //cout<<tree2.evaluate_at("x=3");
 
