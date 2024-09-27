@@ -193,6 +193,145 @@
         return NULL ;
     }
     template<typename DataType>
+    bool calculus_tree<DataType>::is_known_constant(const string &expression){
+        return expression=="pi"||expression=="i"||expression=="e" ;
+    }
+    enum{
+        NUMBER=0,CONSTANT,VARIABLE,FUNCTION,OPERATOR,OPEN_BRACKET,CLOSE_BRACKET
+    };
+    template<typename DataType>
+    unsigned int calculus_tree<DataType>::token_type(const string&token,int &open_brackets_c){
+        if(is_op(token,0)){
+            switch(token[0]){
+                case '(' :{
+                    open_brackets_c++;
+                    return OPEN_BRACKET ;
+                }break;
+                case ')' :{
+                    open_brackets_c--;
+                   return CLOSE_BRACKET ;
+                }break;
+                default :{
+                    return OPERATOR ;
+                }
+            }
+        }
+        else if(is_num(token)){
+            return NUMBER;
+        }
+        else if(is_known_constant(token)){
+            return CONSTANT;
+        }
+        else if(is_function(token,0)!=-1){
+            return FUNCTION ;
+        }
+        else{
+            //must be a variable at this point
+            return VARIABLE ;
+        }
+    }
+    template<typename DataType>
+    string calculus_tree<DataType>::prepare_exp(const string&expression){
+        /*
+        1-opening brackets must match closing ones
+        2-2x,xsin(x),x(2) , x2 ->left*right
+        3-xy is considered a variable name not x*y must indicate
+        4-a function must be followed by ( even if it's one  operand like sinx
+        5-operand is a token and operator is another token
+        6-(x+y)(z+5)->(x+y)*(z+5)
+        7- +- are the only operators that can be used to start an expression
+
+        */
+        unsigned int i = 0  ;
+        string ret_exp = "" ;
+        string temp = "";
+        int open_brackets_c = 0 ;
+        int previous_token =-1 ;
+        int current_token =-1 ;
+        temp =extract(expression,i);
+        previous_token = token_type(temp,open_brackets_c) ;
+        while(i<expression.length()&&open_brackets_c>=0){
+            ret_exp +=temp  ;
+            temp = extract(expression,i);
+            current_token = token_type(temp,open_brackets_c) ;
+            if(open_brackets_c!=-1){
+                switch(current_token){
+                    case NUMBER :{
+                        if(previous_token==CLOSE_BRACKET){
+                            cout<<"\nError:can't have a variable immediately after closing bracket";
+                            cout<<"\nError at:"<< (i-temp.length());
+                            return "0" ;
+                        }
+                    }break;
+                    case VARIABLE :{
+                        if(previous_token==NUMBER){
+                            ret_exp+="*";
+                        }
+                        else if(previous_token==CLOSE_BRACKET){
+                            cout<<"\nError:can't have a variable immediately after closing bracket";
+                            cout<<"\nError at:"<< (i-temp.length());
+                            return "0" ;
+                        }
+                    }break ;
+                    case CONSTANT :{
+                        if(previous_token==NUMBER){
+                            ret_exp+="*";
+                        }
+                        else if(previous_token==CLOSE_BRACKET){
+                            cout<<"\nError:can't have a consant immediately after closing bracket";
+                            cout<<"\nError at:"<< (i-temp.length());
+                            return "0" ;
+                        }
+                    }break ;
+                    case FUNCTION:{
+                        if(previous_token==NUMBER||previous_token==CLOSE_BRACKET){
+                            ret_exp +="*";
+                        }
+                    }break ;
+                    case OPEN_BRACKET :{
+                                                    //(exp1)(exp2)
+                        if(previous_token<FUNCTION||previous_token==CLOSE_BRACKET){
+                            ret_exp+="*";
+                        }
+                    }break ;
+                    case CLOSE_BRACKET:{
+                        //FUNCTION,OPERATOR,OPEN_BRACKET
+                        if(previous_token>VARIABLE&&previous_token<CLOSE_BRACKET){
+                            cout<<"\nError:can't have (fucntion or */+-( immediately before )" ;
+                            cout<<"\nError at:"<< (i-temp.length());
+                            return "0" ;
+                        }
+                    }break ;
+                    case OPERATOR :{
+                        if(previous_token==FUNCTION){
+                            cout<<"\nError:can't have (operator immediately after a function " ;
+                            cout<<"\nError at:"<< (i-temp.length());
+                            return "0" ;
+                        }
+                        else if(previous_token==OPEN_BRACKET||previous_token==OPERATOR){
+                            if(!(temp[0]=='+'||temp[0]=='-')){
+                                //not a signed expression
+                                cout<<"\nError:can't have "<<ret_exp[i-1]<<" immediately after (" ;
+                                cout<<"\nError at:"<< (i-temp.length());
+                                return "0" ;
+                            }
+                        }
+                    }break ;
+                }
+            }
+                else{
+                    cout<<"\nError: closing brackets exceeded opening brackets" ;
+                    cout<<"\nError at:"<< (i-temp.length());
+                    return "0" ;
+                }
+                previous_token = current_token ;
+
+            }
+
+        return ret_exp;
+    }
+
+    template<typename DataType>
     calculus_tree<DataType> ::calculus_tree(const calculus_tree<DataType>&src_tree){
         root =NULL ;
         if(src_tree.root){
@@ -205,7 +344,7 @@
             remove_tree();
         }
         unsigned int start= 0;
-        root = create_tree(expression,start);
+        root = create_tree(prepare_exp(expression),start);
     }
 
     template<typename DataType>
@@ -256,7 +395,7 @@
     template<typename DataType>
     calculus_tree<DataType> ::calculus_tree(const string&expression){
         unsigned int start= 0;
-        root =create_tree(expression,start) ;
+        root =create_tree(prepare_exp(expression),start) ;
     }
     template<typename DataType>
     calculus_tree<DataType>::calculus_tree(void){
@@ -360,16 +499,31 @@
     string calculus_tree<DataType>::extract(const string&expression,unsigned int &start){
         string var="";
         if(start<expression.length()){
+            while(start<expression.size()&&expression[start]==' '){
+                start ++;
+            }
             unsigned int original_start = start;
             if(is_op(expression,start)){
                 var+=expression[start];
                 start++;
             }
-            else{
-                while(start<expression.length()&&!is_op(expression,start)){
+            else if(expression[start]>='0'&&expression[start]<='9'){
+                while(start<expression.length()&&expression[start]>='0'&&expression[start]<='9'&&!is_op(expression,start)&&expression[start]!=' '){
                     start++;
                 }
-
+                if(expression[start]=='.'){
+                    //for floating point numbers
+                    start++ ;
+                }
+                while(start<expression.length()&&expression[start]>='0'&&expression[start]<='9'&&!is_op(expression,start)&&expression[start]!=' '){
+                    start++;
+                }
+                var = expression.substr(original_start, start - original_start);
+            }
+            else{
+                while(start<expression.length()&&!is_op(expression,start)&&expression[start]!=' '){
+                    start++;
+                }
                 var = expression.substr(original_start, start - original_start);
             }
         }
@@ -643,7 +797,7 @@
     template<typename DataType>
     bool calculus_tree<DataType>::is_constant(const string &var){
         if(var.length()){
-            return (var=="e"||var=="i"||var=="pi"||is_num(var));
+            return (is_num(var)||is_known_constant(var));
         }
         return false ;
     }
@@ -1454,7 +1608,7 @@
             while (getline(file, line)) {
                 expression += line;
             }
-            set_exp(expression);
+            set_exp(prepare_exp(expression));
             file.close();
             return true;
         }
@@ -1502,21 +1656,11 @@ int main(){
     "ln(3060513257434037/1125899906842624)*((6*cos(x))/x-3*ln(x^2)*sin(x)-(6*x*cos(x^2))/tan(x)"
     "+(3*sin(x^2)*(tan(x)^2+1))/tan(x)^2)+(x^5*sin(x))/(cos(x)+2)^2-(2*3^(1/2)*x^3)/(x^4)^(1/2)+(2^x*ln(2)*(ln(x)-x^3))/(x^2+1)-(2*2^x*x*(ln(x)-x^3))/(x^2+1)^2";
     */
-    string operation ="x^x";
+    string operation ="x/ - 2 . 2( x + sin( x) )( x+ 2 )";
 
     calculus_tree<long double> tree(operation),tree2;
-    int i =0 ;
-    // ...
 
-    // Start the clock before loading the tree
-    for(int i =0 ; i <100;i++){
-        string filePath = "E:\\pythonProject\\mathematical tree\\file"+to_string(i)+".txt";
-        tree = tree.diff_with("x");
-        tree.save(filePath);
-    }
-
-
-
+    cout<<tree;
     //tree2.set_exp("3*e^(ln(x^2)*cos(x)-sin(x^2)*cotan(x))^3*(ln(x^2)*cos(x)-sin(x^2)*cotan(x))^2*(-ln(x^2)*sin(x)-2*x*cos(x^2)*cotan(x)+sin(x^2)*csc(x)^2+(2*cos(x))/x)");
     //cout<<tree2.evaluate_at("x=3");
 
