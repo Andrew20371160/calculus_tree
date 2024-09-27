@@ -311,6 +311,8 @@ class calculus_tree
 
         bool is_constant(const string &var);
         bool is_constant(node*ptr);
+        bool is_known_constant(const string&var) ;
+        unsigned int token_type(const string&token, int &open_brackets_c);
     public:
         /*
         constructors
@@ -409,7 +411,9 @@ class calculus_tree
                 os << obj.expression();
                 return os;
         }
-};
+
+        string prepare_exp(const string&exp);
+    };
 
 
 #endif
