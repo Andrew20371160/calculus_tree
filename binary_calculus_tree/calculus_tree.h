@@ -313,6 +313,19 @@ class calculus_tree
         bool is_constant(node*ptr);
         bool is_known_constant(const string&var) ;
         unsigned int token_type(const string&token, int &open_brackets_c);
+
+        bool valid_var_const_token(unsigned int previous_token, const string&token,string&ret_exp);
+
+        bool valid_function_token(unsigned int previous_token, const string&token,string&ret_exp);
+
+        bool valid_open_bracket_token(unsigned int previous_token, const string&token,string&ret_exp);
+
+        bool valid_close_bracket_token(unsigned int previous_token, const string&token,string&ret_exp);
+
+        bool valid_operator_token(unsigned int previous_token, const string&token,string&ret_exp);
+
+        void skip_spaces(const string&expression,unsigned int &start);
+
     public:
         /*
         constructors
