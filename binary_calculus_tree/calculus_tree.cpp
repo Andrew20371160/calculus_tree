@@ -780,7 +780,7 @@
                     bool new_op= false ;
                     //extract the thing
                     block= parse_block(expression,start) ;
-                    if(is_op(expression,start)){
+                    if(is_op(expression,start)&&expression[start]!='('&&expression[start]!=')'){
                         op=extract(expression,start);
                         new_op =true;
                     }
@@ -1188,10 +1188,10 @@
     template<typename DataType>
     string calculus_tree<DataType>::simplify_mult(const string&v1,const string &v2){
         if(v1=="0"){
-
+            return "0";
         }
         else if(v2=="0"){
-
+            return "0";
         }
         else{
             return "(("+v1+")*("+v2+"))";
@@ -1204,7 +1204,7 @@
             return "nan";
         }
         else if(v1=="0"){
-
+            return "0" ;
         }
         else if(v2=="0"){
             return "inf";
@@ -1215,7 +1215,7 @@
     template<typename DataType>
     string calculus_tree<DataType>::simplify_add(const string&v1,const string &v2){
         if(v1=="0"&&v2=="0"){
-
+            return "0";
         }
         else if(v1=="0"){
             return "("+v2+")";
@@ -1229,7 +1229,7 @@
     template<typename DataType>
     string calculus_tree<DataType>::simplify_sub(const string&v1,const string &v2){
         if(v1=="0"&&v2=="0"){
-
+            return "0" ;
         }
         else if(v1=="0"){
             return "-1*("+v2+")";
@@ -1258,11 +1258,11 @@
         string right_prime = "0";
         string left_prime = "0";
 
-        if (is_function(ptr->left->symbol,0) || (ptr->left->symbol == var)) {
+        if (is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1 || (ptr->left->symbol == var)) {
             left_prime = diff(ptr->left, var);
             right = expression(ptr->right);
         }
-        if (is_function(ptr->right->symbol,0)||(ptr->right->symbol==var)) {
+        if (is_op(ptr->right->symbol,0)||is_function(ptr->right->symbol,0)!=-1||(ptr->right->symbol==var)) {
             right_prime = diff(ptr->right, var);
             left = expression(ptr->left);
         }
@@ -1278,10 +1278,10 @@
         string left ="0";
         string right_prime ="0";
         string right=expression(ptr->right) ;
-        if (is_function(ptr->left->symbol,0) || (ptr->left->symbol == var)) {
+        if (is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1 || (ptr->left->symbol == var)) {
             left_prime = diff(ptr->left, var);
         }
-        if (is_function(ptr->right->symbol,0)||(ptr->right->symbol==var)) {
+        if (is_op(ptr->right->symbol,0)||is_function(ptr->right->symbol,0)!=-1||(ptr->right->symbol==var)) {
             right_prime = diff(ptr->right, var);
             left = expression(ptr->left);
         }
@@ -1320,12 +1320,12 @@
                     string right = "0";
                     string left_prime = "0";
                     string right_prime = "0";
-                    if (is_function(ptr->left->symbol,0) || (ptr->left->symbol == var)) {
+                    if (is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1 || (ptr->left->symbol == var)) {
                         left_prime = diff(ptr->left, var);
                         left = expression(ptr->left) ;
                         right = expression(ptr->right);
                     }
-                    if (is_function(ptr->right->symbol,0)||(ptr->right->symbol==var)) {
+                    if (is_op(ptr->right->symbol,0)||is_function(ptr->right->symbol,0)!=-1||(ptr->right->symbol==var)) {
                         right_prime = diff(ptr->right, var);
                         if(!left.size()){
                             left = expression(ptr->left);
@@ -1344,47 +1344,47 @@
     string calculus_tree<DataType>::diff_function(const int fn,node*ptr,const string&var ){
         switch(fn){
             case EXP: {
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
                     return simplify_mult(diff(ptr->left,var),expression(ptr));
                 }
 
             }
             case LN: {
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
                     return  simplify_div(diff(ptr->left,var),expression(ptr->left));
                 }
 
             }
             case SIN: {
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult(diff(ptr->left,var),"cos"+inner);
                 }
 
             }
             case COS:{
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"sin"+inner));
                 }
                 return  "0" ;
             }
             case TAN:   {
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult(diff(ptr->left,var),"sec"+inner+"^2") ;
                 }
 
             }
             case SEC: {
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult(diff(ptr->left,var),"(sec"+inner+"*tan"+inner+")") ;
                 }
 
             }
             case CSC:{
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
 
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"(csc"+inner+"*cotan"+inner+")")) ;
@@ -1393,7 +1393,7 @@
             }
             case COTAN: {
 
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
 
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult("-1",simplify_mult(diff(ptr->left,var),"csc"+inner+"^2")) ;
@@ -1401,7 +1401,7 @@
 
             }
             case SQRT: {
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
 
                     string inner = "("+expression(ptr->left)+")";
                     return  simplify_mult("0.5",simplify_mult(diff(ptr->left,var),inner+"^-0.5"));
@@ -1409,7 +1409,7 @@
 
             }
             case ABS : {
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
 
                     //assuming it's >0
                     return "("+diff(ptr->left,var)+")";
@@ -1419,7 +1419,7 @@
             //f'(x) = g'(x) / (g(x) * ln(b))
 
             case LOG : {
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
 
                     string base = ptr->symbol.substr(3);
                     if(base.length()){
@@ -1433,7 +1433,7 @@
 
             }
             case ASIN:{
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
 
                      string inner = "("+expression(ptr->left)+")";
                      return simplify_div(diff(ptr->left,var),"sqrt(1-"+inner+"^2)");
@@ -1441,7 +1441,7 @@
 
             }
             case ACOS:{
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
 
                      string inner = "("+expression(ptr->left)+")";
                      return simplify_mult("-1",simplify_div(diff(ptr->left,var),"sqrt(1-"+inner+"^2)"));
@@ -1449,7 +1449,7 @@
 
                 }
             case ATAN:{
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
 
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_div(diff(ptr->left,var),"(1+"+inner+"^2)");
@@ -1457,7 +1457,7 @@
 
                 }
             case SINH: {
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
 
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult(diff(ptr->left,var),"cosh" + inner);
@@ -1465,14 +1465,14 @@
 
                     }
             case COSH: {
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult(diff(ptr->left,var),"sinh" + inner);
                 }
 
             }
             case TANH: {
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
 
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult(diff(ptr->left,var),"(1-tanh" + inner + "^2)");
@@ -1480,7 +1480,7 @@
 
                 }
             case ASINH:{
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
 
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult(diff(ptr->left,var),"(1/sqrt(" + inner +"^2+1))");
@@ -1488,7 +1488,7 @@
 
             }
             case ACOSH: {
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
 
                     string inner = "("+expression(ptr->left)+")";
 
@@ -1497,7 +1497,7 @@
 
             }
             case ATANH:{
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
 
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult(diff(ptr->left,var),"(1/(1-"+inner+"^2))");
@@ -1507,7 +1507,7 @@
                 }
             #ifdef COMPLEX_MODE
             case IMG :{
-                if(is_function(ptr->left->symbol,0)||ptr->left->symbol==var){
+                if(is_op(ptr->left->symbol,0)||is_function(ptr->left->symbol,0)!=-1||ptr->left->symbol==var){
 
 
                    return "img("+diff(ptr->left,var)+")" ;
@@ -1537,8 +1537,8 @@
                 }
             }
             else{
-                if(is_num(ptr->symbol)||var!=ptr->symbol){
-
+                if(var!=ptr->symbol){
+                    return "0";
                 }
                 else{
                     return "1"  ;
@@ -1560,7 +1560,8 @@
             calculus_tree<DataType>ret_tree ;
             unsigned int temp_start =0;
             if(variable.length()&&!is_num(variable)&&!is_op(variable,temp_start)&&!is_keyword(variable,0)){
-                ret_tree.root = create_tree(diff(root,variable));
+                ret_tree.root = create_tree(diff(root,variable),temp_start);
+                cout<<"\nhappened";
                 return ret_tree ;
             }
             else{
@@ -1613,7 +1614,8 @@
                 gradient_field.resize(ind_vars.size());
                 unsigned int  i = 0 ;
                 for(;i<ind_vars.size();i++){
-                    gradient_field[i].root = create_tree(diff(root,ind_vars[i]));
+                    unsigned int start = 0 ;
+                    gradient_field[i].root = create_tree(diff(root,ind_vars[i]),start);
                 }
             }
         }
@@ -1651,7 +1653,8 @@
                         div_str += "+";
                     }
                     div_str.pop_back();
-                    ret_tree.root= create_tree(div_str);
+                    unsigned int start = 0;
+                    ret_tree.root= create_tree(div_str,start);
 
                 }
             }
@@ -1668,15 +1671,17 @@
     vector<calculus_tree<DataType>> calculus_tree<DataType>::curl(vector<calculus_tree<DataType>>&gradient_field,
                                                             const vector<string>&independent_variables){
         if(gradient_field.size()==3){
+            unsigned int start =0 ;
             vector<calculus_tree<DataType>> ret_curl(3);
             ret_curl[0].root = create_tree(simplify_sub(diff(gradient_field[2].root,independent_variables[1])
-                                    ,diff(gradient_field[1].root,independent_variables[2])));
+                                    ,diff(gradient_field[1].root,independent_variables[2])),start);
+            start = 0;
 
             ret_curl[1].root = create_tree(simplify_mult("-1",simplify_sub(diff(gradient_field[2].root,independent_variables[0])
-                            ,diff(gradient_field[0].root,independent_variables[2]))));
-
+                            ,diff(gradient_field[0].root,independent_variables[2]))),start);
+            start = 0;
             ret_curl[2].root = create_tree(simplify_sub(diff(gradient_field[1].root,independent_variables[0])
-                                        ,diff(gradient_field[0].root,independent_variables[1])));
+                                        ,diff(gradient_field[0].root,independent_variables[1])),start);
 
             return ret_curl;
         }
@@ -1759,20 +1764,20 @@ int main(){
     "+(3*sin(x^2)*(tan(x)^2+1))/tan(x)^2)+(x^5*sin(x))/(cos(x)+2)^2-(2*3^(1/2)*x^3)/(x^4)^(1/2)+(2^x*ln(2)*(ln(x)-x^3))/(x^2+1)-(2*2^x*x*(ln(x)-x^3))/(x^2+1)^2";
     */
 
-    string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))^tan(log2(x+5))*sec(x*asin(1/(x+1)))/"
-                       "csc((x^3+2*x)/4)^cotan(exp(x/2))*acos(1/(x+2)^0.5)";
-    calculus_tree<long double> tree,tree2;
+    string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))^tan(log2(x+5))*sec(x*asin(1/(x+1)))"
+                       ;
+    calculus_tree<long double> tree(operation),tree2;
 
 
     // Start the clock
     auto start = std::chrono::high_resolution_clock::now();
-
-    tree.load("E:\\pythonProject\\mathematical tree\\file10.txt");
+    cout<<tree;
+    tree = tree.diff_with("x");
 
     // Stop the clock and calculate the elapsed time
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    cout << "Time taken by load: " << duration.count() << " microseconds" << endl;
+    cout << "Time taken by differentation: " << duration.count() << " microseconds" << endl;
 
     // Reset and start the clock again
     start = std::chrono::high_resolution_clock::now();
@@ -1784,5 +1789,6 @@ int main(){
     duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
     cout << "Time taken by evaluate_at: " << duration.count() << " microseconds" << endl;
     system("pause");
+
     return 0;
 }
