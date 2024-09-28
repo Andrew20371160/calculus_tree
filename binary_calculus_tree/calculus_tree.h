@@ -58,7 +58,7 @@ i is treated as a constant so you must do this -> expresiion*i or i* expression
 
 #else
     const int function_count =20 ;
-    const int keyword_count =25;
+    const int keyword_count =24;
 
     enum  {SQRT,ABS,SIN,COS,TAN,SEC,CSC,COTAN,ASIN, ACOS, ATAN, EXP, LN, SINH,
            COSH,TANH,ASINH,ACOSH,ATANH,LOG,PI,E,INF_ERR,NAN_ERR
@@ -66,8 +66,8 @@ i is treated as a constant so you must do this -> expresiion*i or i* expression
     const string key_words[keyword_count]={"sqrt","abs","sin","cos","tan",
                                             "sec","csc","cotan","asin","acos",
                                             "atan","exp","ln","sinh","cosh",
-                                            "tanh","asinh","acosh","atanh",
-                                            "log","pi","e","inf","nan"};
+                                            "tanh","asinh","acosh","atanh","log",
+                                            "pi","e","inf","nan"};
 #endif
 
     /*
