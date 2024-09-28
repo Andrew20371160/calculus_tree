@@ -236,7 +236,7 @@ class calculus_tree
         2nd are the independent variables (you can say dell operator)
 
         */
-        vector<calculus_tree<DataType>> curl(vector<calculus_tree<DataType>>&gradient_field,
+        vector<calculus_tree<DataType>> curl(const vector<calculus_tree<DataType>>&gradient_field,
                                                             const vector<string>&independent_variables);
         /*
         this function retruns the divergence of a gradient field (as a calculus tree)
@@ -244,7 +244,7 @@ class calculus_tree
         2nd are the independent variables (must be same size as gradient_field)
         input :(fx,fy,fz),(x,y,z)
         */
-        calculus_tree divergence(vector<calculus_tree<DataType>>&gradient_field,
+        calculus_tree divergence(const vector<calculus_tree<DataType>>&gradient_field,
                                                             const vector<string>&independent_variables);
 
         /*
