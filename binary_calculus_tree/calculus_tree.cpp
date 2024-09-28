@@ -1,4 +1,17 @@
 #include "calculus_tree.h"
+
+    template<typename T>
+    std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
+        os<<'<';
+        for (unsigned int i = 0 ;i<vec.size();i++) {
+            os<<vec[i] ;
+            if(i<vec.size()-1){
+                os<<",\n\n";
+            }
+        }
+        os<<'>';
+        return os;
+    }
     //constructors
     template<typename DataType>
     calculus_tree<DataType>::calculus_tree(void){
@@ -1157,7 +1170,7 @@
     }
 
     template<typename DataType>
-    calculus_tree<DataType> calculus_tree<DataType>::divergence(vector<calculus_tree<DataType>>&gradient_field,
+    calculus_tree<DataType> calculus_tree<DataType>::divergence(const vector<calculus_tree<DataType>>&gradient_field,
                                                             const vector<string>&independent_variables){
             calculus_tree<DataType>ret_tree;
             if(!gradient_field.empty()){
@@ -1183,7 +1196,7 @@
     fx    fy   fz
     */
     template<typename DataType>
-    vector<calculus_tree<DataType>> calculus_tree<DataType>::curl(vector<calculus_tree<DataType>>&gradient_field,
+    vector<calculus_tree<DataType>> calculus_tree<DataType>::curl(const vector<calculus_tree<DataType>>&gradient_field,
                                                             const vector<string>&independent_variables){
         if(gradient_field.size()==3){
             unsigned int start =0 ;
@@ -1307,27 +1320,12 @@ int main(){
     "+(3*sin(x^2)*(tan(x)^2+1))/tan(x)^2)+(x^5*sin(x))/(cos(x)+2)^2-(2*3^(1/2)*x^3)/(x^4)^(1/2)+(2^x*ln(2)*(ln(x)-x^3))/(x^2+1)-(2*2^x*x*(ln(x)-x^3))/(x^2+1)^2";
     */
 
-    string operation =   "sin(acos(1/(x+5*exp(y)))^tan(ln(x^8+y^2))^cos(exp(atan(x*y)))/sec(x^4+y^3))*(asin(x+y)^3+ln(sec(5*x-4*y))-tan(cos(x^5-y^3)))/(cotan(x^6+y^6)+exp(tan(ln(x+y^2))))+log(atan(exp(x*y^2)))+sin(ln(cos(exp(x^3+y^2))))+(sec(x^2-y)*exp(cos(x*y))+ln(tan(x^4+y)))+cos(atan(x^5+y^6)+sec(3*x-2*y))*(asin(cos(x^3))+ln(sec(5*y+x^3))-tan(cos(x^5)))+exp(tan(x*ln(cos(2*y)))/(cos(x^2+y)+sec(x*y)))-sin(log(cotan(atan(2*x-y))+cos(ln(exp(x^2*y^3)))))+(sec(2*x-3*y)/tan(exp(x*y)))+cos(exp(2*atan(x^2*y)))/(ln(3*x-2*y)+tan(sec(x+y^2)))*atan(cos(log(x*exp(y^2)))+sec(cos(3*x*ln(y^3))))+exp(ln(tan(x^4-y^5)))*cos(atan(x+ln(y)))-sin(cotan(log(x^6+y^3)))*exp(sec(tan(2*x-y^2)))+cos(ln(x^2)*tan(exp(x*y^3)))/(sin(3*x^2+y^5))+exp(log(atan(x*y^4)+sec(ln(x*y^3))))*(sec(ln(3*x+y))+cos(tan(x*exp(y))))+cos(log(x+tan(exp(y*x^4)))*ln(atan(x*y)))-sin(exp(x^3)*cos(tan(x^2+y^4)))+(cos(ln(x^3*y^3))*exp(ln(cotan(x+y^2))))/(tan(log(x^2+y^2))+sec(cos(3*x*y)))+atan(log(x^2+y^6))+sec(cos(exp(atan(x+y^4))))+sin(atan(exp(x^4-y^3)))*cos(ln(cos(exp(x^2*y))))+log(cotan(atan(2*x-y^2))+sec(ln(exp(x^3+y^2))))-exp(cos(ln(tan(2*x+y)))+tan(sec(x^2+y^3)))+sin(atan(exp(x*y)))/(cos(x^5+y^5))+ln(cotan(atan(x^3+y^6)))*cos(exp(sec(tan(x^2-y^2))))+cos(ln(x^4+y^4))*exp(cotan(ln(2*x-y)))-sin(log(cotan(exp(x^5+y^3)))+sec(tan(2*x+y^6)))+tan(cos(x^6-y^4)*sec(ln(cotan(x+y^2))))/(cos(log(x^4+y^6))+exp(ln(cotan(x+y^5))))+sec(log(x^3+y^6))*cos(atan(exp(x^4+y^3)))-sin(log(cotan(atan(x^3+y^5)))+sec(cos(exp(x+y^6))))+exp(tan(log(x^5+y^2))+sec(atan(x+y^3))) ";
+    string operation =   "x^2+y^2+z^2";
     calculus_tree<long double> tree(operation),tree2;
+    vector<string> v{"x","y","z"};
+    cout<<tree.curl(tree.gradient(v),v);
 
-    for(int i = 0 ; i<50 ;i++){
-        auto start = std::chrono::high_resolution_clock::now();  // Start timing
-
-        tree = tree.diff_with("x");
-
-        auto end = std::chrono::high_resolution_clock::now();  // End timing
-        std::chrono::duration<double> diff = end - start;  // Calculate duration
-        std::cout << "diff_with took " << diff.count() << " seconds\n";
-
-        start = std::chrono::high_resolution_clock::now();  // Start timing
-
-        tree.save("E:\\pythonProject\\mathematical tree\\tree"+std::to_string(i)+".txt");
-
-        end = std::chrono::high_resolution_clock::now();  // End timing
-        diff = end - start;  // Calculate duration
-        std::cout << "save took " << diff.count() << " seconds\n";
-    }
-    cout<<endl<<tree;
     system("pause");
     return 0;
 }
+
