@@ -565,6 +565,7 @@
         return "";
     }
 
+
     template<typename DataType>
     bool calculus_tree<DataType>::is_op(const string&expression,unsigned int pos ) {
         switch(expression[pos]){
@@ -1561,7 +1562,6 @@
             unsigned int temp_start =0;
             if(variable.length()&&!is_num(variable)&&!is_op(variable,temp_start)&&!is_keyword(variable,0)){
                 ret_tree.root = create_tree(diff(root,variable),temp_start);
-                cout<<"\nhappened";
                 return ret_tree ;
             }
             else{
@@ -1693,12 +1693,38 @@
         if(root){
             ofstream file(filePath);
             if (file.is_open()) {
-                file << expression();
+                save_tour(root,file);
                 file.close();
                 return true;
             }
         }
         return false;
+    }
+    template<typename DataType>
+    void calculus_tree<DataType>::save_tour(node* ptr,ofstream&file) const {
+        if(root){
+            bool found_keyword = false;
+            string ret_exp = "";
+            if(ptr == NULL){
+                ptr = root;
+            }
+            if(is_function(ptr)!=-1){
+                file<<ptr->symbol;
+                found_keyword = true;
+            }
+            if(ptr->left){
+                file<<"(";
+                save_tour(ptr->left,file);
+                if(ptr->right){
+                    file<<ptr->symbol;
+                    save_tour(ptr->right,file);
+                }
+                file<<")";
+            }
+            else if(!found_keyword){
+                file<<ptr->symbol;
+            }
+        }
     }
 
     template<typename DataType>
@@ -1764,31 +1790,25 @@ int main(){
     "+(3*sin(x^2)*(tan(x)^2+1))/tan(x)^2)+(x^5*sin(x))/(cos(x)+2)^2-(2*3^(1/2)*x^3)/(x^4)^(1/2)+(2^x*ln(2)*(ln(x)-x^3))/(x^2+1)-(2*2^x*x*(ln(x)-x^3))/(x^2+1)^2";
     */
 
-    string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))^tan(log2(x+5))*sec(x*asin(1/(x+1)))"
-                       ;
+    string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))*tan(log2(x+5))^(sec(x*asin(1/(x+1)))+5*"
+                       "csc((x^3+2*x)/4))^cotan(exp(x/2))*acos(1/(x+2)^0.5)";
     calculus_tree<long double> tree(operation),tree2;
 
 
+
+
+for(int i = 0 ; i<50; i++){
     // Start the clock
     auto start = std::chrono::high_resolution_clock::now();
-    cout<<tree;
+
     tree = tree.diff_with("x");
 
     // Stop the clock and calculate the elapsed time
     auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    cout << "Time taken by differentation: " << duration.count() << " microseconds" << endl;
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    cout << "Time taken by diff_with in iteration " << i << ": " << duration.count() << " milliseconds" << endl;
 
-    // Reset and start the clock again
-    start = std::chrono::high_resolution_clock::now();
-
-    cout<<tree.evaluate_at("x=4.3412345");
-
-    // Stop the clock and calculate the elapsed time
-    stop = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    cout << "Time taken by evaluate_at: " << duration.count() << " microseconds" << endl;
-    system("pause");
-
+    tree.save("E:\\pythonProject\\mathematical tree\\test_"+to_string(i)+".txt");
+}
     return 0;
 }
