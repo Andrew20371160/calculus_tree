@@ -326,6 +326,7 @@ class calculus_tree
 
         void skip_spaces(const string&expression,unsigned int &start);
         string preprocess_extract(const string&expression,unsigned int &start);
+        void save_tour(node* ptr,ofstream&file) const ;
 
     public:
         /*
