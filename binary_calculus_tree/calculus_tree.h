@@ -86,11 +86,6 @@ class calculus_tree
         and returns it
         */
         string extract(const string&,unsigned int &start);
-        /*
-        is function returns -1 if ptr->symbol isn't a function
-        else it returns it's code (the enum value)
-        */
-        bool is_function( node*&ptr)const;
 
         //removes src and it's chidren
         //disconnects src from it's parent aswell
@@ -178,9 +173,16 @@ class calculus_tree
         */
         void independent_variables_tour(node*ptr,set<string>&ret_set);
 
-        bool is_constant(node*ptr);
+        bool is_constant_tree(node*ptr)const;
+
+        bool is_op_tree(node*ptr)const;
 
         void save_tour(node* ptr,ofstream&file) const ;
+        /*
+        is function returns -1 if ptr->symbol isn't a function
+        else it returns it's code (the enum value)
+        */
+        bool is_function_tree( node*&ptr)const;
 
     public:
         /*
