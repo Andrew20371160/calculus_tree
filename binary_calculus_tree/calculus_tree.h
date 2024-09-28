@@ -1,158 +1,36 @@
 #ifndef _calculus_tree_h_
 
 #define _calculus_tree_h_
-//Includes
-#include <iostream>
-#include <queue>
-#include <set>
-#include <stack>
-#include <list>
-#include <math.h>
-#include <cmath>
-#include <complex>
-#include <string>
-#include <fstream>
+#include "preprocessor.h"
 
-using namespace std ;
+#include "node.h"
 
 
 
-// Uncomment the following line to enable complex mode
+    //to enable complex numbers mode head to functions_and_known_constants.h
 
-//#define COMPLEX_MODE 1
+    /*
+    NOTE:you must define the calculus tree datatype to be complex<>
+    (e.g   calculus_tree<complex<long double>> tree();)
+
+    complex mode allows you to enter expressions like
+    5+i*5 or 5+img(5)
+
+    img is treated as a function so you can do this -> img(x^2+.......)
+    i is treated as a constant so you must do this -> expresiion*i or i* expression
+    */
+
 
 
 /*
-NOTE:you must define the calculus tree datatype to be complex<>
-(e.g   calculus_tree<complex<long double>> tree();)
-
-complex mode allows you to enter expressions like
-5+i*5 or 5+img(5)
-
-img is treated as a function so you can do this -> img(x^2+.......)
-i is treated as a constant so you must do this -> expresiion*i or i* expression
+cout overloading for vector
 */
-
-#ifdef COMPLEX_MODE
-    const int function_count =21 ;
-    const int keyword_count =26;
-    enum  {
-        SQRT,ABS,SIN,COS,TAN,SEC,CSC,COTAN,ASIN,ACOS,ATAN,
-        EXP,LN,SINH,COSH,TANH,ASINH,ACOSH,ATANH,IMG,I,LOG,
-        PI,E,INF_ERR,NAN_ERR
-    };
-    /*
-    functions must be followed by parenthese
-    for log you just attach base to it
-    for ex:log2
-    by default it's log10
-
-    pi,i,e are known constants no need to write the value explicitly
-    */
-    const string key_words[keyword_count]={"sqrt","abs","sin","cos","tan",
-                                            "sec","csc","cotan","asin","acos",
-                                            "atan","exp","ln","sinh","cosh",
-                                            "tanh","asinh","acosh","atanh","img",
-                                            "log","pi","e","i","inf","nan"};
+template<typename T>
+ostream& operator<<(ostream& stream, const vector<T>& vec) ;
 
 
-#else
-    const int function_count =20 ;
-    const int keyword_count =24;
-
-    enum  {SQRT,ABS,SIN,COS,TAN,SEC,CSC,COTAN,ASIN, ACOS, ATAN, EXP, LN, SINH,
-           COSH,TANH,ASINH,ACOSH,ATANH,LOG,PI,E,INF_ERR,NAN_ERR
-        };
-    const string key_words[keyword_count]={"sqrt","abs","sin","cos","tan",
-                                            "sec","csc","cotan","asin","acos",
-                                            "atan","exp","ln","sinh","cosh",
-                                            "tanh","asinh","acosh","atanh","log",
-                                            "pi","e","inf","nan"};
-#endif
-
-    /*
-    cout overloading for vector
-    */
-    template<typename T>
-    ostream& operator<<(ostream& stream, const vector<T>& vec) ;
 
 
-/*
-the following class is to abstract linking operations
-of a node from calculus_tree class
-*/
-class node
-{
-    template<typename DataType>
-    friend class calculus_tree;
-    //a symbol can be 3.5515, v1,x,any_name
-    string symbol ;
-    //links
-    node *parent ;
-    node *left ;
-    node *right ;
-    //a function to allocate memory for a new node
-    node*get_node(const string&);
-    /*
-    this function disconects self or this from it's parent
-    but it's children are still with him
-    */
-    bool disconnect_self(void);
-    /*
-    where (this) must have a parent
-    this function adds a new child to parent of (this)
-    or a new sibling to (this)
-    */
-    bool append_next(const string&);
-    /*
-    this function adds a child to (this)
-    in the order -> left then right
-    if it doesn't have place then it doesn't
-    */
-    bool append_child(const string&);
-    /*
-        if (this) has a parent then this function
-        disconnects (this) from its parent
-        then assign a new parent to it
-        else it just assigns a new parent to it
-    */
-    bool append_parent(const string&);
-    /*
-    previous operations but done one nodes or subtrees
-    */
-    /*
-    this function disconnects src_root from it's parent
-    then adds it to children of parent of (this)
-    if applicable else it doesn't
-    */
-    bool append_next(node*&src_root);
-    /*
-    this function disconnects src_root from it's parent
-    then adds it to children of (this)
-    if applicable else it doesn't
-    */
-    bool append_child(node*&src_root);
-    /*
-    this function disconnects (this) from it's parent
-    then adds it to children of src_root if applicable
-    */
-    bool append_parent(node*&src_root);
-
-    /*
-    op becomes parent of (this)
-    and parent (this) becomes parent of (op)
-    check below diagram
-    */
-    /*
-    p1                                p1
-    |     ->exchange_parent(p2)->     |
-    this                              p2
-                                      |
-                                    this
-    */
-    bool exchange_parent(const string&op) ;
-
-};
 /*
 calculus tree (class used by the user)
 */
@@ -160,6 +38,7 @@ template<typename DataType>
 class calculus_tree
 {
     private :
+        preprocessor processor;
         node *root  ;
         /*
         parsing functions
@@ -211,18 +90,8 @@ class calculus_tree
         is function returns -1 if ptr->symbol isn't a function
         else it returns it's code (the enum value)
         */
-        int is_function( node*&ptr)const;
-        //same for this
-        int is_function(const string&expression,unsigned int  ) ;
-        /*
-        returns true if expression[pos] is an operator
-        */
-        bool is_op(const string&expression,unsigned int  ) ;
-        //checks if var is a number
-        //with decimal points and signs
-        bool is_num(const string &var);
-        //returns true if extracted operand is a keyword (either a function or constant like "pi")
-        bool is_keyword(const string&expression ,unsigned int pos);
+        bool is_function( node*&ptr)const;
+
         //removes src and it's chidren
         //disconnects src from it's parent aswell
         bool remove_node(node*&src) ;
@@ -302,30 +171,15 @@ class calculus_tree
         /*
         returns a copy from src root
         */
-        node * copy_tree(const node*);
+        node * copy_tree(const node*)const;
         /*
             fills ret_set with independent variables in the tree
             (e.g. x,y,v133335353...)
         */
         void independent_variables_tour(node*ptr,set<string>&ret_set);
 
-        bool is_constant(const string &var);
         bool is_constant(node*ptr);
-        bool is_known_constant(const string&var) ;
-        unsigned int token_type(const string&token, int &open_brackets_c);
 
-        bool valid_var_const_token(unsigned int previous_token, const string&token,string&ret_exp);
-
-        bool valid_function_token(unsigned int previous_token, const string&token,string&ret_exp);
-
-        bool valid_open_bracket_token(unsigned int previous_token, const string&token,string&ret_exp);
-
-        bool valid_close_bracket_token(unsigned int previous_token, const string&token,string&ret_exp);
-
-        bool valid_operator_token(unsigned int previous_token, const string&token,string&ret_exp);
-
-        void skip_spaces(const string&expression,unsigned int &start);
-        string preprocess_extract(const string&expression,unsigned int &start);
         void save_tour(node* ptr,ofstream&file) const ;
 
     public:
@@ -427,7 +281,6 @@ class calculus_tree
                 return os;
         }
 
-        string prepare_exp(const string&exp);
     };
 
 
