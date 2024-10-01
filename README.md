@@ -1,3 +1,6 @@
 # calculus-tree
-the file I will keep updating is binary_calculus_tree
-the other file only contains parsing and building up a general tree from a mathematical expression
+1-the expression tree is in binray_calculus_tree directory 
+
+2-the other file was an attempt to build an expresssion tree using a general tree.
+turns out the expression tree must be binray even in the general tree file
+after examining it builds a binary tree at the end but less efficient and more complicated one.
