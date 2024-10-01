@@ -182,7 +182,7 @@
         temp =preprocess_extract(expression,i);
         previous_token = token_type(temp,open_brackets_c) ;
         //an expression can't start with *,/,^,),or an error
-        if(!((previous_token==ERROR)||(previous_token==CLOSE_BRACKET)||((previous_token==OPERATOR)&&(temp[0]=='+'||temp[0]=='-')))){
+        if(!((previous_token==ERROR)||(previous_token==CLOSE_BRACKET)||((previous_token==OPERATOR)&&(temp[0]!='+'||temp[0]!='-')))){
             ret_exp +=temp  ;
             while(i<expression.length()&&open_brackets_c>=0){
                 //extract the new operand
