@@ -1,4 +1,7 @@
     #include "node.h"
+
+    using namespace std;
+    //allocate memory for a new node
     node * node::get_node(const string &symbol){
         node*ret_node = NULL;
         ret_node = new node ;
