@@ -1,5 +1,6 @@
 #include "functions_and_known_constants.h"
 
+    using namespace std ;
 
     bool is_op(const string&expression,unsigned int pos ) {
         if(pos<expression.size()){
