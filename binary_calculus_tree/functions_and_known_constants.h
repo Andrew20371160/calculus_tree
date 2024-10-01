@@ -7,15 +7,8 @@
 
     //Includes
     #include <iostream>
-    #include <queue>
-    #include <set>
-    #include <list>
-    #include <math.h>
-    #include <cmath>
-    #include <complex>
+
     #include <string>
-    #include <fstream>
-    using namespace std ;
 
 
 
@@ -40,7 +33,7 @@
 
         pi,i,e are known constants no need to write the value explicitly
         */
-        const string key_words[keyword_count]={"sqrt","abs","sin","cos","tan",
+        const std::string  key_words[keyword_count]={"sqrt","abs","sin","cos","tan",
                                                 "sec","csc","cotan","asin","acos",
                                                 "atan","exp","ln","sinh","cosh",
                                                 "tanh","asinh","acosh","atanh","img",
@@ -63,7 +56,7 @@
             PI,E,
             INF_ERR,NAN_ERR
         };
-        const string key_words[keyword_count]={"sqrt","abs","sin","cos","tan",
+        const std::string  key_words[keyword_count]={"sqrt","abs","sin","cos","tan",
                                                 "sec","csc","cotan","asin","acos",
                                                 "atan","exp","ln","sinh","cosh",
                                                 "tanh","asinh","acosh","atanh",
@@ -74,19 +67,23 @@
                                                 "inf","nan"};
 
     #endif
-
-    //same for this
-    int is_known_function(const string&expression,unsigned int& pos ) ;
+    /*
+    extracts operand at pos then returns it's enum value if exists
+    else it returns -1
+    */
+    int is_known_function(const std::string &expression,unsigned int& pos ) ;
     /*
     returns true if expression[pos] is an operator
     */
-    bool is_op(const string&expression,unsigned int pos ) ;
+    bool is_op(const std::string &expression,unsigned int pos ) ;
     //checks if var is a number
     //with decimal points and signs
-    bool is_num(const string &var);
-
-    int is_keyword(const string&expression,unsigned int  pos);
-
-    int is_known_constant(const string&var,unsigned int pos ) ;
+    bool is_num(const std::string  &var);
+    //returns enum value if operand starting at pos
+    //else -1
+    int is_keyword(const std::string &expression,unsigned int  pos);
+    //returns enum value if an operand starting at pos if it's a known constant
+    //else -1
+    int is_known_constant(const std::string &var,unsigned int pos ) ;
 
 #endif
