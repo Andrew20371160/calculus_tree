@@ -1,4 +1,5 @@
 #include "calculus_tree.h"
+    using namespace std ;
 
     template<typename T>
     std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
@@ -1218,9 +1219,9 @@
 
     //save and load section
     template<typename DataType>
-    bool calculus_tree<DataType>::save(const string&filePath) {
+    bool calculus_tree<DataType>::save(const string&file_path) {
         if(root){
-            ofstream file(filePath);
+            ofstream file(file_path);
             if (file.is_open()) {
                 save_tour(root,file);
                 file.close();
@@ -1278,7 +1279,6 @@
         return false;
     }
 
-#include <chrono>
 int main(){
 
     /*
@@ -1320,10 +1320,11 @@ int main(){
     "+(3*sin(x^2)*(tan(x)^2+1))/tan(x)^2)+(x^5*sin(x))/(cos(x)+2)^2-(2*3^(1/2)*x^3)/(x^4)^(1/2)+(2^x*ln(2)*(ln(x)-x^3))/(x^2+1)-(2*2^x*x*(ln(x)-x^3))/(x^2+1)^2";
     */
 
-    string operation =   "x^2+y^2+z^2";
-    calculus_tree<long double> tree(operation),tree2;
-    vector<string> v{"x","y","z"};
-    cout<<tree.curl(tree.gradient(v),v);
+    string operation =   "1/x+1*((x^2+4*x+1/x^2-1)*ln(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
+    calculus_tree<long double>tree(operation) ;
+    cout<<tree.diff_with("x").evaluate_at("x=54545121.5");
+    cout<<endl<<tree.diff_with("+");
+    cout<<endl<<tree.evaluate_at("x=2");
 
     system("pause");
     return 0;
