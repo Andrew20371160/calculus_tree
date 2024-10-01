@@ -1,0 +1,13 @@
+1-The functions_and_known_constants.h header file defines known mathematical functions and constants.
+-It provides utility functions to check if a string is a known function, operator, number, keyword, or constant.
+-if you want to access complex_mode uncomment //#define complex_mode
+  
+2-The node header file defines the node class, which is used to represent a node in a tree structure for mathematical expressions.
+-This class provides methods for managing the relationships between nodes, such as adding siblings, children, and parents, and disconnecting a node from its parent.
+-It's designed to abstract the linking operations from the calculus_tree class
+
+3-The preprocessor.h header file defines the preprocessor class, which is used to preprocess mathematical expressions. It checks for errors, ensures the correct usage of operators and functions, and modifies the expression to a format that can be easily parsed by the calculus_tree class. It also ensures that the number of opening and closing brackets match.
+
+4-The calculus_tree.h header file defines the calculus_tree class, which is a template class used to represent and manipulate mathematical expressions in a tree structure.
+-This class provides methods for parsing expressions, evaluating them, differentiating them, and performing various calculus operations such as gradient, curl, divergence, and Laplacian.
+-It also supports complex numbers and can handle expressions with multiple variables.
