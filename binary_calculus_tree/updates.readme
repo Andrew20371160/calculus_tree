@@ -1,1 +1,7 @@
+10/6/2024 updates:
+1-added simplification (only for leaves now will try to add for subtrees later)
+for ex: (1+2)*1*x is now simplified to 3*x
+ofcourse scale that to larger expressions (you get the idea)
+2-added capability to evaluate an expression at a known constant (ex: x= pi)
+3-fixed couple of bugs rearding evaluation
 10/2/2024 updates :contains genration ,evaluation ,differentiation ,save and load of an expression tree
