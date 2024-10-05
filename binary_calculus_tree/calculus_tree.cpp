@@ -162,7 +162,6 @@
     bool calculus_tree<DataType>::remove_node(node*&src) {
         if(src){
             src->disconnect_self();
-
             queue<node*>q ;
             q.push(src);
             while(!q.empty())
@@ -573,10 +572,7 @@
             }
             var  = expression.substr(original_start,start -original_start);
         }
-        if(is_keyword(var,0)==-1){
-            return var ;
-        }
-        return "";
+        return var ;
     }
 
     template<typename DataType>
@@ -596,9 +592,16 @@
                        if(i<vars_equal.length()){
                            value = eval_extract(vars_equal,i);
                        }
-                       if(value.length()&&is_num(value)){
-                            variables_and_values.push_back(var);
-                            variables_and_values.push_back(value);
+                       if(value.length()){
+                            if(is_num(value)){
+                                variables_and_values.push_back(var);
+                                variables_and_values.push_back(value);
+                            }
+                            else if(is_known_constant(value,0)){
+
+                                variables_and_values.push_back(var);
+                                variables_and_values.push_back(to_string(evaluate_constant(value)));
+                            }
                        }
                        i++;
                    }
@@ -607,7 +610,6 @@
                    }
                 }
                 set<string> ind_vars;
-                list<string>::iterator it = variables_and_values.begin() ;
                 independent_variables_tour(root,ind_vars) ;
                 if(ind_vars.size() ==variables_and_values.size()/2){
                     for(unsigned int i = 0 ; i <ind_vars.size();i++){
@@ -638,16 +640,16 @@
     }
 
     template<typename DataType>
-    DataType calculus_tree<DataType>::evaluate_constant(node*ptr){
-        int const_code = is_known_constant(ptr->symbol,0);
+    DataType calculus_tree<DataType>::evaluate_constant(const string&symbol){
+        int const_code = is_known_constant(symbol,0);
         switch(const_code){
             case PI :return DataType(M_PI) ;
-            case E: DataType(exp(1)) ;
+            case E: return DataType(exp(1)) ;
             #ifdef COMPLEX_MODE
                 case I : return complex<long double>(0,1) ;
             #endif
             default:{
-                cout<<endl<<ptr->symbol<<" is the issue";
+                cout<<endl<<symbol<<" is the issue";
                 return 0;
             }
         }
@@ -683,7 +685,7 @@
                         ++it;
                     }
                 }
-                return evaluate_constant(ptr);
+                return evaluate_constant(ptr->symbol);
             }
             else{
                 if(is_op_tree(ptr)){
@@ -1278,7 +1280,242 @@
         }
         return false;
     }
+    template<typename DataType>
+    string  calculus_tree<DataType>::simplify_tree_add(const std::string &v1,const std::string  &v2){
+        if(v1.size()&&v2.size()){
+            bool is_v1_num = is_num(v1);
+            bool is_v2_num = is_num(v2);
+            if(is_v1_num&&is_v2_num){
+                return to_string(stold(v1)+stold(v2));
+            }
+            else if (is_v1_num)
+            {
+                if(stold(v1)==0){
+                    return v2 ;
+                }
+            }
+            else if(is_v2_num){
+                if(stold(v2)==0){
+                    return v1 ;
+                }
+            }
+            if(v1=="inf"||v2=="inf"){
+                return "inf";
+            }
+        }
+        //can't simplify
+        return "";
+    }
+    template<typename DataType>
+    string  calculus_tree<DataType>::simplify_tree_sub(const std::string &v1,const std::string  &v2){
+        if(v1.size()&&v2.size()){
+        bool is_v1_num = is_num(v1);
+        bool is_v2_num = is_num(v2);
+        if(is_v1_num&&is_v2_num){
+            return to_string(stold(v1)-stold(v2));
+        }
+        //no need to simplify 0-v1 since it would be translated to -1*v1
+        else if(is_v2_num){
+            if(stold(v2)==0){
+                return v1 ;
+            }
+        }
+        else if(v1==v2){
+            return "0";
+        }
+        if(v1=="inf"||v2=="inf"){
+            return "inf";
+        }
+        }
+        //can't simplify
+        return "";
+    }
+    template<typename DataType>
+    string  calculus_tree<DataType>::simplify_tree_mult(const std::string &v1,const std::string  &v2){
+        if(v1.size()&&v2.size()){
+        bool is_v1_num = is_num(v1);
+        bool is_v2_num = is_num(v2);
+        if(is_v1_num&&is_v2_num){
+            return to_string(stold(v1)*stold(v2));
+        }
+        else if (is_v1_num){
+            if(stold(v1)==0){
+                return "0";
+            }
+            else if(stold(v1)==1){
+                return v2;
+            }
+        }
+        else if (is_v2_num){
+            if(stold(v2)==0){
+                return "0";
+            }
+            else if(stold(v2)==1){
+                return v1;
+            }
+        }
+        else if(v1=="inf"||v2=="inf"){
+            return "inf";
+        }
+        }
+        return "";
+    }
+    template<typename DataType>
+    string  calculus_tree<DataType>::simplify_tree_div(const std::string &v1,const std::string  &v2){
+        if(v1.size()&&v2.size()){
+        bool is_v1_num = is_num(v1);
+        bool is_v2_num = is_num(v2);
+        if(is_v1_num&&is_v2_num){
+            if(stold(v2)==0){
+                if(stold(v1)==0){
+                    return "nan";
+                }
+                return "inf" ;
+            }
+            return to_string(stold(v1)/stold(v2));
+        }
+        else if (is_v2_num){
+            if(stold(v2)==0){
+                return "inf";
+            }
+            else if(stold(v2)==1){
+                return v1;
+            }
+        }
+        else if (is_v1_num){
+            if(stold(v1)==0){
+                return "0";
+            }
+        }
+        else if(v1==v2){
+            return"1";
+        }
+        else if(v2=="inf"){
+            return "0";
+        }
+        else if(v1=="inf"){
+            return "inf";
+        }
+        }
+        return "";
+    }
+    template<typename DataType>
+    string  calculus_tree<DataType>::simplify_tree_power(const std::string &v1,const std::string  &v2){
+        if(v1.size()&&v2.size()){
+        bool is_v1_num = is_num(v1);
+        bool is_v2_num = is_num(v2);
+        if(is_v1_num&&is_v2_num){
+            if(stold(v2)==0){
+                if(stold(v1)==0){
+                    return "nan";
+                }
+                return "1";
+            }
+            return to_string(pow(stold(v1),stold(v2)));
+        }
+        else if(is_v2_num){
+            long double v2_val = stold(v2);
+            if(v2_val==1){
+                return v1 ;
+            }
+            else if(v2_val==0){
+                return "1";
+            }
+        }
+        else if(is_v1_num){
+            long double v1_val = stold(v1);
+            if(v1_val==1){
+                return "1" ;
+            }
+            else if(v1_val==0){
+                return "0";
+            }
+        }
+        else if(v1=="inf"||v2=="inf"){
+            return "inf";
+        }
+        }
+        return "";
+    }
 
+    template<typename DataType>
+    string calculus_tree<DataType>::simplify_tree(node*ptr){
+        if(ptr){
+            string left_operand="";
+            string right_operand="";
+            if(ptr->left){
+                left_operand = simplify_tree(ptr->left);
+            }
+            if(ptr->right){
+                right_operand = simplify_tree(ptr->right);
+            }
+            if(is_op_tree(ptr)){
+                string simplification_output ="";
+                switch(ptr->symbol[0]){
+                    case '+':simplification_output = simplify_tree_add(left_operand,right_operand);break;
+                    case '-':simplification_output = simplify_tree_sub(left_operand,right_operand);break;
+                    case '*':simplification_output = simplify_tree_mult(left_operand,right_operand);break;
+                    case '/':simplification_output = simplify_tree_div(left_operand,right_operand);break;
+                    case '^':simplification_output = simplify_tree_power(left_operand,right_operand);break;
+                }
+                if(simplification_output.size()){
+                    //simplification occurred
+                    if(ptr->parent){
+                        node*temp = ptr->parent;
+                        remove_node(ptr);
+                        temp->append_child(simplification_output);
+                    }
+                    else{
+                        //root is updated then
+                        remove_node(root);
+                        root=root->get_node(simplification_output);
+                    }
+                    return simplification_output ;
+                }
+            }
+            else if(is_function_tree(ptr)){
+                if(is_num(left_operand)){
+                    unsigned int temp_start = 0 ;
+                    int fn_code = is_known_function(ptr->symbol,temp_start);
+                    string value ="";
+                    DataType base_log = DataType(10);
+                    if(fn_code==LOG){
+                        if(ptr->symbol.length()>3){
+                            base_log = DataType(stold(ptr->symbol.substr(3)));
+                        }
+                        value =to_string(evaluate_function(fn_code,stold(left_operand),base_log)) ;
+                    }
+                    else{
+                        value= to_string(evaluate_function(fn_code,stold(left_operand),base_log));
+                    }
+                    if(ptr->parent){
+                        node*temp = ptr->parent;
+                        remove_node(ptr);
+                        temp->append_child(value);
+                    }
+                    else{
+                        //root is updated then
+                        remove_node(root);
+                        root=root->get_node(value);
+                    }
+                    return value ;
+                }
+            }
+        else {
+            if(is_known_constant(ptr->symbol,0)!=-1){
+                return to_string(evaluate_constant(ptr->symbol));
+            }
+            return ptr->symbol;
+        }
+    }
+    return "";
+    }
+    template<typename DataType>
+    void calculus_tree<DataType>::simplify(void){
+        if(root){
+            simplify_tree(root);
+        }
+    }
 int main(){
 
     /*
@@ -1319,14 +1556,13 @@ int main(){
     "ln(3060513257434037/1125899906842624)*((6*cos(x))/x-3*ln(x^2)*sin(x)-(6*x*cos(x^2))/tan(x)"
     "+(3*sin(x^2)*(tan(x)^2+1))/tan(x)^2)+(x^5*sin(x))/(cos(x)+2)^2-(2*3^(1/2)*x^3)/(x^4)^(1/2)+(2^x*ln(2)*(ln(x)-x^3))/(x^2+1)-(2*2^x*x*(ln(x)-x^3))/(x^2+1)^2";
     */
+    string operation = "1/x+1*((x^2+4*x+1/x^2-1)*log(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
 
-    string operation =   "1/x+1*((x^2+4*x+1/x^2-1)*ln(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
     calculus_tree<long double>tree(operation) ;
-    cout<<tree.diff_with("x").evaluate_at("x=54545121.5");
-    cout<<endl<<tree.diff_with("+");
-    cout<<endl<<tree.evaluate_at("x=2");
-
+    tree= tree.diff_with("x");
+    cout<<tree;
+    tree.simplify();
+    cout<<endl<<endl<<tree;
     system("pause");
     return 0;
 }
-
