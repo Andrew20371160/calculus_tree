@@ -115,7 +115,7 @@ class calculus_tree
         if ptr->symbol is a kown constant it returns it's value
         else it prints an error msg where the issue is and returns zero at that point
         */
-        DataType evaluate_constant(node*);
+        DataType evaluate_constant(const std::string&);
         /*
         switches through the known function using function code
         then returns the value
@@ -189,6 +189,12 @@ class calculus_tree
         else it returns it's code (the enum value)
         */
         bool is_function_tree( node*&ptr)const;
+        std::string simplify_tree(node*ptr);
+        std::string  simplify_tree_add(const std::string &v1,const std::string  &v2);
+        std::string  simplify_tree_sub(const std::string &v1,const std::string  &v2);
+        std::string  simplify_tree_mult(const std::string &v1,const std::string  &v2);
+        std::string  simplify_tree_div(const std::string &v1,const std::string  &v2);
+        std::string  simplify_tree_power(const std::string &v1,const std::string  &v2);
 
     public:
         /*
@@ -288,6 +294,7 @@ class calculus_tree
                 os << obj.expression();
                 return os;
         }
+        void simplify(void);
 
     };
 
