@@ -1092,6 +1092,7 @@
             unsigned int temp_start =0;
             if(variable.length()&&!is_num(variable)&&!is_op(variable,0)&&is_keyword(variable,0)==-1){
                 ret_tree.root = create_tree(diff(root,variable),temp_start);
+                ret_tree.simplify();
                 return ret_tree ;
             }
             else{
