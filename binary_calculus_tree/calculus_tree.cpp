@@ -533,34 +533,7 @@
         return false ;
     }
 
-    template<typename DataType>
-    DataType calculus_tree<DataType>::evaluate_function(const int fn,const DataType var, const  DataType base) {
-        switch(fn){
-            case EXP: return exp(var);
-            case LN: return log(var);
-            case SIN: return sin(var);
-            case COS: return cos(var);
-            case TAN: return tan(var);
-            case SQRT: return pow(var,0.5);
-            case ABS : return abs(var);
-            case LOG : return log(var) / log(base);
-            case SEC: return DataType(1)/cos(var) ;
-            case CSC:return DataType(1)/sin(var) ;
-            case COTAN: return DataType(1)/tan(var);
-            case ASIN: return asin(var);
-            case ACOS: return acos(var);
-            case ATAN: return atan(var);
-            case SINH: return sinh(var);
-            case COSH: return cosh(var);
-            case TANH: return tanh(var);
-            case ASINH: return asinh(var);
-            case ACOSH: return acosh(var);
-            case ATANH: return atanh(var);
-            #ifdef COMPLEX_MODE
-                case IMG :return complex<long double>(0,1)*var;
-            #endif
-        }
-    }
+
 
     template<typename DataType>
     string calculus_tree<DataType>::eval_extract(const string&expression,unsigned int &start){
@@ -600,7 +573,7 @@
                             else if(is_known_constant(value,0)){
 
                                 variables_and_values.push_back(var);
-                                variables_and_values.push_back(to_string(evaluate_constant(value)));
+                                variables_and_values.push_back(to_string(evaluate_constant<DataType>(value)));
                             }
                        }
                        i++;
@@ -628,32 +601,7 @@
         return 0 ;
     }
 
-    template<typename DataType>
-    DataType calculus_tree<DataType>::evaluate_operator(char op,const DataType&left_operand,const DataType&right_operand){
-       switch(op){
-            case '+':return left_operand+right_operand ;
-            case '-':return left_operand-right_operand ;
-            case '*':return left_operand*right_operand ;
-            case '/':return left_operand/right_operand ;
-            case '^':return pow(left_operand,right_operand);
-        }
-    }
 
-    template<typename DataType>
-    DataType calculus_tree<DataType>::evaluate_constant(const string&symbol){
-        int const_code = is_known_constant(symbol,0);
-        switch(const_code){
-            case PI :return DataType(M_PI) ;
-            case E: return DataType(exp(1)) ;
-            #ifdef COMPLEX_MODE
-                case I : return complex<long double>(0,1) ;
-            #endif
-            default:{
-                cout<<endl<<symbol<<" is the issue";
-                return 0;
-            }
-        }
-    }
 
     template<typename DataType>
     DataType calculus_tree<DataType>::evaluate(node*ptr,const list<string>&variables_and_values){
@@ -685,7 +633,7 @@
                         ++it;
                     }
                 }
-                return evaluate_constant(ptr->symbol);
+                return evaluate_constant<DataType>(ptr->symbol);
             }
             else{
                 if(is_op_tree(ptr)){
@@ -704,10 +652,10 @@
                             if(ptr->symbol.length()>3){
                                 base_log = DataType(stold(ptr->symbol.substr(3)));
                             }
-                            return evaluate_function(fn_code,(left_operand),base_log) ;
+                            return evaluate_function<DataType>(fn_code,(left_operand),base_log) ;
                         }
                         else{
-                            return evaluate_function(fn_code,(left_operand),base_log);
+                            return evaluate_function<DataType>(fn_code,(left_operand),base_log);
                         }
                     }
                     else{
@@ -1484,10 +1432,10 @@
                         if(ptr->symbol.length()>3){
                             base_log = DataType(stold(ptr->symbol.substr(3)));
                         }
-                        value =to_string(evaluate_function(fn_code,stold(left_operand),base_log)) ;
+                        value =to_string(evaluate_function<DataType>(fn_code,stold(left_operand),base_log)) ;
                     }
                     else{
-                        value= to_string(evaluate_function(fn_code,stold(left_operand),base_log));
+                        value= to_string(evaluate_function<DataType>(fn_code,stold(left_operand),base_log));
                     }
                     if(ptr->parent){
                         node*temp = ptr->parent;
@@ -1504,7 +1452,7 @@
             }
         else {
             if(is_known_constant(ptr->symbol,0)!=-1){
-                return to_string(evaluate_constant(ptr->symbol));
+                return to_string(evaluate_constant<DataType>(ptr->symbol));
             }
             return ptr->symbol;
         }
@@ -1576,5 +1524,6 @@ int main(){
     cout << "\nSimplified in " << simplify_time.count() << " ms";
 
     tree.save("E:\\pythonProject\\mathematical tree\\tree4.txt");
+    system("pause");
     return 0 ;
 }
