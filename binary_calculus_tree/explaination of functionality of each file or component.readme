@@ -1,10 +1,7 @@
 1-The functions_and_known_constants.h header file defines known mathematical functions and constants.
 -It provides utility functions to check if a string is a known function, operator, number, keyword, or constant.
 -if you want to access complex_mode uncomment //#define complex_mode
--if you want to add new constants and functions head to it aswell (or let me know)
-
-2-the functions_and_known_constants.tpp contains evaluate_constant,evaluate_function,evaluate_operator
--in that file exists the definitions of these template functions if you wanna add evaluation of a constant or a function head there.
+-if you want to add new constants or functions head to it (or let me know)
 
 
 3-The node header file defines the node class, which is used to represent a node in a tree structure for mathematical expressions.
