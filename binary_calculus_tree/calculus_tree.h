@@ -4,11 +4,7 @@
 #include <queue>
 #include <set>
 #include <list>
-#include <math.h>
-#include <cmath>
-#include <complex>
 #include <fstream>
-
 #include "preprocessor.h"
 #include "node.h"
 
@@ -107,20 +103,8 @@ class calculus_tree
         */
         std::string  eval_extract(const std::string &,unsigned int &start);
 
-        /*
-            the name is obvious
-        */
-        DataType evaluate_operator(char op,const DataType&left_operand,const DataType&right_operand);
-        /*
-        if ptr->symbol is a kown constant it returns it's value
-        else it prints an error msg where the issue is and returns zero at that point
-        */
-        DataType evaluate_constant(const std::string&);
-        /*
-        switches through the known function using function code
-        then returns the value
-        */
-        DataType evaluate_function(const int fn,const DataType var,const DataType base);
+
+
         /*
         vists children first to get values or expressions results
         then returns the total value of the mathematical tree
