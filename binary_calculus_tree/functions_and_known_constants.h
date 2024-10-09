@@ -12,6 +12,18 @@
     #include <cmath>
     #include <complex>
     #include <limits>
+    /*
+    you can add a new constant or function following these steps
+    1-increment constants_count or functions_count respectively (both in COMPLEX_MODE and normal mode)
+    2-add enum value accordingly say you wanna add sigmoid then add the name SIGMOID to functions_codes (both in COMPLEX_MODE and normal mode)
+    3-add a string representing that function or constant to the according array (both in COMPLEX_MODE and normal mode)
+    4-don't add a function before log
+    5-head to the functions_and_known_constants.tpp then add evaluation of it
+    6-then head to calculus_tree.cpp
+    and add the differeniation of that function in diff_function
+    string calculus_tree<DataType>::diff_function(const int fn,node*ptr,const string&var ){
+
+    */
 
     #ifdef COMPLEX_MODE
 
@@ -20,16 +32,19 @@
         const int keywords_count =26;
 
         enum  functions_codes{
+            //don't add functions' codes here
             LOG,
             SQRT,ABS,SIN,COS,TAN,
             SEC,CSC,COTAN,ASIN,ACOS,
             ATAN,EXP,LN,SINH,COSH,
             TANH,ASINH,ACOSH,ATANH,IMG,
+            //add new functions' codes here
         };
 
         enum constants_codes{
             PI,E,I,
             INF_ERR,NAN_ERR
+            //add new constants codes here
         }
         /*
         functions must be followed by parenthese
@@ -40,13 +55,13 @@
         pi,i,e are known constants no need to write the value explicitly
         */
         const std::string  known_functions[functions_count]={
-                                                "log",
-                                                "sqrt","abs","sin","cos","tan",
-                                                "sec","csc","cotan","asin","acos",
-                                                "atan","exp","ln","sinh","cosh",
-                                                "tanh","asinh","acosh","atanh","img",
-                                                //add new functions here
-                                            };
+                "log",
+                "sqrt","abs","sin","cos","tan",
+                "sec","csc","cotan","asin","acos",
+                "atan","exp","ln","sinh","cosh",
+                "tanh","asinh","acosh","atanh","img",
+                //add new functions here
+            };
         const std::string  known_constants[constants_count]={
                                                 "pi","e","i",
                                                 "inf","nan"
@@ -54,6 +69,7 @@
                                             };
 
     #else
+        //normal mode
         const int functions_count =20 ;
         const int constants_count =4 ;
         const int keywords_count =24;
