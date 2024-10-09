@@ -1,6 +1,6 @@
 #include "functions_and_known_constants.h"
 
-    using namespace std ;
+    using namespace std;
 
     bool is_op(const string&expression,unsigned int pos ) {
         if(pos<expression.size()){
@@ -49,35 +49,18 @@
         return false ;
     }
 
-    int is_known_function(const string&expression ,unsigned int &start){
+    int is_known_function(const string&expression ,unsigned int start){
         if(start<expression.length()){
-            unsigned int temp_start = start ;
             unsigned int original_start = start ;
-            while(temp_start<expression.length()&&!is_op(expression,temp_start)){
-                temp_start++;
+            while(start<expression.length()&&!is_op(expression,start)){
+                start++;
             }
-            string temp=  expression.substr(original_start, temp_start - original_start);
+            string temp=  expression.substr(original_start, start - original_start);
             if(temp.substr(0,3)=="log"){
                 return LOG ;
              }
-             for(int i =0 ; i <function_count-1;i++){
-                if(temp==key_words[i]){
-                    return i;
-                }
-             }
-         }
-         return -1 ;
-    }
-
-    int is_keyword(const string&expression ,unsigned int pos){
-        if(pos<expression.length()){
-            unsigned int original_start = pos ;
-            while(pos<expression.length()&&!is_op(expression,pos)){
-                pos++;
-            }
-            string temp=  expression.substr(original_start, pos - original_start);
-             for(int i =0 ; i <keyword_count;i++){
-                if(temp==key_words[i]){
+             for(int i =1 ; i <functions_count;i++){
+                if(temp==known_functions[i]){
                     return i;
                 }
              }
@@ -92,11 +75,28 @@
                 pos++;
             }
             string temp=  expression.substr(original_start, pos - original_start);
-            for(int i =function_count ; i <keyword_count-2;i++){
-                if(temp==key_words[i]){
+            for(int i =0 ; i <constants_count;i++){
+                if(temp==known_constants[i]){
                     return i;
                 }
             }
         }
         return -1 ;
     }
+
+    int is_keyword(const string&expression ,unsigned int pos){
+        if(pos<expression.length()){
+            unsigned int original_start = pos ;
+            while(pos<expression.length()&&!is_op(expression,pos)){
+                pos++;
+            }
+            string temp=  expression.substr(original_start, pos - original_start);
+            int ret_code = is_known_constant(expression,pos);
+            if(ret_code==-1){
+                ret_code= is_known_function(expression,pos);
+            }
+            return ret_code ;
+         }
+         return -1 ;
+    }
+
