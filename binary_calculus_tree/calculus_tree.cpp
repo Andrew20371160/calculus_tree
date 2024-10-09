@@ -976,12 +976,10 @@
             }break;
             case ATANH:{
                 if(!is_constant_tree(ptr->left)||ptr->left->symbol==var){
-
                     string inner = "("+expression(ptr->left)+")";
                     return simplify_mult(diff(ptr->left,var),"(1/(1-"+inner+"^2))");
 
                 }
-
             }break;
             #ifdef COMPLEX_MODE
             case IMG :{
@@ -993,6 +991,7 @@
             }break;
             #endif // COMPLEX_MODE
         }
+        //add new function differentiation here
         return "0" ;
     }
 
