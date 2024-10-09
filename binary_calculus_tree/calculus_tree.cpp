@@ -85,7 +85,7 @@
             }
             else if(src.root){
                 calculus_tree<DataType> ret_tree ;
-                node *ret_root=ret_root->get_node("*");
+                node *ret_root=new node("*");
                 ret_root->append_child("-1");
                 ret_root->right = src.copy_tree(src.root);
                 ret_tree.root =ret_root ;
@@ -197,7 +197,7 @@
     node * calculus_tree<DataType>::copy_tree(const node*src_root)const{
         if(src_root){
             node *ret_root = NULL ;
-            ret_root = ret_root->get_node(src_root->symbol);
+            ret_root = new node(src_root->symbol);
             if(src_root->left){
                 ret_root->left = copy_tree(src_root->left);
                 if(ret_root->left){
@@ -375,7 +375,7 @@
         node *temp = NULL;
         int diff = precedence(op,0)-precedence(last_op->symbol,0);
         if(diff>0||op=="^"){
-            temp = temp->get_node(op) ;
+            temp = new node(op) ;
             temp->append_child(var) ;
             last_op->append_child(temp) ;
             last_op = last_op->right;
@@ -425,12 +425,12 @@
                                 signed_var=true;
                             }
                             else if(!is_op(expression,start)){
-                                temp =temp->get_node(extract(expression,start));
+                                temp =new node(extract(expression,start));
                                 signed_var=true;
                             }
                             if(temp&&signed_var){
                                 node *ret_root =NULL;
-                                ret_root=ret_root->get_node("*");
+                                ret_root=new node("*");
                                 ret_root->append_child(op+"1");
                                 ret_root->append_child(temp) ;
                                 temp= ret_root;
@@ -440,7 +440,7 @@
                     return temp ;
                 }
                 else{
-                    return temp->get_node(extract(expression,start));
+                    return new node(extract(expression,start));
                 }
             }
         }
@@ -1469,7 +1469,7 @@
                     else{
                         //root is updated then
                         remove_node(root);
-                        root=root->get_node(simplification_output);
+                        root=new node(simplification_output);
                     }
                     return simplification_output ;
                 }
@@ -1497,7 +1497,7 @@
                     else{
                         //root is updated then
                         remove_node(root);
-                        root=root->get_node(value);
+                        root=new node(value);
                     }
                     return value ;
                 }
@@ -1517,6 +1517,8 @@
             simplify_tree(root);
         }
     }
+    #include <chrono>
+
 int main(){
 
     /*
@@ -1557,13 +1559,22 @@ int main(){
     "ln(3060513257434037/1125899906842624)*((6*cos(x))/x-3*ln(x^2)*sin(x)-(6*x*cos(x^2))/tan(x)"
     "+(3*sin(x^2)*(tan(x)^2+1))/tan(x)^2)+(x^5*sin(x))/(cos(x)+2)^2-(2*3^(1/2)*x^3)/(x^4)^(1/2)+(2^x*ln(2)*(ln(x)-x^3))/(x^2+1)-(2*2^x*x*(ln(x)-x^3))/(x^2+1)^2";
     */
-    string operation = "1/x+1*((x^2+4*x+1/x^2-1)*log(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
 
-    calculus_tree<long double>tree(operation) ;
-    tree= tree.diff_with("x");
-    cout<<tree;
+
+    calculus_tree<long double> tree;
+
+    auto start = std::chrono::high_resolution_clock::now();
+    tree.load("E:\\pythonProject\\mathematical tree\\tree4.txt");
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> load_time = end - start;
+    cout << "\nLoaded in " << load_time.count() << " ms";
+
+    start = std::chrono::high_resolution_clock::now();
     tree.simplify();
-    cout<<endl<<endl<<tree;
-    system("pause");
-    return 0;
+    end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> simplify_time = end - start;
+    cout << "\nSimplified in " << simplify_time.count() << " ms";
+
+    tree.save("E:\\pythonProject\\mathematical tree\\tree4.txt");
+    return 0 ;
 }
