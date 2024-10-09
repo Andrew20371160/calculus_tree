@@ -1,18 +1,11 @@
     #include "node.h"
 
     using namespace std;
-    //allocate memory for a new node
-    node * node::get_node(const string &symbol){
-        node*ret_node = NULL;
-        ret_node = new node ;
-        if(ret_node){
-            ret_node->symbol = symbol ;
-            ret_node->parent = NULL;
-            ret_node->left =NULL ;
-            ret_node->right = NULL;
-            return ret_node  ;
-        }
-        return NULL;
+    node::node(const string &_symbol){
+        symbol = _symbol ;
+        parent = NULL;
+        left =NULL ;
+        right = NULL;
     }
     //appends symbol as a new sibling to this
     //and a new child to parent of this
@@ -20,7 +13,7 @@
     //so that the tree structure isn't ruined
     bool node::append_next(const string &symbol){
         if(parent&&parent->right==NULL){
-            node*new_node= get_node(symbol);
+            node*new_node = new node(symbol);
             if(new_node){
                 new_node->parent= parent;
                 parent->right = new_node ;
@@ -34,7 +27,7 @@
     */
     bool node::append_child(const string &symbol){
         if(left==NULL||right==NULL){
-            node*new_node= get_node(symbol);
+            node*new_node = new node(symbol);
             if(new_node){
                 if(left==NULL){
                     left= new_node ;
@@ -71,7 +64,7 @@
     to it which is symbol
     */
     bool node::append_parent(const string&symbol){
-        node*new_parent = get_node(symbol);
+        node*new_parent = new node(symbol);
         if(new_parent){
             //disconnect this from its parent and its sibling
             this->disconnect_self();
@@ -146,7 +139,7 @@
             return this->append_parent(op) ;
          }
          else{
-            node*new_parent = get_node(op);
+            node*new_parent = new node(op);
             if(new_parent){
                 node*gparent  =parent ;
                 this->disconnect_self();
