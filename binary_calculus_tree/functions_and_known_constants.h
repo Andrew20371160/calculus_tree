@@ -7,22 +7,67 @@
 
     //Includes
     #include <iostream>
-
     #include <string>
-
-
+    #include <math.h>
+    #include <cmath>
+    #include <complex>
+    #include <limits>
 
     #ifdef COMPLEX_MODE
 
-        const int function_count =21 ;
-        const int keyword_count =26;
-        enum  {
+        const int functions_count =21 ;
+        const int constants_count =5 ;
+        const int keywords_count =26;
+
+        enum  functions_codes{
+            LOG,
             SQRT,ABS,SIN,COS,TAN,
             SEC,CSC,COTAN,ASIN,ACOS,
             ATAN,EXP,LN,SINH,COSH,
             TANH,ASINH,ACOSH,ATANH,IMG,
-            LOG,
+        };
+
+        enum constants_codes{
             PI,E,I,
+            INF_ERR,NAN_ERR
+        }
+        /*
+        functions must be followed by parenthese
+        for log you just attach base to it
+        for ex:log2
+        by default it's log10
+
+        pi,i,e are known constants no need to write the value explicitly
+        */
+        const std::string  known_functions[functions_count]={
+                                                "log",
+                                                "sqrt","abs","sin","cos","tan",
+                                                "sec","csc","cotan","asin","acos",
+                                                "atan","exp","ln","sinh","cosh",
+                                                "tanh","asinh","acosh","atanh","img",
+                                                //add new functions here
+                                            };
+        const std::string  known_constants[constants_count]={
+                                                "pi","e","i",
+                                                "inf","nan"
+                                                //add new constants here
+                                            };
+
+    #else
+        const int functions_count =20 ;
+        const int constants_count =4 ;
+        const int keywords_count =24;
+
+        enum  functions_codes{
+            LOG,
+            SQRT,ABS,SIN,COS,TAN,
+            SEC,CSC,COTAN,ASIN,ACOS,
+            ATAN,EXP,LN,SINH,COSH,
+            TANH,ASINH,ACOSH,ATANH,
+        };
+
+        enum constants_codes{
+            PI,E,
             INF_ERR,NAN_ERR
         };
         /*
@@ -33,45 +78,26 @@
 
         pi,i,e are known constants no need to write the value explicitly
         */
-        const std::string  key_words[keyword_count]={"sqrt","abs","sin","cos","tan",
-                                                "sec","csc","cotan","asin","acos",
-                                                "atan","exp","ln","sinh","cosh",
-                                                "tanh","asinh","acosh","atanh","img",
-                                                //add new functions here
+        const std::string  known_functions[functions_count]={
                                                 "log",
-                                                //add new constants here
-                                                "pi","e","i",
-                                                "inf","nan"};
-
-
-    #else
-        const int function_count =20 ;
-        const int keyword_count =24;
-
-        enum  {
-            SQRT,ABS,SIN,COS,TAN,
-            SEC,CSC,COTAN,ASIN,ACOS,
-            ATAN,EXP,LN,SINH,COSH,
-            TANH,ASINH,ACOSH,ATANH,LOG,
-            PI,E,
-            INF_ERR,NAN_ERR
-        };
-        const std::string  key_words[keyword_count]={"sqrt","abs","sin","cos","tan",
+                                                "sqrt","abs","sin","cos","tan",
                                                 "sec","csc","cotan","asin","acos",
                                                 "atan","exp","ln","sinh","cosh",
                                                 "tanh","asinh","acosh","atanh",
                                                 //add new functions here
-                                                "log",
+                                            };
+        const std::string  known_constants[constants_count]={
                                                 "pi","e",
+                                                "inf","nan"
                                                 //add new constants here
-                                                "inf","nan"};
+                                            };
 
     #endif
     /*
     extracts operand at pos then returns it's enum value if exists
     else it returns -1
     */
-    int is_known_function(const std::string &expression,unsigned int& pos ) ;
+    int is_known_function(const std::string &expression,unsigned int pos ) ;
     /*
     returns true if expression[pos] is an operator
     */
@@ -85,5 +111,14 @@
     //returns enum value if an operand starting at pos if it's a known constant
     //else -1
     int is_known_constant(const std::string &var,unsigned int pos ) ;
+
+    template<typename DataType>
+    DataType evaluate_function(const int fn,const DataType var, const  DataType base);
+    template<typename DataType>
+    DataType evaluate_constant(const std::string&symbol);
+    template<typename DataType>
+    DataType evaluate_operator(char op,const DataType&left_operand,const DataType&right_operand);
+
+    #include "functions_and_known_constants.tpp"
 
 #endif
