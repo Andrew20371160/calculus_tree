@@ -18,8 +18,7 @@
             node *parent ;
             node *left ;
             node *right ;
-            //a function to allocate memory for a new node
-            node*get_node(const std::string &);
+
             /*
             this function disconects self or this from it's parent
             but it's children are still with him
@@ -78,6 +77,7 @@
                                             this
             */
             bool exchange_parent(const std::string &op) ;
-
+        public:
+            node(const std::string &);
     };
 #endif
