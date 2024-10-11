@@ -87,7 +87,8 @@
                 calculus_tree<DataType> ret_tree ;
                 node *ret_root=new node("*");
                 ret_root->append_child("-1");
-                ret_root->right = src.copy_tree(src.root);
+                node*temp_src= src.copy_tree(src.root) ;
+                ret_root->append_child(temp_src);
                 ret_tree.root =ret_root ;
                 return ret_tree;
             }
