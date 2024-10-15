@@ -87,8 +87,7 @@
                 calculus_tree<DataType> ret_tree ;
                 node *ret_root=new node("*");
                 ret_root->append_child("-1");
-                node*temp_src= src.copy_tree(src.root) ;
-                ret_root->append_child(temp_src);
+                ret_root->right = src.copy_tree(src.root);
                 ret_tree.root =ret_root ;
                 return ret_tree;
             }
@@ -1040,7 +1039,7 @@
             unsigned int temp_start =0;
             if(variable.length()&&!is_num(variable)&&!is_op(variable,0)&&is_keyword(variable,0)==-1){
                 ret_tree.root = create_tree(diff(root,variable),temp_start);
-                ret_tree.simplify();
+                ret_tree.simplify_leaves();
                 return ret_tree ;
             }
             else{
@@ -1230,7 +1229,7 @@
         return false;
     }
     template<typename DataType>
-    string  calculus_tree<DataType>::simplify_tree_add(const std::string &v1,const std::string  &v2){
+    string  calculus_tree<DataType>::simplify_tree_leaves_add(const std::string &v1,const std::string  &v2){
         if(v1.size()&&v2.size()){
             bool is_v1_num = is_num(v1);
             bool is_v2_num = is_num(v2);
@@ -1256,7 +1255,7 @@
         return "";
     }
     template<typename DataType>
-    string  calculus_tree<DataType>::simplify_tree_sub(const std::string &v1,const std::string  &v2){
+    string  calculus_tree<DataType>::simplify_tree_leaves_sub(const std::string &v1,const std::string  &v2){
         if(v1.size()&&v2.size()){
         bool is_v1_num = is_num(v1);
         bool is_v2_num = is_num(v2);
@@ -1280,7 +1279,7 @@
         return "";
     }
     template<typename DataType>
-    string  calculus_tree<DataType>::simplify_tree_mult(const std::string &v1,const std::string  &v2){
+    string  calculus_tree<DataType>::simplify_tree_leaves_mult(const std::string &v1,const std::string  &v2){
         if(v1.size()&&v2.size()){
         bool is_v1_num = is_num(v1);
         bool is_v2_num = is_num(v2);
@@ -1310,7 +1309,7 @@
         return "";
     }
     template<typename DataType>
-    string  calculus_tree<DataType>::simplify_tree_div(const std::string &v1,const std::string  &v2){
+    string  calculus_tree<DataType>::simplify_tree_leaves_div(const std::string &v1,const std::string  &v2){
         if(v1.size()&&v2.size()){
         bool is_v1_num = is_num(v1);
         bool is_v2_num = is_num(v2);
@@ -1349,7 +1348,7 @@
         return "";
     }
     template<typename DataType>
-    string  calculus_tree<DataType>::simplify_tree_power(const std::string &v1,const std::string  &v2){
+    string  calculus_tree<DataType>::simplify_tree_leaves_power(const std::string &v1,const std::string  &v2){
         if(v1.size()&&v2.size()){
         bool is_v1_num = is_num(v1);
         bool is_v2_num = is_num(v2);
@@ -1388,24 +1387,24 @@
     }
 
     template<typename DataType>
-    string calculus_tree<DataType>::simplify_tree(node*ptr){
+    string calculus_tree<DataType>::simplify_tree_leaves(node*ptr){
         if(ptr){
             string left_operand="";
             string right_operand="";
             if(ptr->left){
-                left_operand = simplify_tree(ptr->left);
+                left_operand = simplify_tree_leaves(ptr->left);
             }
             if(ptr->right){
-                right_operand = simplify_tree(ptr->right);
+                right_operand = simplify_tree_leaves(ptr->right);
             }
             if(is_op_tree(ptr)){
                 string simplification_output ="";
                 switch(ptr->symbol[0]){
-                    case '+':simplification_output = simplify_tree_add(left_operand,right_operand);break;
-                    case '-':simplification_output = simplify_tree_sub(left_operand,right_operand);break;
-                    case '*':simplification_output = simplify_tree_mult(left_operand,right_operand);break;
-                    case '/':simplification_output = simplify_tree_div(left_operand,right_operand);break;
-                    case '^':simplification_output = simplify_tree_power(left_operand,right_operand);break;
+                    case '+':simplification_output = simplify_tree_leaves_add(left_operand,right_operand);break;
+                    case '-':simplification_output = simplify_tree_leaves_sub(left_operand,right_operand);break;
+                    case '*':simplification_output = simplify_tree_leaves_mult(left_operand,right_operand);break;
+                    case '/':simplification_output = simplify_tree_leaves_div(left_operand,right_operand);break;
+                    case '^':simplification_output = simplify_tree_leaves_power(left_operand,right_operand);break;
                 }
                 if(simplification_output.size()){
                     //simplification occurred
@@ -1460,12 +1459,14 @@
     return "";
     }
     template<typename DataType>
-    void calculus_tree<DataType>::simplify(void){
+    void calculus_tree<DataType>::simplify_leaves(void){
         if(root){
-            simplify_tree(root);
+            simplify_tree_leaves(root);
         }
     }
-    #include <chrono>
+
+
+#include <chrono>
 
 int main(){
 
@@ -1518,7 +1519,7 @@ int main(){
     cout << "\nLoaded in " << load_time.count() << " ms";
 
     start = std::chrono::high_resolution_clock::now();
-    tree.simplify();
+    tree.simplify_leaves();
     end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> simplify_time = end - start;
     cout << "\nSimplified in " << simplify_time.count() << " ms";
