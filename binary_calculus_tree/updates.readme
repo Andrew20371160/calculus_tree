@@ -1,3 +1,5 @@
+10/15/2024 small updates:
+added threshold for floatibg point operation feel free to edit it in calculus_tree.h
 10/10/2024 updates:
 1-separated functions and constants evaluation from the calculus tree now they are in a separate file (now it's easier to add new functions or constants)
 2-if you wanna add new constants or functions head to functions_and_known_constants.h and follow the guide you find there.
