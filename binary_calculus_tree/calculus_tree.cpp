@@ -1,6 +1,10 @@
 #include "calculus_tree.h"
     using namespace std ;
 
+    string to_string(const string&src){
+        return src;
+    }
+
     template<typename T>
     std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
         os<<'<';
@@ -48,6 +52,17 @@
         if(src_tree.root){
             root = copy_tree(src_tree.root) ;
         }
+        return *this ;
+    }
+    template<typename DataType>
+    template<typename input_datatype>
+    calculus_tree<DataType>& calculus_tree<DataType>::operator=(const input_datatype&data){
+        if(root){
+            remove_node(root);
+            root =NULL;
+        }
+        set_exp(to_string(data));
+
         return *this ;
     }
 
@@ -1464,8 +1479,6 @@
             simplify_tree_leaves(root);
         }
     }
-
-
 #include <chrono>
 
 int main(){
@@ -1512,6 +1525,9 @@ int main(){
 
     calculus_tree<long double> tree;
 
+    tree= string("sin(x)*x");
+    //sin(3)*3
+    cout<<endl<<tree.evaluate_at("x=3")<<endl;
     auto start = std::chrono::high_resolution_clock::now();
     tree.load("E:\\pythonProject\\mathematical tree\\tree4.txt");
     auto end = std::chrono::high_resolution_clock::now();
