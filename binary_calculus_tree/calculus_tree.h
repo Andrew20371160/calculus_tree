@@ -174,12 +174,12 @@ class calculus_tree
         else it returns it's code (the enum value)
         */
         bool is_function_tree( node*&ptr)const;
-        std::string simplify_tree_leaves(node*ptr);
-        std::string  simplify_tree_leaves_add(const std::string &v1,const std::string  &v2);
-        std::string  simplify_tree_leaves_sub(const std::string &v1,const std::string  &v2);
-        std::string  simplify_tree_leaves_mult(const std::string &v1,const std::string  &v2);
-        std::string  simplify_tree_leaves_div(const std::string &v1,const std::string  &v2);
-        std::string  simplify_tree_leaves_power(const std::string &v1,const std::string  &v2);
+        std::string simplify_tree(node*ptr);
+        std::string  simplify_tree_add(const std::string &v1,const std::string  &v2);
+        std::string  simplify_tree_sub(const std::string &v1,const std::string  &v2);
+        std::string  simplify_tree_mult(const std::string &v1,const std::string  &v2);
+        std::string  simplify_tree_div(const std::string &v1,const std::string  &v2);
+        std::string  simplify_tree_power(const std::string &v1,const std::string  &v2);
         //exchanges old_var in tree with new_var even if it's an expression like x+1
         void exchange_variable_tour(node*ptr,const std::string &old_var,const calculus_tree<DataType>&);
 
@@ -288,7 +288,8 @@ class calculus_tree
         }
         //simplify leaves of the expression for example
         //0*x =0....etc
-        void simplify_leaves(void);
+        void simplify(void);
+
         //switches a old_variable to a new one or an expression
         //and returns resulting tree
         calculus_tree<DataType>exchange(const string&old_varible,const string&new_var)const;
