@@ -1054,7 +1054,7 @@
             unsigned int temp_start =0;
             if(variable.length()&&!is_num(variable)&&!is_op(variable,0)&&is_keyword(variable,0)==-1){
                 ret_tree.root = create_tree(diff(root,variable),temp_start);
-                ret_tree.simplify_leaves();
+                ret_tree.simplify();
                 return ret_tree ;
             }
             else{
@@ -1244,8 +1244,8 @@
         return false;
     }
     template<typename DataType>
-    string  calculus_tree<DataType>::simplify_tree_leaves_add(const std::string &v1,const std::string  &v2){
-        if(v1.size()&&v2.size()){
+    string  calculus_tree<DataType>::simplify_tree_add(const std::string &v1,const std::string  &v2){
+        if(v1.size()||v2.size()){
             bool is_v1_num = is_num(v1);
             bool is_v2_num = is_num(v2);
             if(is_v1_num&&is_v2_num){
@@ -1270,8 +1270,8 @@
         return "";
     }
     template<typename DataType>
-    string  calculus_tree<DataType>::simplify_tree_leaves_sub(const std::string &v1,const std::string  &v2){
-        if(v1.size()&&v2.size()){
+    string  calculus_tree<DataType>::simplify_tree_sub(const std::string &v1,const std::string  &v2){
+        if(v1.size()||v2.size()){
         bool is_v1_num = is_num(v1);
         bool is_v2_num = is_num(v2);
         if(is_v1_num&&is_v2_num){
@@ -1294,8 +1294,8 @@
         return "";
     }
     template<typename DataType>
-    string  calculus_tree<DataType>::simplify_tree_leaves_mult(const std::string &v1,const std::string  &v2){
-        if(v1.size()&&v2.size()){
+    string  calculus_tree<DataType>::simplify_tree_mult(const std::string &v1,const std::string  &v2){
+        if(v1.size()||v2.size()){
         bool is_v1_num = is_num(v1);
         bool is_v2_num = is_num(v2);
         if(is_v1_num&&is_v2_num){
@@ -1324,8 +1324,8 @@
         return "";
     }
     template<typename DataType>
-    string  calculus_tree<DataType>::simplify_tree_leaves_div(const std::string &v1,const std::string  &v2){
-        if(v1.size()&&v2.size()){
+    string  calculus_tree<DataType>::simplify_tree_div(const std::string &v1,const std::string  &v2){
+        if(v1.size()||v2.size()){
         bool is_v1_num = is_num(v1);
         bool is_v2_num = is_num(v2);
         if(is_v1_num&&is_v2_num){
@@ -1363,8 +1363,8 @@
         return "";
     }
     template<typename DataType>
-    string  calculus_tree<DataType>::simplify_tree_leaves_power(const std::string &v1,const std::string  &v2){
-        if(v1.size()&&v2.size()){
+    string  calculus_tree<DataType>::simplify_tree_power(const std::string &v1,const std::string  &v2){
+        if(v1.size()||v2.size()){
         bool is_v1_num = is_num(v1);
         bool is_v2_num = is_num(v2);
         if(is_v1_num&&is_v2_num){
@@ -1402,24 +1402,24 @@
     }
 
     template<typename DataType>
-    string calculus_tree<DataType>::simplify_tree_leaves(node*ptr){
+    string calculus_tree<DataType>::simplify_tree(node*ptr){
         if(ptr){
             string left_operand="";
             string right_operand="";
             if(ptr->left){
-                left_operand = simplify_tree_leaves(ptr->left);
+                left_operand = simplify_tree(ptr->left);
             }
             if(ptr->right){
-                right_operand = simplify_tree_leaves(ptr->right);
+                right_operand = simplify_tree(ptr->right);
             }
             if(is_op_tree(ptr)){
                 string simplification_output ="";
                 switch(ptr->symbol[0]){
-                    case '+':simplification_output = simplify_tree_leaves_add(left_operand,right_operand);break;
-                    case '-':simplification_output = simplify_tree_leaves_sub(left_operand,right_operand);break;
-                    case '*':simplification_output = simplify_tree_leaves_mult(left_operand,right_operand);break;
-                    case '/':simplification_output = simplify_tree_leaves_div(left_operand,right_operand);break;
-                    case '^':simplification_output = simplify_tree_leaves_power(left_operand,right_operand);break;
+                    case '+':simplification_output = simplify_tree_add(left_operand,right_operand);break;
+                    case '-':simplification_output = simplify_tree_sub(left_operand,right_operand);break;
+                    case '*':simplification_output = simplify_tree_mult(left_operand,right_operand);break;
+                    case '/':simplification_output = simplify_tree_div(left_operand,right_operand);break;
+                    case '^':simplification_output = simplify_tree_power(left_operand,right_operand);break;
                 }
                 if(simplification_output.size()){
                     //simplification occurred
@@ -1473,12 +1473,14 @@
     }
     return "";
     }
+
     template<typename DataType>
-    void calculus_tree<DataType>::simplify_leaves(void){
+    void calculus_tree<DataType>::simplify(void){
         if(root){
-            simplify_tree_leaves(root);
+            simplify_tree(root);
         }
     }
+
     template<typename DataType>
     void calculus_tree<DataType>::exchange_variable_tour(node*ptr,const string &old_var,const calculus_tree<DataType>&new_var){
         if(ptr){
@@ -1528,65 +1530,8 @@
 
 int main(){
 
-    /*
-    string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))+tan(log2(x+5))+sec(x*asin(1/(x+1)))+csc((x^3+2*x)/4)-cotan(exp(x/2))+
-    acos(1/(x+2)^0.5)-atan(x^2/3-ln(x))+exp(sin(pi/6+x))+ln(cos(x^2+exp(x)))+log2(1/(x+3))";
-
-    test4
-    string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))^tan(log2(x+5))*sec(x*asin(1/(x+1)))/"
-                       "csc((x^3+2*x)/4)^cotan(exp(x/2))*acos(1/(x+2)^0.5)";
-
-    test6 string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))^tan(log2(x+5))^sec(x*asin(1/(x+1)))/"
-                       "csc((x^3+2*x)/4)*(cotan(exp(x/2))+acos(1/(x+2)^0.5))";
-
-    string operation = "sin(pi/4+ln(x^2+1))+cos(pi/3-exp(x))*tan(log2(x+5))^(sec(x*asin(1/(x+1)))+5*"
-                       "csc((x^3+2*x)/4))^cotan(exp(x/2))*acos(1/(x+2)^0.5)";
-
-    string operation = "1/x+1*((x^2+4*x+1/x^2-1)*log(x+(x^2-1)^0.5)-(x+3)/(x^2-1)^0.5)";
-
-
-    string operation = "sin(acos(1/(x+5*(exp(2*x)^atan(x^2+3)))))+ln(sec(3*x))-(cos(x^2)/(x+4))";
-
-
-    string operation = "(cos(acos(1/(x+5*(exp(3*y)^atan(x^3+y^2-4)))))+ln(sec(2*x-cos(y^3)))-(cos(x^2+y)/(tan(y^4-x)+7*(exp(x+y)))))*(asin(x+y)^3)+log(5*exp(cotan(x^3-2*y))+sin(x*ln(cos(3*y))))-(atan(exp(x+y)^tan(x-y))/(sec(x^2+y^2)+3*csc(x+y)))+7*log(x*y)-(cos(exp(x*atan(y^2)))/(sec(ln(x))+cos(y*x^2))))";
-        string operation ="1+2-3*6/18^1^8*5/8*25^x^sin(x+2)/(13+224)+7";
-
-    f(x,y)=(sin(acos(1/(x+exp(2*y))))+ln(sec(x^2-y))+cos(x^3)/(tan(y^2-3*x)))*(asin(x+y)^2)-atan(exp(x*y))
-    ((((sin(acos((1/(x+exp((2*y))))))^ln(sec(((x^2)-y))))*(cos((x^3))/tan(((y^2)^(3*x)))))*(asin((x+y))^2))-atan(exp((x*y))))
-
-    f(x,y)=
-    sin(acos(1/(x+5*exp(y)))^tan(ln(x^8+y^2))^cos(exp(atan(x*y)))/sec(x^4+y^3))*(asin(x+y)^3+ln(sec(5*x-4*y))-tan(cos(x^5-y^3)))/(cotan(x^6+y^6)+exp(tan(ln(x+y^2))))+log(atan(exp(x*y^2)))+sin(ln(cos(exp(x^3+y^2))))+(sec(x^2-y)*exp(cos(x*y))+ln(tan(x^4+y)))+cos(atan(x^5+y^6)+sec(3*x-2*y))*(asin(cos(x^3))+ln(sec(5*y+x^3))-tan(cos(x^5)))+exp(tan(x*ln(cos(2*y)))/(cos(x^2+y)+sec(x*y)))-sin(log(cotan(atan(2*x-y))+cos(ln(exp(x^2*y^3)))))+(sec(2*x-3*y)/tan(exp(x*y)))+cos(exp(2*atan(x^2*y)))/(ln(3*x-2*y)+tan(sec(x+y^2)))*atan(cos(log(x*exp(y^2)))+sec(cos(3*x*ln(y^3))))+exp(ln(tan(x^4-y^5)))*cos(atan(x+ln(y)))-sin(cotan(log(x^6+y^3)))*exp(sec(tan(2*x-y^2)))+cos(ln(x^2)*tan(exp(x*y^3)))/(sin(3*x^2+y^5))+exp(log(atan(x*y^4)+sec(ln(x*y^3))))*(sec(ln(3*x+y))+cos(tan(x*exp(y))))+cos(log(x+tan(exp(y*x^4)))*ln(atan(x*y)))-sin(exp(x^3)*cos(tan(x^2+y^4)))+(cos(ln(x^3*y^3))*exp(ln(cotan(x+y^2))))/(tan(log(x^2+y^2))+sec(cos(3*x*y)))+atan(log(x^2+y^6))+sec(cos(exp(atan(x+y^4))))+sin(atan(exp(x^4-y^3)))*cos(ln(cos(exp(x^2*y))))+log(cotan(atan(2*x-y^2))+sec(ln(exp(x^3+y^2))))-exp(cos(ln(tan(2*x+y)))+tan(sec(x^2+y^3)))+sin(atan(exp(x*y)))/(cos(x^5+y^5))+ln(cotan(atan(x^3+y^6)))*cos(exp(sec(tan(x^2-y^2))))+cos(ln(x^4+y^4))*exp(cotan(ln(2*x-y)))-sin(log(cotan(exp(x^5+y^3)))+sec(tan(2*x+y^6)))+tan(cos(x^6-y^4)*sec(ln(cotan(x+y^2))))/(cos(log(x^4+y^6))+exp(ln(cotan(x+y^5))))+sec(log(x^3+y^6))*cos(atan(exp(x^4+y^3)))-sin(log(cotan(atan(x^3+y^5)))+sec(cos(exp(x+y^6))))+exp(tan(log(x^5+y^2))+sec(atan(x+y^3)))
-
-    string operation = "(3*x^5+sin(2*x)-4*x*log(x))^2*(e^(x^2)*tan(x))/(sqrt(x^3+5)-cos(3*x))";
-
-    string operation ="e^(cos(x)*ln(x^2)-sin(x^2)/tan(x))^3+(x^5/(2+cos(x)))-sqrt(3*x^4)+(2^x/(1+x^2))*(ln(x)-x^3)";
-
-    string operation = "(5*x^4)/(cos(x)+2)+(2^x*(1/x-3*x^2))/(x^2+1)"+
-    "(3060513257434037/1125899906842624)^(3*ln(x^2)*cos(x)-(3*sin(x^2))/tan(x))*"
-    "ln(3060513257434037/1125899906842624)*((6*cos(x))/x-3*ln(x^2)*sin(x)-(6*x*cos(x^2))/tan(x)"
-    "+(3*sin(x^2)*(tan(x)^2+1))/tan(x)^2)+(x^5*sin(x))/(cos(x)+2)^2-(2*3^(1/2)*x^3)/(x^4)^(1/2)+(2^x*ln(2)*(ln(x)-x^3))/(x^2+1)-(2*2^x*x*(ln(x)-x^3))/(x^2+1)^2";
-    */
-
-
-    calculus_tree<long double> tree;
-
-    tree= string("sin(x)*x");
-    cout<<tree.exchange("x","(x+2)^2*sin(x+y)");
-    //sin(3)*3
-    //cout<<endl<<tree.evaluate_at("x=3")<<endl;
-    auto start = std::chrono::high_resolution_clock::now();
-    tree.load("E:\\pythonProject\\mathematical tree\\tree4.txt");
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> load_time = end - start;
-    cout << "\nLoaded in " << load_time.count() << " ms";
-
-    start = std::chrono::high_resolution_clock::now();
-    tree.simplify_leaves();
-    end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> simplify_time = end - start;
-    cout << "\nSimplified in " << simplify_time.count() << " ms";
-
-    tree.save("E:\\pythonProject\\mathematical tree\\tree4.txt");
+    calculus_tree<long double>tree("0*(2x^2+cos(u))+1");
+    tree.simplify();
+    cout<<tree;
     system("pause");
-    return 0 ;
 }
