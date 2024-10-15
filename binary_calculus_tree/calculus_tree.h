@@ -286,8 +286,11 @@ class calculus_tree
                 os << obj.expression();
                 return os;
         }
+        //simplify leaves of the expression for example
+        //0*x =0....etc
         void simplify_leaves(void);
-
+        //switches a variable to a new one or an expression
+        //and returns resulting tree
         calculus_tree<DataType>exchange(const string&varible,const string&new_var)const;
     };
 
