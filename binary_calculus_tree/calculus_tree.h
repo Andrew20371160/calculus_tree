@@ -173,12 +173,12 @@ class calculus_tree
         else it returns it's code (the enum value)
         */
         bool is_function_tree( node*&ptr)const;
-        std::string simplify_tree(node*ptr);
-        std::string  simplify_tree_add(const std::string &v1,const std::string  &v2);
-        std::string  simplify_tree_sub(const std::string &v1,const std::string  &v2);
-        std::string  simplify_tree_mult(const std::string &v1,const std::string  &v2);
-        std::string  simplify_tree_div(const std::string &v1,const std::string  &v2);
-        std::string  simplify_tree_power(const std::string &v1,const std::string  &v2);
+        std::string simplify_tree_leaves(node*ptr);
+        std::string  simplify_tree_leaves_add(const std::string &v1,const std::string  &v2);
+        std::string  simplify_tree_leaves_sub(const std::string &v1,const std::string  &v2);
+        std::string  simplify_tree_leaves_mult(const std::string &v1,const std::string  &v2);
+        std::string  simplify_tree_leaves_div(const std::string &v1,const std::string  &v2);
+        std::string  simplify_tree_leaves_power(const std::string &v1,const std::string  &v2);
 
     public:
         /*
@@ -278,7 +278,7 @@ class calculus_tree
                 os << obj.expression();
                 return os;
         }
-        void simplify(void);
+        void simplify_leaves(void);
 
     };
 
