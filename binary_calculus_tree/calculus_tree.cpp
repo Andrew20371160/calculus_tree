@@ -1479,6 +1479,51 @@
             simplify_tree_leaves(root);
         }
     }
+    template<typename DataType>
+    void calculus_tree<DataType>::exchange_variable_tour(node*ptr,const string &old_var,const calculus_tree<DataType>&new_var){
+        if(ptr){
+           if(ptr->left){
+                exchange_variable_tour(ptr->left,old_var,new_var);
+           }
+           if(ptr->right){
+                exchange_variable_tour(ptr->right,old_var,new_var);
+           }
+           if(ptr->left==NULL&&ptr->right==NULL){
+                if(ptr->symbol==old_var){
+                    if(ptr->parent){
+                        node*parent= ptr->parent;
+                        if(parent->left==ptr){
+                            remove_node(ptr);
+                            parent->left=copy_tree(new_var.root);
+                            ptr=parent->left;
+                        }
+                        else{
+                            remove_node(ptr);
+                            parent->right=copy_tree(new_var.root);
+                            ptr=parent->right;
+                        }
+                    }
+                    else{
+                        //updating root
+                        remove_node(root);
+                        root = copy_tree(new_var.root) ;
+                        ptr=root;
+                    }
+                }
+           }
+        }
+    }
+    template<typename DataType>
+    calculus_tree<DataType> calculus_tree<DataType>::exchange(const string&var,const string&new_var)const{
+        if(is_keyword(var,0)==-1&&!is_num(var)){
+            calculus_tree<DataType>temp_tree(new_var);
+            calculus_tree<DataType>ret_tree=*this ;
+            ret_tree.exchange_variable_tour(ret_tree.root,var,temp_tree);
+            return ret_tree;
+        }
+        return *this;
+    }
+
 #include <chrono>
 
 int main(){
@@ -1526,8 +1571,9 @@ int main(){
     calculus_tree<long double> tree;
 
     tree= string("sin(x)*x");
+    cout<<tree.exchange("x","(x+2)^2*sin(x+y)");
     //sin(3)*3
-    cout<<endl<<tree.evaluate_at("x=3")<<endl;
+    //cout<<endl<<tree.evaluate_at("x=3")<<endl;
     auto start = std::chrono::high_resolution_clock::now();
     tree.load("E:\\pythonProject\\mathematical tree\\tree4.txt");
     auto end = std::chrono::high_resolution_clock::now();
