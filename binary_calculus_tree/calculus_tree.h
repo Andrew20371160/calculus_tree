@@ -289,9 +289,9 @@ class calculus_tree
         //simplify leaves of the expression for example
         //0*x =0....etc
         void simplify_leaves(void);
-        //switches a variable to a new one or an expression
+        //switches a old_variable to a new one or an expression
         //and returns resulting tree
-        calculus_tree<DataType>exchange(const string&varible,const string&new_var)const;
+        calculus_tree<DataType>exchange(const string&old_varible,const string&new_var)const;
     };
 
 #endif
