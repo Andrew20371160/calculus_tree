@@ -7,7 +7,7 @@
 #include <fstream>
 #include "preprocessor.h"
 #include "node.h"
-//feel free to edit the threshold
+
 const long double threshold = 10e-6 ;
 
 
@@ -195,6 +195,13 @@ class calculus_tree
         //assignment operator
         //of input is empty then caller becomes empty aswell
         calculus_tree& operator=(const calculus_tree&);
+        //you can set expression using any data
+        //tree =  3 -> iniatlizes the tree to be 3
+        //tree = string("some expression");
+//inializes the tree to that expression
+        template<typename input_datatype>
+        calculus_tree& operator=(const input_datatype&);
+
         /*
             operators for calculus trees
         */
@@ -282,6 +289,5 @@ class calculus_tree
         void simplify_leaves(void);
 
     };
-
 
 #endif
