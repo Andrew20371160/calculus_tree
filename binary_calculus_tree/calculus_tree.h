@@ -8,7 +8,7 @@
 #include "preprocessor.h"
 #include "node.h"
 //feel free to edit the threshold
-long double threshold = 10e-6 ;
+const long double threshold = 10e-6 ;
 
 
     //to enable complex numbers mode head to functions_and_known_constants.h
