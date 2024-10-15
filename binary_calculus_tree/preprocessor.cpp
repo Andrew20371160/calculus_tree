@@ -6,14 +6,14 @@
 
     }
 
-    void preprocessor::skip_spaces(const string&expression,unsigned int &start){
+    void preprocessor::skip_spaces(const string&expression,unsigned int &start)const{
         while(start<expression.size()&&expression[start]==' '){
             start++;
         }
     }
     //this extracts operand (whatever its length) or operator
     //start goes to second operand or operator
-    string preprocessor::preprocess_extract(const string&expression,unsigned int &start){
+    string preprocessor::preprocess_extract(const string&expression,unsigned int &start)const{
         string var="";
         if(start<expression.length()){
             //skip spaces
@@ -56,7 +56,7 @@
 
 
     //returns token type based on the extracted token
-    unsigned int preprocessor::token_type(const string&token,int &open_brackets_c){
+    unsigned int preprocessor::token_type(const string&token,int &open_brackets_c)const{
         if(token.length()){
             if(is_op(token,0)){
                 switch(token[0]){
@@ -92,7 +92,7 @@
         return ERROR ;
     }
 
-    bool preprocessor::valid_var_const_token(unsigned int previous_token, const string&token,string&ret_exp){
+    bool preprocessor::valid_var_const_token(unsigned int previous_token, const string&token,string&ret_exp)const{
         bool valid = true ;
         //ERROR=-1,VAR_CONST,FUNCTION,OPERATOR,OPEN_BRACKET,CLOSE_BRACKET
         if(previous_token==VAR_CONST){
@@ -105,7 +105,7 @@
         return valid;
     }
 
-    bool preprocessor::valid_function_token(unsigned int previous_token, const string&token,string&ret_exp){
+    bool preprocessor::valid_function_token(unsigned int previous_token, const string&token,string&ret_exp)const{
         bool valid = true ;
         //ERROR=-1,VAR_CONST,FUNCTION,OPERATOR,OPEN_BRACKET,CLOSE_BRACKET
         if(previous_token==VAR_CONST||previous_token==CLOSE_BRACKET){
@@ -118,7 +118,7 @@
         return valid;
     }
 
-    bool preprocessor::valid_open_bracket_token(unsigned int previous_token, const string&token,string&ret_exp){
+    bool preprocessor::valid_open_bracket_token(unsigned int previous_token, const string&token,string&ret_exp)const{
         bool valid = true ;
         //ERROR=-1,VAR_CONST,FUNCTION,OPERATOR,OPEN_BRACKET,CLOSE_BRACKET
         if(previous_token==VAR_CONST||previous_token==CLOSE_BRACKET){
@@ -128,7 +128,7 @@
     }
 
 
-    bool preprocessor::valid_close_bracket_token(unsigned int previous_token, const string&token,string&ret_exp){
+    bool preprocessor::valid_close_bracket_token(unsigned int previous_token, const string&token,string&ret_exp)const{
         bool valid = true ;
         //ERROR=-1,VAR_CONST,FUNCTION,OPERATOR,OPEN_BRACKET,CLOSE_BRACKET
         if(previous_token>VAR_CONST&&previous_token<CLOSE_BRACKET){
@@ -138,7 +138,7 @@
         return valid;
     }
 
-    bool preprocessor::valid_operator_token(unsigned int previous_token, const string&token,string&ret_exp){
+    bool preprocessor::valid_operator_token(unsigned int previous_token, const string&token,string&ret_exp)const{
         bool valid = true ;
         //ERROR=-1,VAR_CONST,FUNCTION,OPERATOR,OPEN_BRACKET,CLOSE_BRACKET
         switch(previous_token){
@@ -162,7 +162,7 @@
         return valid;
     }
 
-    string preprocessor::prepare_exp(const string&expression){
+    string preprocessor::prepare_exp(const string&expression)const{
         /*
             1-opening brackets must match closing ones
             2-2x,xsin(x),x(2) , x2 ->left*right
