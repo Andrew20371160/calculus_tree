@@ -12,7 +12,7 @@ enum{
         private:
             //returns the code of the extracted token and updates open_brackets_c
             //increments or decrements it if it finds ( or ) respectively
-            unsigned int token_type(const std::string &token, int &open_brackets_c);
+            unsigned int token_type(const std::string &token, int &open_brackets_c)const;
             /*
                 based on previous token type
                 these functions check based on mathematical expressions rules
@@ -32,26 +32,26 @@ enum{
             //they also update ret_exp with operators sometimes
             //for ex: if previous token is x, and the new token is (
             //ret_exp = ret_exp+"*" (it adds the * operator to ret_exp so that tree generation doesn't crash)
-            bool valid_var_const_token(unsigned int previous_token, const std::string &token, std::string &ret_exp );
+            bool valid_var_const_token(unsigned int previous_token, const std::string &token, std::string &ret_exp )const;
 
-            bool valid_function_token(unsigned int previous_token, const std::string &token, std::string &ret_exp );
+            bool valid_function_token(unsigned int previous_token, const std::string &token, std::string &ret_exp )const;
 
-            bool valid_open_bracket_token(unsigned int previous_token, const std::string &token, std::string &ret_exp );
+            bool valid_open_bracket_token(unsigned int previous_token, const std::string &token, std::string &ret_exp )const;
 
-            bool valid_close_bracket_token(unsigned int previous_token, const std::string &token, std::string &ret_exp );
+            bool valid_close_bracket_token(unsigned int previous_token, const std::string &token, std::string &ret_exp )const;
 
-            bool valid_operator_token(unsigned int previous_token, const std::string &token, std::string &ret_exp );
+            bool valid_operator_token(unsigned int previous_token, const std::string &token, std::string &ret_exp )const;
             //skips spaces from starting position and updates start to the new position
-            void skip_spaces(const std::string &expression,unsigned int &start);
+            void skip_spaces(const std::string &expression,unsigned int &start)const;
             //extracts an operand at start position and updates start to start of new operand
-            std::string  preprocess_extract(const std::string &expression,unsigned int &start);
+            std::string  preprocess_extract(const std::string &expression,unsigned int &start)const;
 
 
         public :
             //empty constructor
             preprocessor(void) ;
             //takes expression as an input and then preprocesses it and returns the processed expression
-            std::string  prepare_exp(const std::string &exp);
+            std::string  prepare_exp(const std::string &exp)const;
 
     };
 
