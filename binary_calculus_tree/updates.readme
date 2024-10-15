@@ -1,4 +1,7 @@
 10/15/2024 small updates:
+added assignment operator for any datatype 
+for ex: tree=  3; ->inializes the tree to be 3 
+tree= string("x*sin(theta)"); ->sets the expression of the tree to be that string
 added threshold for floatibg point operation feel free to edit it in calculus_tree.h
 10/10/2024 updates:
 1-separated functions and constants evaluation from the calculus tree now they are in a separate file (now it's easier to add new functions or constants)
