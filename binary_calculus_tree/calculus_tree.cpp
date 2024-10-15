@@ -141,13 +141,13 @@
                 return ret_tree;
             }
             else if(root){
-                if(stold(root->symbol)!=0){
+                if(abs(stold(root->symbol))>threshold){
                     return calculus_tree<DataType>("1");
                 }
                 return calculus_tree<DataType>("nan");
             }
             else if(src.root){
-                if(stold(src.root->symbol)!=0){
+                if(abs(stold(src.root->symbol))>threshold){
                     return calculus_tree<DataType>("0");
                     }
                     return calculus_tree<DataType>("nan");
@@ -785,10 +785,10 @@
             case '^':{
                 if(is_num(ptr->right->symbol)){
                     long double  exponent = stold(ptr->right->symbol);
-                    if(exponent==0){
+                    if(abs(exponent)<=threshold){
                         return "0" ;
                     }
-                    else if(exponent==1){
+                    else if(abs(exponent-1)<=threshold){
                         return "(" + diff(ptr->left,var) + ")";
                     }
                     else{
@@ -1238,12 +1238,12 @@
             }
             else if (is_v1_num)
             {
-                if(stold(v1)==0){
+                if(abs(stold(v1))<=threshold){
                     return v2 ;
                 }
             }
             else if(is_v2_num){
-                if(stold(v2)==0){
+                if(abs(stold(v2))<=threshold){
                     return v1 ;
                 }
             }
@@ -1264,7 +1264,7 @@
         }
         //no need to simplify 0-v1 since it would be translated to -1*v1
         else if(is_v2_num){
-            if(stold(v2)==0){
+            if(abs(stold(v2))<=threshold){
                 return v1 ;
             }
         }
@@ -1287,18 +1287,18 @@
             return to_string(stold(v1)*stold(v2));
         }
         else if (is_v1_num){
-            if(stold(v1)==0){
+            if(abs(stold(v1))<=threshold){
                 return "0";
             }
-            else if(stold(v1)==1){
+            else if(abs(stold(v1)-1)<=threshold){
                 return v2;
             }
         }
         else if (is_v2_num){
-            if(stold(v2)==0){
+            if(abs(stold(v2))<=threshold){
                 return "0";
             }
-            else if(stold(v2)==1){
+            else if(abs(stold(v2)-1)<=threshold){
                 return v1;
             }
         }
@@ -1314,8 +1314,8 @@
         bool is_v1_num = is_num(v1);
         bool is_v2_num = is_num(v2);
         if(is_v1_num&&is_v2_num){
-            if(stold(v2)==0){
-                if(stold(v1)==0){
+            if(abs(stold(v2))<=threshold){
+                if(abs(stold(v1))<=threshold){
                     return "nan";
                 }
                 return "inf" ;
@@ -1323,15 +1323,15 @@
             return to_string(stold(v1)/stold(v2));
         }
         else if (is_v2_num){
-            if(stold(v2)==0){
+            if(abs(stold(v2))<=threshold){
                 return "inf";
             }
-            else if(stold(v2)==1){
+            else if(abs(stold(v2)-1)<=threshold){
                 return v1;
             }
         }
         else if (is_v1_num){
-            if(stold(v1)==0){
+            if(abs(stold(v1))<=threshold){
                 return "0";
             }
         }
@@ -1353,8 +1353,8 @@
         bool is_v1_num = is_num(v1);
         bool is_v2_num = is_num(v2);
         if(is_v1_num&&is_v2_num){
-            if(stold(v2)==0){
-                if(stold(v1)==0){
+            if(abs(stold(v2))<=threshold){
+                if(abs(stold(v1))<=threshold){
                     return "nan";
                 }
                 return "1";
@@ -1363,19 +1363,19 @@
         }
         else if(is_v2_num){
             long double v2_val = stold(v2);
-            if(v2_val==1){
+            if(abs(v2_val-1)<=threshold){
                 return v1 ;
             }
-            else if(v2_val==0){
+            else if(abs(v2_val)<=threshold){
                 return "1";
             }
         }
         else if(is_v1_num){
             long double v1_val = stold(v1);
-            if(v1_val==1){
+            if(abs(v1_val-1)<=threshold){
                 return "1" ;
             }
-            else if(v1_val==0){
+            else if(abs(v1_val)<=threshold){
                 return "0";
             }
         }
