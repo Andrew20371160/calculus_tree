@@ -180,6 +180,8 @@ class calculus_tree
         std::string  simplify_tree_leaves_mult(const std::string &v1,const std::string  &v2);
         std::string  simplify_tree_leaves_div(const std::string &v1,const std::string  &v2);
         std::string  simplify_tree_leaves_power(const std::string &v1,const std::string  &v2);
+        //exchanges old_var in tree with new_var even if it's an expression like x+1
+        void exchange_variable_tour(node*ptr,const std::string &old_var,const calculus_tree<DataType>&);
 
     public:
         /*
@@ -195,10 +197,8 @@ class calculus_tree
         //assignment operator
         //of input is empty then caller becomes empty aswell
         calculus_tree& operator=(const calculus_tree&);
-        //you can set expression using any data
-        //tree =  3 -> iniatlizes the tree to be 3
-        //tree = string("some expression");
-//inializes the tree to that expression
+        //assignment operator
+        //of input is empty then caller becomes empty aswell
         template<typename input_datatype>
         calculus_tree& operator=(const input_datatype&);
 
@@ -288,6 +288,7 @@ class calculus_tree
         }
         void simplify_leaves(void);
 
+        calculus_tree<DataType>exchange(const string&varible,const string&new_var)const;
     };
 
 #endif
