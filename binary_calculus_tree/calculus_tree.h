@@ -112,7 +112,7 @@ class calculus_tree
         (if tree contains variables like x) it uses the value where evaluating
         it doesn't replace value of x in the tree
         */
-        DataType evaluate(node*ptr,const  std::list<std::string>& vars_and_values);
+        DataType evaluate(node*ptr,const  std::vector<std::string>& vars_and_values)const;
 
         /*
         differentiation functions
@@ -182,7 +182,10 @@ class calculus_tree
         std::string  simplify_tree_power(const std::string &v1,const std::string  &v2);
         //exchanges old_var in tree with new_var even if it's an expression like x+1
         void exchange_variable_tour(node*ptr,const std::string &old_var,const calculus_tree<DataType>&);
-
+        vector<DataType>simpson_rule_tour(node*ptr ,const string&symbol,
+                                                    const DataType&x_val,const DataType&step_size,
+                                                    const unsigned int&fx_size,const vector<string>&variables_and_values) const ;
+        bool prepare_variables_and_values(vector<string>&)const;
     public:
         /*
         constructors
@@ -275,24 +278,47 @@ class calculus_tree
         /*
         if the tree contains variables like x ,y,c1,v2....
         and you want to evaluate the tree
-        call it like this ->evaluate_at("x=5.55,y=728,c1=525.2")
+        put each variable with it's corresponding value in a vector
+        for example :
+            vector<string> variables_and_values = {"x","pi","y","4.6775"};
         if there are no variables then call it as it is
         evaluate_at()
         */
-        DataType evaluate_at(std::string vars_equal="");
+        DataType evaluate_at(std::vector<std::string> vars_equal = {""});
         //you can cout a tree
         friend std::ostream& operator<<(std::ostream& os, const calculus_tree& obj) {
 
                 os << obj.expression();
                 return os;
         }
-        //simplify leaves of the expression for example
-        //0*x =0....etc
+        /*
+        perfroms some algebraic and numerical simplification
+        for ex :evaluating functions of some constants , (x+1)*0 is replaced with 0 and so on...
+        */
         void simplify(void);
 
         //switches a old_variable to a new one or an expression
         //and returns resulting tree
         calculus_tree<DataType>exchange(const string&old_varible,const string&new_var)const;
+
+        /*
+        where variable is variable of variable of integration
+        start of integral is beg
+        end if integral is end
+        number of intervals is intervals_count
+        and variables_and_values is a vector
+        where each even index is a variable name followed by an odd index which is it's value
+        ex: vector<DataType>{"x","5","y","pi"...and so on}
+        //note: don't include x in the vector.
+        ex:
+        say you wanna itegrate from 1 to 1000 with 100000 subintervals
+        say a is 6
+        x^2*sin(2x+a)
+        call:simpson_rule("x",1,1000,100000,vector<DataType>{"a","6"....and so on})
+        */
+        DataType simpson_rule(const string&variable,const DataType beg,const DataType end,
+                                                    const unsigned int intervals_count,
+                                                    vector<string> variables_and_values={""})const;
     };
 
 #endif
