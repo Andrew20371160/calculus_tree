@@ -481,7 +481,6 @@
                     bool new_op= false ;
                     //extract the thing
                     block= parse_block(expression,start) ;
-
                     if(is_op(expression,start)&&expression[start]!='('&&expression[start]!=')'){
                         op = extract(expression,start);
                         new_op= true ;
@@ -547,136 +546,97 @@
         }
         return false ;
     }
-
-
-
     template<typename DataType>
-    string calculus_tree<DataType>::eval_extract(const string&expression,unsigned int &start){
-        string var="";
-        if(start<expression.length()){
-            unsigned int original_start = start ;
-            while(start<expression.length()&&expression[start]!='='&&expression[start]!=','){
-                start++;
-            }
-            var  = expression.substr(original_start,start -original_start);
-        }
-        return var ;
-    }
-
-    template<typename DataType>
-    DataType calculus_tree<DataType>::evaluate_at(string vars_equal){
-        if(root){
-            list<string>variables_and_values;
-            string value="";
-            string var="";
-            if(vars_equal.length()){
-                unsigned int i =0;
-                while(i<vars_equal.length()){
-                    string var = eval_extract(vars_equal,i);
-                    if(var.length()){
-                       if(i<vars_equal.length()&&vars_equal[i]=='='){
-                            i++ ;
-                       }
-                       if(i<vars_equal.length()){
-                           value = eval_extract(vars_equal,i);
-                       }
-                       if(value.length()){
-                            if(is_num(value)){
-                                variables_and_values.push_back(var);
-                                variables_and_values.push_back(value);
+    bool calculus_tree<DataType>::prepare_variables_and_values(vector<string>&variables_and_values)const{
+        if(variables_and_values.size()){
+            //must be even
+            if(variables_and_values.size()%2==0){
+                for(unsigned int i = 0; i<variables_and_values.size();i++){
+                    if(is_known_function(variables_and_values[i],0)!=-1){
+                        cout<<"\nCan't use ("<<variables_and_values[i]<<") as a variable or value";
+                        return 0;
+                    }
+                    if(i%2==0){
+                        //must be variables here
+                        if(is_num(variables_and_values[i])||is_known_constant(variables_and_values[i],0)!=-1){
+                            cout<<"\nCan't use ("<<variables_and_values[i]<<" ) as a variable";
+                            return 0;
+                        }
+                    }
+                    else{
+                        //must be value here
+                        if(!is_num(variables_and_values[i])){
+                            if(is_known_constant(variables_and_values[i],0)!=-1){
+                                variables_and_values[i]=to_string(evaluate_constant<DataType>(variables_and_values[i]));
                             }
-                            else if(is_known_constant(value,0)){
-
-                                variables_and_values.push_back(var);
-                                variables_and_values.push_back(to_string(evaluate_constant<DataType>(value)));
-                            }
-                       }
-                       i++;
-                   }
-                   else{
-                        break ;
-                   }
-                }
-                set<string> ind_vars;
-                independent_variables_tour(root,ind_vars) ;
-                if(ind_vars.size() ==variables_and_values.size()/2){
-                    for(unsigned int i = 0 ; i <ind_vars.size();i++){
-                        for(list<string>::iterator it = variables_and_values.begin(); it!=variables_and_values.end();++it){
-                            if(ind_vars.find(*it) == ind_vars.end()){
-                                cout<<"\nUnknown variable ( "<<*it<<" )";
+                            else{
+                                cout<<"\nCan't use ("<<variables_and_values[i]<<") as a value";
                                 return 0;
                             }
-                            ++it ;
                         }
                     }
                 }
             }
-            return evaluate(root,variables_and_values) ;
+        }
+        return 1 ;
+    }
+
+    template<typename DataType>
+    DataType calculus_tree<DataType>::evaluate_at(vector<string>variables_and_values){
+        if(root){
+            if(prepare_variables_and_values(variables_and_values)){
+               return evaluate(root,variables_and_values) ;
+            }
         }
         return 0 ;
     }
 
-
-
     template<typename DataType>
-    DataType calculus_tree<DataType>::evaluate(node*ptr,const list<string>&variables_and_values){
-        if(root){
-            if(ptr==NULL){
-                ptr= root ;
+    DataType calculus_tree<DataType>::evaluate(node*ptr,const vector<string>&variables_and_values)const{
+        DataType left_operand = DataType(0) ;
+        DataType right_operand = DataType(0) ;
+        //visit kids first
+        if(ptr->left){
+            left_operand =evaluate(ptr->left,variables_and_values);
+        }
+        if(ptr->right){
+            right_operand= evaluate(ptr->right,variables_and_values) ;
+        }
+        if(ptr->left==NULL&&ptr->right==NULL){
+            if(is_num(ptr->symbol)){
+                return DataType(stold(ptr->symbol)) ;
             }
-            DataType left_operand = DataType(0) ;
-            DataType right_operand = DataType(0)  ;
-            //visit kids first
-            if(ptr->left){
-                left_operand =evaluate(ptr->left,variables_and_values);
-            }
-            if(ptr->right){
-                right_operand= evaluate(ptr->right,variables_and_values) ;
-            }
-            if(ptr->left==NULL&&ptr->right==NULL){
-                if(is_num(ptr->symbol)){
-                    return DataType(stold(ptr->symbol)) ;
-                }
-                else if(variables_and_values.size()){
-                    list<string>::const_iterator it =variables_and_values.begin() ;
-                    while(it!=variables_and_values.end()){
-                        if(*it==ptr->symbol){
-                            ++it ;
-                            return DataType(stold(*it));
-                        }
-                        ++it;
-                        ++it;
+            else if(variables_and_values.size()){
+                for(unsigned int i =0 ; i<variables_and_values.size();i+=2){
+                    if(variables_and_values[i]==ptr->symbol){
+                        i++;
+                        return DataType(stold(variables_and_values[i]));
                     }
                 }
-                return evaluate_constant<DataType>(ptr->symbol);
+            }
+            return evaluate_constant<DataType>(ptr->symbol);
+        }
+        else{
+            if(is_op_tree(ptr)){
+                return evaluate_operator(ptr->symbol[0],left_operand,right_operand);
             }
             else{
-                if(is_op_tree(ptr)){
-                    return evaluate_operator(ptr->symbol[0],left_operand,right_operand);
-                }
-                else{
-                    unsigned int temp_start = 0 ;
-                    int fn_code = is_known_function(ptr->symbol,temp_start);
-                    if(fn_code!=-1){
-                        //since one of them must be zero
-                        //since the function is the root of that expression
-                        //f(expression) after evaluating the expression
-                        //i return the value
-                        DataType base_log = DataType(10);
-                        if(fn_code==LOG){
-                            if(ptr->symbol.length()>3){
-                                base_log = DataType(stold(ptr->symbol.substr(3)));
-                            }
-                            return evaluate_function<DataType>(fn_code,(left_operand),base_log) ;
+                unsigned int temp_start = 0 ;
+                int fn_code = is_known_function(ptr->symbol,temp_start);
+                if(fn_code!=-1){
+                    //since one of them must be zero
+                    //since the function is the root of that expression
+                    //f(expression) after evaluating the expression
+                    //i return the value
+                    DataType base_log = DataType(10);
+                    if(fn_code==LOG){
+                        if(ptr->symbol.length()>3){
+                            base_log = DataType(stold(ptr->symbol.substr(3)));
                         }
-                        else{
-                            return evaluate_function<DataType>(fn_code,(left_operand),base_log);
-                        }
+                        return evaluate_function<DataType>(fn_code,(left_operand),base_log) ;
                     }
                     else{
-                        cout<<"\nUNDEFINED\n";
-                        cout<<ptr->symbol;
-                        return 0 ;
+                        return evaluate_function<DataType>(fn_code,(left_operand),base_log);
                     }
                 }
             }
@@ -1272,23 +1232,23 @@
     template<typename DataType>
     string  calculus_tree<DataType>::simplify_tree_sub(const std::string &v1,const std::string  &v2){
         if(v1.size()||v2.size()){
-        bool is_v1_num = is_num(v1);
-        bool is_v2_num = is_num(v2);
-        if(is_v1_num&&is_v2_num){
-            return to_string(stold(v1)-stold(v2));
-        }
-        //no need to simplify 0-v1 since it would be translated to -1*v1
-        else if(is_v2_num){
-            if(abs(stold(v2))<=threshold){
-                return v1 ;
+            bool is_v1_num = is_num(v1);
+            bool is_v2_num = is_num(v2);
+            if(is_v1_num&&is_v2_num){
+                return to_string(stold(v1)-stold(v2));
             }
-        }
-        else if(v1==v2){
-            return "0";
-        }
-        if(v1=="inf"||v2=="inf"){
-            return "inf";
-        }
+            //no need to simplify 0-v1 since it would be translated to -1*v1
+            else if(is_v2_num){
+                if(abs(stold(v2))<=threshold){
+                    return v1 ;
+                }
+            }
+            else if(v1==v2){
+                return "0";
+            }
+            if(v1=="inf"||v2=="inf"){
+                return "inf";
+            }
         }
         //can't simplify
         return "";
@@ -1296,107 +1256,107 @@
     template<typename DataType>
     string  calculus_tree<DataType>::simplify_tree_mult(const std::string &v1,const std::string  &v2){
         if(v1.size()||v2.size()){
-        bool is_v1_num = is_num(v1);
-        bool is_v2_num = is_num(v2);
-        if(is_v1_num&&is_v2_num){
-            return to_string(stold(v1)*stold(v2));
-        }
-        else if (is_v1_num){
-            if(abs(stold(v1))<=threshold){
-                return "0";
+            bool is_v1_num = is_num(v1);
+            bool is_v2_num = is_num(v2);
+            if(is_v1_num&&is_v2_num){
+                return to_string(stold(v1)*stold(v2));
             }
-            else if(abs(stold(v1)-1)<=threshold){
-                return v2;
+            else if (is_v1_num){
+                if(abs(stold(v1))<=threshold){
+                    return "0";
+                }
+                else if(abs(stold(v1)-1)<=threshold){
+                    return v2;
+                }
             }
-        }
-        else if (is_v2_num){
-            if(abs(stold(v2))<=threshold){
-                return "0";
+            else if (is_v2_num){
+                if(abs(stold(v2))<=threshold){
+                    return "0";
+                }
+                else if(abs(stold(v2)-1)<=threshold){
+                    return v1;
+                }
             }
-            else if(abs(stold(v2)-1)<=threshold){
-                return v1;
+            else if(v1=="inf"||v2=="inf"){
+                return "inf";
             }
-        }
-        else if(v1=="inf"||v2=="inf"){
-            return "inf";
-        }
         }
         return "";
     }
     template<typename DataType>
     string  calculus_tree<DataType>::simplify_tree_div(const std::string &v1,const std::string  &v2){
         if(v1.size()||v2.size()){
-        bool is_v1_num = is_num(v1);
-        bool is_v2_num = is_num(v2);
-        if(is_v1_num&&is_v2_num){
-            if(abs(stold(v2))<=threshold){
-                if(abs(stold(v1))<=threshold){
-                    return "nan";
+            bool is_v1_num = is_num(v1);
+            bool is_v2_num = is_num(v2);
+            if(is_v1_num&&is_v2_num){
+                if(abs(stold(v2))<=threshold){
+                    if(abs(stold(v1))<=threshold){
+                        return "nan";
+                    }
+                    return "inf" ;
                 }
-                return "inf" ;
+                return to_string(stold(v1)/stold(v2));
             }
-            return to_string(stold(v1)/stold(v2));
-        }
-        else if (is_v2_num){
-            if(abs(stold(v2))<=threshold){
-                return "inf";
+            else if (is_v2_num){
+                if(abs(stold(v2))<=threshold){
+                    return "inf";
+                }
+                else if(abs(stold(v2)-1)<=threshold){
+                    return v1;
+                }
             }
-            else if(abs(stold(v2)-1)<=threshold){
-                return v1;
+            else if (is_v1_num){
+                if(abs(stold(v1))<=threshold){
+                    return "0";
+                }
             }
-        }
-        else if (is_v1_num){
-            if(abs(stold(v1))<=threshold){
+            else if(v1==v2){
+                return"1";
+            }
+            else if(v2=="inf"){
                 return "0";
             }
-        }
-        else if(v1==v2){
-            return"1";
-        }
-        else if(v2=="inf"){
-            return "0";
-        }
-        else if(v1=="inf"){
-            return "inf";
-        }
+            else if(v1=="inf"){
+                return "inf";
+            }
         }
         return "";
     }
     template<typename DataType>
     string  calculus_tree<DataType>::simplify_tree_power(const std::string &v1,const std::string  &v2){
         if(v1.size()||v2.size()){
-        bool is_v1_num = is_num(v1);
-        bool is_v2_num = is_num(v2);
-        if(is_v1_num&&is_v2_num){
-            if(abs(stold(v2))<=threshold){
-                if(abs(stold(v1))<=threshold){
-                    return "nan";
+            bool is_v1_num = is_num(v1);
+            bool is_v2_num = is_num(v2);
+            if(is_v1_num&&is_v2_num){
+                if(abs(stold(v2))<=threshold){
+                    if(abs(stold(v1))<=threshold){
+                        return "nan";
+                    }
+                    return "1";
                 }
-                return "1";
+                return to_string(pow(stold(v1),stold(v2)));
             }
-            return to_string(pow(stold(v1),stold(v2)));
-        }
-        else if(is_v2_num){
-            long double v2_val = stold(v2);
-            if(abs(v2_val-1)<=threshold){
-                return v1 ;
+            else if(is_v2_num){
+                long double v2_val = stold(v2);
+                if(abs(v2_val-1)<=threshold){
+                    return v1 ;
+                }
+                else if(abs(v2_val)<=threshold){
+                    return "1";
+                }
             }
-            else if(abs(v2_val)<=threshold){
-                return "1";
+            else if(is_v1_num){
+                long double v1_val = stold(v1);
+                if(abs(v1_val-1)<=threshold){
+                    return "1" ;
+                }
+                else if(abs(v1_val)<=threshold){
+                    return "0";
+                }
             }
-        }
-        else if(is_v1_num){
-            long double v1_val = stold(v1);
-            if(abs(v1_val-1)<=threshold){
-                return "1" ;
+            else if(v1=="inf"||v2=="inf"){
+                return "inf";
             }
-            else if(abs(v1_val)<=threshold){
-                return "0";
-            }
-        }
-        else if(v1=="inf"||v2=="inf"){
-            return "inf";
-        }
         }
         return "";
     }
@@ -1464,14 +1424,14 @@
                     return value ;
                 }
             }
-        else {
-            if(is_known_constant(ptr->symbol,0)!=-1){
-                return to_string(evaluate_constant<DataType>(ptr->symbol));
+            else {
+                if(is_known_constant(ptr->symbol,0)!=-1){
+                    return to_string(evaluate_constant<DataType>(ptr->symbol));
+                }
+                return ptr->symbol;
             }
-            return ptr->symbol;
         }
-    }
-    return "";
+        return "";
     }
 
     template<typename DataType>
@@ -1525,13 +1485,116 @@
         }
         return *this;
     }
+    template<typename DataType>
+    vector<DataType> calculus_tree<DataType>::simpson_rule_tour(node*ptr ,const string&symbol,
+                                                    const DataType&x_val,const DataType&step_size,
+                                                    const unsigned int&fx_size,const vector<string>&variables_and_values)const{
+        vector<DataType> left_operands;
+        vector<DataType> right_operands;
+        vector<DataType>values(fx_size);
+        //visit kids first
+        if(ptr->left){
+            left_operands = simpson_rule_tour(ptr->left,symbol,x_val,step_size,fx_size,variables_and_values);
+        }
+        if(ptr->right){
+            right_operands = simpson_rule_tour(ptr->right,symbol,x_val,step_size,fx_size,variables_and_values);
+        }
+        if(is_constant_tree(ptr)){
+            DataType value;
+            bool is_x= false;
+            if(is_num(ptr->symbol)){
+                value= DataType(stold(ptr->symbol)) ;
+            }
+            else if(symbol==ptr->symbol){
+                is_x=true;
+                value=x_val;
+            }
+            else if(variables_and_values.size()){
+                for(unsigned int i =0 ; i<variables_and_values.size();i+=2){
+                    if(variables_and_values[i]==ptr->symbol){
+                        i++;
+                        value = DataType(stold(variables_and_values[i]));
+                        break;
+                    }
+                }
+            }
+            else{
+                value =evaluate_constant<DataType>(ptr->symbol);
+            }
+            if(is_x){
+                for(unsigned int i =0 ; i <fx_size;i++){
+                    values[i]=value+step_size*i;
+                }
+            }
+            else{
+                for(unsigned int i =0 ; i <fx_size;i++){
+                    values[i]=value;
+                }
+            }
+            return values;
+        }
+        else{
+            if(is_op_tree(ptr)){
+                for(unsigned int i =0 ; i <fx_size;i++){
+                    values[i]=evaluate_operator(ptr->symbol[0],left_operands[i],right_operands[i]);
+                }
+            }
+            else{
+                unsigned int temp_start = 0 ;
+                int fn_code = is_known_function(ptr->symbol,temp_start);
+                if(fn_code!=-1){
+                    //since one of them must be zero
+                    //since the function is the root of that expression
+                    //f(expression) after evaluating the expression
+                    //i return the value
+                    DataType base_log = DataType(10);
+                    if(fn_code==LOG){
+                        if(ptr->symbol.length()>3){
+                            base_log = DataType(stold(ptr->symbol.substr(3)));
+                        }
+                        for(unsigned int i =0 ; i <fx_size;i++){
+                            values[i] =evaluate_function<DataType>(fn_code,left_operands[i],base_log) ;
+                        }
+                    }
+                    else{
+                        for(unsigned int i =0 ; i <fx_size;i++){
+                            values[i] =evaluate_function<DataType>(fn_code,left_operands[i],base_log) ;
+                        }
+                    }
+                }
+            }
+        }
+        return values;
+    }
+
+    template<typename DataType>
+    DataType calculus_tree<DataType>::simpson_rule(const string&variable,const DataType beg,const DataType end,
+                                                    const unsigned int sub_intervals_count,
+                                                    vector<string> variables_and_values)const{
+        if(variable.size()&&sub_intervals_count>0&&beg<end){
+            if(prepare_variables_and_values(variables_and_values)){
+                DataType step_size = (end-beg)/DataType(sub_intervals_count);
+                vector<DataType>fx=simpson_rule_tour(root,variable,beg,step_size,sub_intervals_count+1,variables_and_values);
+                DataType value= fx[0];
+                for(unsigned int i = 1;i<sub_intervals_count;i++){
+                    if(i&1){
+                        value+=fx[i]*4;
+                    }
+                    else{
+                        value+=fx[i]*2;
+                    }
+                }
+                value+=fx[sub_intervals_count];
+                return (step_size/DataType(3))*value;
+            }
+        }
+        return 0;
+    }
 
 #include <chrono>
 
 int main(){
-
-    calculus_tree<long double>tree("0*(2x^2+cos(u))+1");
-    tree.simplify();
-    cout<<tree;
+    calculus_tree<long double>tree("x^x");
+    cout<<tree.simpson_rule("x",1,100,1000);
     system("pause");
 }
