@@ -1,3 +1,8 @@
+10/19/2024 updates:
+1-added simpson's rule (will enhance its performance later)
+2-refactored some code and changed input method of evaluate_at
+3-fixed some errors aswell
+
 10/15/2024 updates:
 1-added switch variable capability say you wanna exchange x with x^2+1 
 the new function exchange does that and returns resuling tree.
