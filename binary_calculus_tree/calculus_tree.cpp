@@ -1568,33 +1568,103 @@
     }
 
     template<typename DataType>
-    DataType calculus_tree<DataType>::simpson_rule(const string&variable,const DataType beg,const DataType end,
-                                                    const unsigned int sub_intervals_count,
+    DataType calculus_tree<DataType>::simpson_rule_1_3(const string&variable,const DataType beg,const DataType end,
+                                                    const unsigned int sub_intervals_count, unsigned int traversal_array_size,
                                                     vector<string> variables_and_values)const{
-        if(variable.size()&&sub_intervals_count>0&&beg<end){
+        if(variable.size()&&sub_intervals_count>0&&beg<end&&traversal_array_size<=sub_intervals_count){
             if(prepare_variables_and_values(variables_and_values)){
-                DataType step_size = (end-beg)/DataType(sub_intervals_count);
-                vector<DataType>fx=simpson_rule_tour(root,variable,beg,step_size,sub_intervals_count+1,variables_and_values);
-                DataType value= fx[0];
-                for(unsigned int i = 1;i<sub_intervals_count;i++){
-                    if(i&1){
-                        value+=fx[i]*4;
-                    }
-                    else{
-                        value+=fx[i]*2;
+                if(traversal_array_size==0){
+                    traversal_array_size = sub_intervals_count ;
+                    while(traversal_array_size>1000){
+                        traversal_array_size/=2;
                     }
                 }
-                value+=fx[sub_intervals_count];
+                DataType step_size = (end-beg)/DataType(sub_intervals_count);
+                DataType value = DataType(0);
+                /* For big intervals, say 1000000, it's not sufficient to perform the computations
+                   on the whole array at once. We can divide it and balance the traversal, aka stack usage,
+                   with the array size.
+                */
+                /* For 1000000 intervals, we can divide it so that we visit the tree 1000 times,
+                   and each time we evaluate for 1000 values.
+                */
+                unsigned int traversal_count = sub_intervals_count/traversal_array_size;
+                for(unsigned int i = 0 ;i<traversal_count;i++){
+                    vector<DataType>fx=simpson_rule_tour(root,variable,(beg+traversal_array_size*step_size*i)
+                                                        ,step_size,traversal_array_size+1,variables_and_values);
+                        for(unsigned int j = 0;j<traversal_array_size+1;j++){
+                            if(j==0&&i==0){
+                                value=fx[0];
+                            }
+                            else if(i==traversal_count-1&&j==traversal_array_size){
+                                value+=fx[traversal_array_size];
+                            }
+                            else{
+                                if(j&1){
+                                    value+=fx[j]*4;
+                                }
+                                else{
+                                    value+=fx[j]*2;
+                                }
+                            }
+                        }
+                    }
                 return (step_size/DataType(3))*value;
             }
         }
         return 0;
     }
+template<typename DataType>
+DataType calculus_tree<DataType>::simpson_rule_3_8(const string& variable, const DataType beg, const DataType end,
+                                               const unsigned int sub_intervals_count, unsigned int traversal_array_size,
+                                               vector<string> variables_and_values) const {
+    if (variable.size() && sub_intervals_count > 0 && beg < end && traversal_array_size <= sub_intervals_count) {
+        if (prepare_variables_and_values(variables_and_values)) {
+            if (traversal_array_size == 0) {
+                traversal_array_size = sub_intervals_count;
+                while (traversal_array_size > 1000) {
+                    traversal_array_size /= 3;
+                }
+            }
+            DataType step_size = (end - beg) / DataType(sub_intervals_count);
+            DataType value = DataType(0);
 
+            /* For big intervals, say 1000000, it's not sufficient to perform the computations
+               on the whole array at once. We can divide it and balance the traversal, aka stack usage,
+               with the array size.
+            */
+            /* For 1000000 intervals, we can divide it so that we visit the tree 1000 times,
+               and each time we evaluate for 1000 values.
+            */
+            unsigned int traversal_count = sub_intervals_count / traversal_array_size;
+            for (unsigned int i = 0; i < traversal_count; i++) {
+                vector<DataType> fx = simpson_rule_tour(root, variable, (beg + traversal_array_size * step_size * i),
+                                                        step_size, traversal_array_size + 1, variables_and_values);
+                for (unsigned int j = 0; j < traversal_array_size + 1; j++) {
+                    if (j == 0 && i == 0) {
+                        value = fx[0];
+                    }
+                    else if (i == traversal_count - 1 && j == traversal_array_size) {
+                        value += fx[traversal_array_size];
+                    }
+                    else {
+                        if (j % 3 == 0) {
+                            value += fx[j] * 2;
+                        } else {
+                            value += fx[j] * 3;
+                        }
+                    }
+                }
+            }
+            return (DataType(3/8) * step_size) * value;
+        }
+    }
+    return 0;
+}
 #include <chrono>
 
 int main(){
-    calculus_tree<long double>tree("x^x");
-    cout<<tree.simpson_rule("x",1,100,1000);
+    calculus_tree< long double>tree("x^5*(5x^4+x)");
+    cout<<tree.simpson_rule("x",1,100,5200);
     system("pause");
 }
