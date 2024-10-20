@@ -314,11 +314,24 @@ class calculus_tree
         say you wanna itegrate from 1 to 1000 with 100000 subintervals
         say a is 6
         x^2*sin(2x+a)
-        call:simpson_rule("x",1,1000,100000,vector<DataType>{"a","6"....and so on})
+        call:simpson_rule("x",1,1000,100000,0,vector<DataType>{"a","6"....and so on})
+
+        balancing between traversal and array size:
+            traversal array size is the size of the array used in every recursive call of the evaluation
+            by default it's adjusted in both simpsons' rules to be less than or equal to 1000
+            //explaination:
+            For big intervals, say 1000000, it's not sufficient to perform the computations
+            on the whole array at once. We can divide it and balance the traversal, aka stack usage,
+            with the array size.
+            For 1000000 intervals, we can keed dividing it by 2 so that we visit the tree say 1000 times,
+            and each time we evaluate for 1000 values.
         */
-        DataType simpson_rule(const string&variable,const DataType beg,const DataType end,
-                                                    const unsigned int intervals_count,
+        DataType simpson_rule_1_3(const string&variable,const DataType beg,const DataType end,
+                                                    const unsigned int intervals_count, unsigned int traversal_array_size=0,
                                                     vector<string> variables_and_values={""})const;
+        DataType simpson_rule_3_8(const string&variable,const DataType beg,const DataType end,
+                                            const unsigned int intervals_count, unsigned int traversal_array_size=0,
+                                            vector<string> variables_and_values={""})const;
     };
 
 #endif
