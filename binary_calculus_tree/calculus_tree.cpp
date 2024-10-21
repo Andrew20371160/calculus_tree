@@ -1614,57 +1614,172 @@
         }
         return 0;
     }
-template<typename DataType>
-DataType calculus_tree<DataType>::simpson_rule_3_8(const string& variable, const DataType beg, const DataType end,
-                                               const unsigned int sub_intervals_count, unsigned int traversal_array_size,
-                                               vector<string> variables_and_values) const {
-    if (variable.size() && sub_intervals_count > 0 && beg < end && traversal_array_size <= sub_intervals_count) {
-        if (prepare_variables_and_values(variables_and_values)) {
-            if (traversal_array_size == 0) {
-                traversal_array_size = sub_intervals_count;
-                while (traversal_array_size > 1000) {
-                    traversal_array_size /= 3;
+    template<typename DataType>
+    DataType calculus_tree<DataType>::simpson_rule_3_8(const string& variable, const DataType beg, const DataType end,
+                                                   const unsigned int sub_intervals_count, unsigned int traversal_array_size,
+                                                   vector<string> variables_and_values) const {
+        if (variable.size() && sub_intervals_count > 0 && beg < end && traversal_array_size <= sub_intervals_count) {
+            if (prepare_variables_and_values(variables_and_values)) {
+                if (traversal_array_size == 0) {
+                    traversal_array_size = sub_intervals_count;
+                    while (traversal_array_size > 1000) {
+                        traversal_array_size /= 3;
+                    }
+                }
+                DataType step_size = (end - beg) / DataType(sub_intervals_count);
+                DataType value = DataType(0);
+
+                /* For big intervals, say 1000000, it's not sufficient to perform the computations
+                   on the whole array at once. We can divide it and balance the traversal, aka stack usage,
+                   with the array size.
+                */
+                /* For 1000000 intervals, we can divide it so that we visit the tree 1000 times,
+                   and each time we evaluate for 1000 values.
+                */
+                unsigned int traversal_count = sub_intervals_count / traversal_array_size;
+                for (unsigned int i = 0; i < traversal_count; i++) {
+                    vector<DataType> fx = simpson_rule_tour(root, variable, (beg + traversal_array_size * step_size * i),
+                                                            step_size, traversal_array_size + 1, variables_and_values);
+                    for (unsigned int j = 0; j < traversal_array_size + 1; j++) {
+                        if (j == 0 && i == 0) {
+                            value = fx[0];
+                        }
+                        else if (i == traversal_count - 1 && j == traversal_array_size) {
+                            value += fx[traversal_array_size];
+                        }
+                        else {
+                            if (j % 3 == 0) {
+                                value += fx[j] * 2;
+                            } else {
+                                value += fx[j] * 3;
+                            }
+                        }
+                    }
+                }
+                return (DataType(3/8) * step_size) * value;
+            }
+        }
+        return 0;
+    }
+
+    template<typename DataType>
+    vector<DataType> calculus_tree<DataType>::table_tour(node*ptr,const vector<string>&variables_and_values,
+                                                    const unsigned int &fx_size ,const vector<DataType>&step_size)const{
+        vector<DataType> left_operands;
+        vector<DataType> right_operands;
+        vector<DataType>values(fx_size);
+        //visit kids first
+        if(ptr->left){
+            left_operands =table_tour(ptr->left,variables_and_values,
+                                                    fx_size ,step_size);
+        }
+        if(ptr->right){
+            right_operands= table_tour(ptr->right,variables_and_values,
+                                                    fx_size ,step_size) ;
+        }
+        if(is_constant_tree(ptr)){
+            DataType value;
+            int is_x_index= -1;
+            if(is_num(ptr->symbol)){
+                value= DataType(stold(ptr->symbol)) ;
+            }
+            else if(variables_and_values.size()){
+                for(unsigned int i =0 ; i<variables_and_values.size();i+=2){
+                    if(variables_and_values[i]==ptr->symbol){
+                        i++;
+                        value = DataType(stold(variables_and_values[i]));
+                        is_x_index=(i-1)/2;
+                        break;
+                    }
                 }
             }
-            DataType step_size = (end - beg) / DataType(sub_intervals_count);
-            DataType value = DataType(0);
-
-            /* For big intervals, say 1000000, it's not sufficient to perform the computations
-               on the whole array at once. We can divide it and balance the traversal, aka stack usage,
-               with the array size.
-            */
-            /* For 1000000 intervals, we can divide it so that we visit the tree 1000 times,
-               and each time we evaluate for 1000 values.
-            */
-            unsigned int traversal_count = sub_intervals_count / traversal_array_size;
-            for (unsigned int i = 0; i < traversal_count; i++) {
-                vector<DataType> fx = simpson_rule_tour(root, variable, (beg + traversal_array_size * step_size * i),
-                                                        step_size, traversal_array_size + 1, variables_and_values);
-                for (unsigned int j = 0; j < traversal_array_size + 1; j++) {
-                    if (j == 0 && i == 0) {
-                        value = fx[0];
+            else{
+                value =evaluate_constant<DataType>(ptr->symbol);
+            }
+            if(is_x_index!=-1){
+                for(unsigned int i =0 ; i <fx_size;i++){
+                    values[i]=value+step_size[is_x_index]*i;
+                }
+            }
+            else{
+                for(unsigned int i =0 ; i <fx_size;i++){
+                    values[i]=value;
+                }
+            }
+            return values;
+        }
+        else{
+            if(is_op_tree(ptr)){
+                for(unsigned int i =0 ; i <fx_size;i++){
+                    values[i]=evaluate_operator(ptr->symbol[0],left_operands[i],right_operands[i]);
+                }
+            }
+            else{
+                unsigned int temp_start = 0 ;
+                int fn_code = is_known_function(ptr->symbol,temp_start);
+                if(fn_code!=-1){
+                    //since one of them must be zero
+                    //since the function is the root of that expression
+                    //f(expression) after evaluating the expression
+                    //i return the value
+                    DataType base_log = DataType(10);
+                    if(fn_code==LOG){
+                        if(ptr->symbol.length()>3){
+                            base_log = DataType(stold(ptr->symbol.substr(3)));
+                        }
+                        for(unsigned int i =0 ; i <fx_size;i++){
+                            values[i] =evaluate_function<DataType>(fn_code,left_operands[i],base_log) ;
+                        }
                     }
-                    else if (i == traversal_count - 1 && j == traversal_array_size) {
-                        value += fx[traversal_array_size];
-                    }
-                    else {
-                        if (j % 3 == 0) {
-                            value += fx[j] * 2;
-                        } else {
-                            value += fx[j] * 3;
+                    else{
+                        for(unsigned int i =0 ; i <fx_size;i++){
+                            values[i] =evaluate_function<DataType>(fn_code,left_operands[i],base_log) ;
                         }
                     }
                 }
             }
-            return (DataType(3/8) * step_size) * value;
         }
+        return values;
     }
-    return 0;
-}
-#include <chrono>
+    template<typename DataType>
+    vector<DataType> calculus_tree<DataType>::table(vector<string>& variables_and_values,
+                                                    const unsigned int &fx_size, const vector<DataType>&step_size,
+                                                    unsigned int traversal_array_size) const {
+        if (variables_and_values.size() && fx_size > 0 && step_size.size() == variables_and_values.size() / 2) {
+            if (prepare_variables_and_values(variables_and_values)) {
+                if (traversal_array_size == 0) {
+                    traversal_array_size = fx_size;
+                    while (traversal_array_size > 1000) {
+                        traversal_array_size /= 2;
+                    }
+                }
+                unsigned int extra_round_count = fx_size % traversal_array_size;
+                vector<string> updated_values = variables_and_values;
+                vector<DataType> ret_fx(fx_size);
 
+                unsigned int traversal_count = fx_size / traversal_array_size;
+                unsigned int i = 0;
+                for (; i < traversal_count; i++) {
+                    vector<DataType> fx = table_tour(root, updated_values, traversal_array_size, step_size);
+                    for (unsigned int j = 0; j < traversal_array_size; j++) {
+                        ret_fx[i * traversal_array_size + j] = fx[j];
+                    }
+                    // Update variables for next round
+                    for (unsigned int j = 0; j < step_size.size(); j++) {
+                        updated_values[2*j+1] = to_string(stold(variables_and_values[2*j+1])+traversal_array_size*step_size[j]*(i+1));
+                    }
+                }
+                if (extra_round_count > 0) {
+                    vector<DataType> fx = table_tour(root, updated_values, extra_round_count, step_size);
+                    for (unsigned int j = 0; j < extra_round_count; j++) {
+                        ret_fx[i * traversal_array_size + j] = fx[j];
+                    }
+                }
+                return ret_fx;
+            }
+        }
+        return vector<DataType>(0);
+    }
 int main(){
-    calculus_tree< long double>tree("x^5*(5x^4+x)");
-    cout<<tree.simpson_rule("x",1,100,5200);
-    system("pause");
+
 }
