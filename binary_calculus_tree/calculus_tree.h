@@ -186,6 +186,8 @@ class calculus_tree
                                                     const DataType&x_val,const DataType&step_size,
                                                     const unsigned int&fx_size,const vector<string>&variables_and_values) const ;
         bool prepare_variables_and_values(vector<string>&)const;
+        vector<DataType>table_tour(node*ptr,const std::vector<std::string>&variables_and_values,
+                                                    const unsigned int &fx_size ,const vector<DataType>&step_size)const;
     public:
         /*
         constructors
@@ -332,6 +334,37 @@ class calculus_tree
         DataType simpson_rule_3_8(const string&variable,const DataType beg,const DataType end,
                                             const unsigned int intervals_count, unsigned int traversal_array_size=0,
                                             vector<string> variables_and_values={""})const;
+        /*The table function generates a table of values for a given set of
+        variables and their corresponding step sizes. It traverses a calculus tree
+        and evaluates the function at each step.
+
+       - Parameters
+        variables_and_values (vector&): A vector containing variable names and their initial values in alternating
+        order (e.g., {"x", "0.0", "y", "1.0"}).
+        fx_size (const unsigned int&): The number of function evaluations to perform.
+        step_size (const vector&): A vector containing the step sizes for each variable.
+        traversal_array_size (unsigned int): The size of the traversal array. If set to 0, it will be automatically adjusted.
+        Returns
+        vector<DataType>: A vector containing the evaluated function values.
+        balancing between traversal and array size:
+        traversal array size is the size of the array used in every recursive call of the evaluation
+        by default it's adjusted in both simpsons' rules to be less than or equal to 1000
+        //explaination:
+        For big intervals, say 1000000, it's not sufficient to perform the computations
+        on the whole array at once. We can divide it and balance the traversal, aka stack usage,
+        with the array size.
+        For 1000000 intervals, we can keed dividing it by 2 so that we visit the tree say 1000 times,
+        and each time we evaluate for 1000 values.
+
+        -Preconditions
+        variables_and_values must contain an even number of elements.
+        fx_size must be greater than 0.
+        step_size.size() must be equal to variables_and_values.size() / 2.
+
+        */
+        vector<DataType> table(vector<string>& variables_and_values,
+                                                        const unsigned int &fx_size, const vector<DataType> &step_size,
+                                                        unsigned int traversal_array_size=0) const ;
     };
 
 #endif
