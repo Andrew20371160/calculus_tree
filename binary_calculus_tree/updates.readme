@@ -1,3 +1,6 @@
+10/25/2024 update:
+fixed an issue where simpson's 3/8 rule would always return 0 returning final value multiplied by 3/8 which results in integer dividing 
+which always returns zero.
 10/22/2024 update:
 1-added table functionality which evaluates the expression with multiple variables where each set at initial value
 with variable step size for each variable
