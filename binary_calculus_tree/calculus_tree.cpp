@@ -1656,7 +1656,7 @@
                         }
                     }
                 }
-                return (DataType(3/8) * step_size) * value;
+                return ((DataType(3)/DataType(8)) * step_size) * value;
             }
         }
         return 0;
